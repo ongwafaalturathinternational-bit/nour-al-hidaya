@@ -1,0 +1,22 @@
+NOUR AL-HIDAYA — PROTOTYPE D'APPLICATION (installable, fonctionne hors ligne)
+
+CONTENU DU DOSSIER
+  index.html   l'application (un seul fichier)
+  manifest.json, sw.js, icon-192.png, icon-512.png   pour l'installer comme une vraie application
+
+POUR L'ESSAYER TOUT DE SUITE
+  Ouvrez index.html dans Chrome (ordinateur ou téléphone Android).
+
+POUR L'INSTALLER SUR UN TÉLÉPHONE
+  Il faut mettre ces 5 fichiers sur un site (hébergement gratuit possible : GitHub Pages, Netlify, Cloudflare Pages).
+  Ensuite, ouvrez l'adresse dans Chrome sur Android : menu ⋮ puis « Installer l'application ».
+  Après la première ouverture avec internet, l'application fonctionne sans connexion.
+
+CE QUE C'EST (ET CE QUE CE N'EST PAS ENCORE)
+  - Prototype de démonstration : les noms et chiffres sont des exemples.
+  - Les données restent sur l'appareil (pas encore de serveur) : un formateur et ses apprenants ne partagent donc pas encore leurs données entre téléphones.
+  - Rôles : apprenant, agent de mosquée (inscription et registre), formateur, parrain, ONG.
+  - Contenu réel : leçons 1, 2 et 7 (issues de vos livrets). Les autres leçons sont en préparation.
+  - Audio de récitation : bouton présent, fichiers à fournir (droits à valider).
+  - Texte coranique et leçons : à faire valider par le comité pédagogique et religieux.
+  - Menus en français, anglais et arabe ; leçons en français pour l'instant.

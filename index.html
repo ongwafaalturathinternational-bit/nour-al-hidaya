@@ -1,0 +1,954 @@
+<title>Nour Al-Hidaya</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0F2240">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap">
+<style>
+/* Concept : une application de cours sobre, marine et or comme les livrets de l'ONG, pensée pour un petit téléphone Android. */
+:root{
+  --bg:#F4F6FA; --surface:#FFFFFF; --ink:#14203A; --muted:#5A667B; --line:#DCE1EB;
+  --navy:#0F2240; --navy-ink:#FFFFFF; --gold:#C9972B; --gold-soft:#FBF2DA; --gold-ink:#6B4A07;
+  --ok:#1E7A4C; --ok-soft:#E3F3EA; --warn:#A35F00; --warn-soft:#FFF0D6; --bad:#B3372E; --bad-soft:#FBE6E4;
+  --blue-soft:#E7EEF9; --fs:1;
+  --serif:Georgia,"Times New Roman",serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --arab:"Amiri","Noto Naskh Arabic",Tahoma,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A1220; --surface:#121E36; --ink:#E9EDF6; --muted:#98A5BC; --line:#253352;
+  --navy:#0F2240; --gold:#D8A93A; --gold-soft:#2A2411; --gold-ink:#EBCB7C;
+  --ok:#52C28B; --ok-soft:#10301F; --warn:#E2A24A; --warn-soft:#33260E; --bad:#F0817A; --bad-soft:#3A1816; --blue-soft:#16264A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A1220; --surface:#121E36; --ink:#E9EDF6; --muted:#98A5BC; --line:#253352;
+  --navy:#0F2240; --gold:#D8A93A; --gold-soft:#2A2411; --gold-ink:#EBCB7C;
+  --ok:#52C28B; --ok-soft:#10301F; --warn:#E2A24A; --warn-soft:#33260E; --bad:#F0817A; --bad-soft:#3A1816; --blue-soft:#16264A; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:calc(16px*var(--fs))/1.5 var(--sans);padding-inline:max(0px,env(safe-area-inset-left,0px)) max(0px,env(safe-area-inset-right,0px));-webkit-tap-highlight-color:transparent}
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3{font-family:var(--serif);margin:0;text-wrap:balance;line-height:1.25}
+.ar{font-family:var(--arab);direction:rtl;unicode-bidi:isolate}
+header.top{background:var(--navy);color:var(--navy-ink);padding:10px max(16px,env(safe-area-inset-left,0px)) 10px max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:3px solid var(--gold)}
+header.top img{width:34px;height:34px;border-radius:50%;background:#fff}
+header.top .t{flex:1;min-width:0}
+header.top .t b{font-family:var(--serif);font-size:1.02rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top .t small{opacity:.8;font-size:.78rem}
+.pill{font-size:.72rem;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.35);white-space:nowrap}
+.pill.off{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.back{background:none;border:0;color:#fff;font-size:1.4rem;line-height:1;padding:4px 8px 4px 0}
+main{flex:1;padding:16px max(16px,env(safe-area-inset-left,0px)) 96px max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+nav.bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:6}
+nav.bar button{flex:1;background:none;border:0;padding:6px 2px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.74rem;border-radius:10px}
+nav.bar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.bar button.on{color:var(--navy);font-weight:700}
+@media (prefers-color-scheme:dark){nav.bar button.on{color:var(--gold)}}
+:root[data-theme="dark"] nav.bar button.on{color:var(--gold)}
+nav.bar button.on svg{stroke:var(--gold)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card.plain{border:0;padding:0;background:none}
+.lbl{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h2{font-size:1.25rem}h3{font-size:1.05rem}
+.muted{color:var(--muted)}.small{font-size:.86rem}
+.row{display:flex;align-items:center;gap:10px}.sp{flex:1;min-width:0}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:600;min-height:46px}
+.btn.gold{background:var(--gold);color:#1B1403}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:7px 12px;min-height:36px;font-size:.88rem;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.full{width:100%}
+.bar-p{height:8px;background:var(--line);border-radius:9px;overflow:hidden}
+.bar-p i{display:block;height:100%;background:var(--gold);border-radius:9px}
+.bar-p.ok i{background:var(--ok)}
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:99px;font-weight:600;background:var(--blue-soft);color:var(--ink)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}.tag.warn{background:var(--warn-soft);color:var(--warn)}.tag.bad{background:var(--bad-soft);color:var(--bad)}.tag.gold{background:var(--gold-soft);color:var(--gold-ink)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;width:100%;text-align:left}
+.item.lock{opacity:.6}
+.num{width:34px;height:34px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-weight:700;font-family:var(--serif);flex:none}
+.num.done{background:var(--ok);color:#fff}
+.hero{background:var(--navy);color:#fff;border-radius:16px;padding:18px;border:1px solid var(--gold)}
+.hero h2{color:#fff}.hero .ar{font-size:1.5rem;color:#EBCB7C}
+.hero .bar-p{background:rgba(255,255,255,.2);margin-top:12px}
+.steps{display:flex;gap:6px}.steps i{flex:1;height:5px;border-radius:5px;background:var(--line)}.steps i.on{background:var(--gold)}.steps i.cur{background:var(--navy)}
+@media (prefers-color-scheme:dark){.steps i.cur{background:#fff}}
+:root[data-theme="dark"] .steps i.cur{background:#fff}
+.key{background:var(--gold-soft);border-inline-start:5px solid var(--gold);padding:16px;border-radius:12px;font-family:var(--serif);font-size:1.12rem;color:var(--ink)}
+.prose{font-family:var(--serif);font-size:1.02rem;line-height:1.65}
+.prose h3{margin:14px 0 4px}.prose p{margin:0 0 10px}
+.verse{background:var(--navy);color:#fff;border-radius:14px;padding:18px;text-align:center}
+.verse .ar{font-size:1.75rem;line-height:2.1;color:#fff}
+.verse .fr{font-family:var(--serif);font-style:italic;opacity:.92}
+.verse .ref{color:#EBCB7C;font-size:.85rem;margin-top:4px}
+.audio{display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:99px;padding:8px 16px}
+textarea,input[type=text],select{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+textarea{min-height:96px;resize:vertical}
+label.chk{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface)}
+label.chk input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--navy);flex:none}
+label.chk.on{border-color:var(--ok);background:var(--ok-soft)}
+.opt{display:block;width:100%;text-align:start;padding:13px 14px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;margin-bottom:8px}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{padding:12px;border-radius:12px;margin:6px 0 10px}.fb.ok{background:var(--ok-soft)}.fb.no{background:var(--bad-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--navy);background:var(--surface);border-radius:99px;padding:8px 14px}
+.chip[disabled]{opacity:.35}
+.seq{counter-reset:s;display:flex;flex-direction:column;gap:6px;min-height:46px;margin-bottom:10px}
+.seq div{counter-increment:s;background:var(--blue-soft);padding:8px 12px;border-radius:10px}
+.seq div::before{content:counter(s) ". ";font-weight:700}
+.sel-row{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:12px}
+.tri{display:flex;gap:6px}.tri button{flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-size:.85rem}
+.tri button.p.on{background:var(--ok);color:#fff;border-color:var(--ok)}.tri button.a.on{background:var(--bad);color:#fff;border-color:var(--bad)}.tri button.e.on{background:var(--warn);color:#fff;border-color:var(--warn)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi b{font-family:var(--serif);font-size:1.7rem;display:block;font-variant-numeric:tabular-nums}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bars .r{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;font-size:.86rem}
+.bars .r div{height:14px;background:var(--line);border-radius:6px;overflow:hidden}.bars .r div i{display:block;height:100%;background:var(--navy)}
+@media (prefers-color-scheme:dark){.bars .r div i{background:var(--gold)}}
+:root[data-theme="dark"] .bars .r div i{background:var(--gold)}
+.note{background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:.86rem;border:1px dashed var(--warn)}
+.note.info{background:var(--blue-soft);border-color:var(--navy)}
+.note.priv{background:var(--bad-soft);border-color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:99px;z-index:20;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:90%;text-align:center;border:1px solid var(--gold)}
+.login{padding:28px max(20px,env(safe-area-inset-left,0px)) 30px;display:flex;flex-direction:column;gap:14px;flex:1}
+.login .brand{text-align:center;padding:10px 0 6px}
+.login .brand img{width:74px;height:74px;border-radius:50%;background:#fff;border:2px solid var(--gold)}
+.login .brand h1{font-size:1.7rem;margin-top:8px;color:var(--ink)}
+.login .brand .ar{font-size:1.5rem;color:var(--gold)}
+.role{display:flex;gap:12px;align-items:center;text-align:start;width:100%;padding:14px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px}
+.role b{font-family:var(--serif);display:block}
+.role .ic{width:42px;height:42px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center;flex:none;font-family:var(--serif);font-weight:700}
+.cert{background:#FFFDF6;color:#14203A;border:3px double #C9972B;border-radius:6px;padding:22px 16px;text-align:center;outline:6px solid #0F2240;outline-offset:-1px;margin:6px}
+.cert h2{color:#0F2240;font-size:1.35rem}.cert .nm{font-family:var(--serif);font-size:1.6rem;color:#0F2240;border-bottom:2px solid #C9972B;display:inline-block;padding:2px 14px;margin:8px 0}
+.cert .ar{color:#C9972B;font-size:1.5rem}
+.cert small{color:#555}
+.chk-row{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.hr{height:1px;background:var(--line);margin:4px 0}
+.disc header.top{background:#33415C}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.card,.item{transition:border-color .15s}}
+[dir=rtl] .flip{transform:scaleX(-1);display:inline-block}
+[dir=rtl] .bars .r b{text-align:start}
+.langs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.langs button{border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-size:.88rem}
+.langs button.on{background:var(--navy);color:#fff;border-color:var(--gold)}
+.free{text-align:center;font-size:.9rem;color:var(--ink);background:var(--gold-soft);border-radius:12px;padding:10px 12px}
+</style>
+
+<div id="app"></div>
+
+<script>
+"use strict";
+/* ---------- utilitaires ---------- */
+const LOGO="data:image/png;base64,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";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=(s,e=document)=>e.querySelector(s);
+const KEY="nh_proto_v2";
+let mem=null;
+function store(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return mem}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){mem=JSON.parse(JSON.stringify(S))}}
+const dayISO=(off=0)=>{const d=new Date();d.setDate(d.getDate()+off);return d.toISOString().slice(0,10)};
+const LOC={fr:"fr-FR",en:"en-GB",ar:"ar"};
+const loc=()=>LOC[(S&&S.set&&S.set.lang)||"fr"];
+const fmt=iso=>new Date(iso+"T12:00:00").toLocaleDateString(loc(),{day:"numeric",month:"long",year:"numeric"});
+const fmtS=iso=>new Date(iso+"T12:00:00").toLocaleDateString(loc(),{day:"numeric",month:"short"});
+const country=cc=>{try{return new Intl.DisplayNames([loc()],{type:"region"}).of(cc)}catch(e){return cc}};
+const CCS=["BJ","TG","CI","SN","ML","BF","NE","GH","NG","CM","CD","GA","MA","DZ","TN","EG","SA","FR","BE","CH","CA","US","GB","DE","IT","ES","NL","BR","IN","ID","ZA"];
+const ico={
+ book:'<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>',
+ task:'<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4v2h6V4M9 12l2 2 4-4"/></svg>',
+ chart:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
+ users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c.7-3.5 3.3-5 7-5s6.300 1.500 7 5M17 4.500a3.500 3.500 0 0 1 0 7M22 20c-.4-2.400-1.700-4-4-4.700"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>',
+ shield:'<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.500-3.300 8-8 9-4.700-1-8-4.500-8-9V6z"/></svg>',
+ heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.500-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 10c0 5.500-7 10-7 10z"/></svg>'
+};
+
+/* ---------- contenu (repris des livrets de l'ONG) ---------- */
+const LESSONS={
+1:{mod:1,title:"Qui est Dieu ?",ar:"مَنْ هُوَ اللَّهُ؟",key:"Dieu est le Créateur unique : il nous a créés, il nous connaît et il est proche de nous.",
+ text:[["Le Créateur de tout","Regardez autour de vous : le ciel, la pluie, la terre, votre propre corps. Rien de tout cela ne s’est fait tout seul. L’islam enseigne que tout a été créé par un Dieu unique. En arabe, on l’appelle Allah : ce n’est pas le dieu d’un seul peuple, c’est simplement le mot arabe pour dire « Dieu », le Créateur de tous les êtres humains."],
+  ["Un Dieu qui connaît et qui est proche","Dieu n’est pas lointain. Il voit, il entend, il connaît nos peines et nos joies. Il est Ar-Rahman, le Miséricordieux, et Ar-Rahim, le Très-Miséricordieux. Il pardonne à celui qui revient vers lui. On peut lui parler à tout moment, avec ses propres mots."],
+  ["Ses plus beaux noms","Ses plus beaux noms nous le font connaître : Al-Ghafour (Celui qui pardonne), Al-Hakim (le Sage), Al-‘Adl (le Juste)."]],
+ verse:{ar:"وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ",fr:"« Il est avec vous où que vous soyez »",ref:"Sourate Al-Hadid (57:4)"},
+ reflect:["Quand ai-je déjà senti que Dieu était proche, ou que j’avais besoin de lui ?","Quels bienfaits (santé, famille, nourriture…) ai-je reçus cette semaine ?"],
+ practice:["Avant de manger ou de commencer un travail, dites « Bismillah » (Au nom d’Allah). Après avoir mangé, dites « Alhamdulillah » (Louange à Allah).","Chaque soir, dites à voix haute, ou notez, trois bienfaits reçus dans la journée.","Répétez avec votre parrain ou votre marraine les deux noms Ar-Rahman et Ar-Rahim."],
+ retain:["Dieu est unique et il a tout créé.","Allah est le mot arabe qui veut dire « Dieu ».","Dieu est proche, miséricordieux, et il pardonne."],
+ quiz:[
+  {t:"qcm",q:"Que veut dire le mot « Allah » ?",o:["C’est le nom d’un prophète","C’est le mot arabe qui veut dire « Dieu »","C’est le nom d’un livre"],a:1,why:"Allah est le mot arabe pour dire « Dieu », le Créateur de tous les êtres humains."},
+  {t:"match",q:"Associez chaque nom de Dieu à son sens.",p:[["Ar-Rahman","Le Miséricordieux"],["Al-Ghafour","Celui qui pardonne"],["Al-Hakim","Le Sage"]]},
+  {t:"qcm",q:"Que dit-on avant de manger ?",o:["Bismillah","Alhamdulillah","Subhana Llah"],a:0,why:"On dit « Bismillah » avant de manger, et « Alhamdulillah » après."}]},
+2:{mod:1,title:"Le Tawhid",ar:"التَّوْحِيدُ",key:"Je m’adresse à Dieu seul, directement, et je lui confie mes épreuves.",
+ text:[["Croire en un Dieu unique","Tawhid vient d’un mot arabe qui veut dire « rendre un ». C’est croire qu’Allah est Un : lui seul est le Créateur, lui seul mérite d’être adoré, et lui seul peut guérir, protéger et donner. C’est le cœur de l’islam."],
+  ["Pas d’intermédiaire","Pour parler à Dieu, il n’y a besoin ni d’intermédiaire, ni d’objet, ni de rite spécial. Chacun peut l’appeler à tout moment, dans sa propre langue."],
+  ["Quand arrive l’épreuve","Maladie, manque d’argent, dispute, peur : tout le monde traverse des épreuves. L’islam invite à se tourner d’abord vers Dieu, tout en faisant ce qu’on peut : se soigner, consulter un médecin, travailler, demander conseil. On agit, puis on s’en remet à Dieu : c’est la confiance (tawakkul). L’islam l’explique avec douceur : on apprend pas à pas, sans honte et sans jugement."]],
+ verse:{ar:"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",fr:"« C’est Toi seul que nous adorons, et c’est Toi seul dont nous implorons le secours »",ref:"Sourate Al-Fatiha (1:5)"},
+ reflect:["Vers qui est-ce que je me tourne en premier quand j’ai peur ou quand je suis malade ?","Qu’est-ce que cela changerait de savoir que Dieu m’entend, sans intermédiaire ?"],
+ practice:["Parlez à Dieu pendant deux minutes, avec vos mots et dans votre langue (c’est la du‘a) : remerciez-le, puis dites-lui ce qui vous pèse.","Avec votre parrain ou votre marraine, listez trois difficultés que vous avez vécues. Pour chacune : qu’avez-vous fait ? Que pourriez-vous faire, puis confier à Dieu ?","Apprenez cette phrase : « Tawakkaltu ‘ala Allah » (j’ai placé ma confiance en Allah)."],
+ retain:["Le Tawhid, c’est croire qu’Allah est Un.","On s’adresse à Dieu seul, sans intermédiaire.","Face à l’épreuve : on agit, puis on met sa confiance en Dieu."],
+ quiz:[
+  {t:"qcm",q:"Que veut dire « Tawhid » ?",o:["Croire qu’Allah est Un","Faire un pèlerinage","Donner la zakat"],a:0,why:"Tawhid vient d’un mot qui veut dire « rendre un » : croire qu’Allah est Un."},
+  {t:"qcm",q:"Pour parler à Dieu, faut-il un intermédiaire ?",o:["Oui, une personne spéciale","Oui, un objet ou un rite","Non : on peut l’appeler à tout moment, dans sa langue"],a:2,why:"Il n’y a besoin ni d’intermédiaire, ni d’objet, ni de rite spécial."},
+  {t:"qcm",q:"Face à une épreuve, que fait-on ?",o:["On agit (se soigner, travailler, demander conseil), puis on met sa confiance en Dieu","On attend sans rien faire","On ne compte que sur des objets"],a:0,why:"On agit, puis on s’en remet à Dieu : c’est la confiance (tawakkul)."}]},
+7:{mod:2,title:"La purification (wudu)",ar:"الطَّهَارَةُ",key:"Je me purifie avant la prière : un corps propre et un cœur présent.",
+ text:[["Pourquoi se purifier ?","La prière est un rendez-vous avec Dieu : on s’y prépare, comme avant de rencontrer quelqu’un d’important. « La propreté est la moitié de la foi » (Muslim)."],
+  ["Le wudu, pas à pas","1. Avoir l’intention et dire Bismillah\n2. Se laver les mains (3 fois)\n3. Se rincer la bouche, puis le nez (3 fois)\n4. Se laver le visage (3 fois)\n5. Se laver les bras jusqu’aux coudes (3 fois)\n6. Passer la main mouillée sur la tête et les oreilles\n7. Se laver les pieds jusqu’aux chevilles (3 fois)"],
+  ["Ce qui annule le wudu","Aller aux toilettes (urine, selles, gaz), un sommeil profond, une perte de connaissance. On refait alors le wudu."],
+  ["Pour aller plus loin","Après des relations conjugales ou à la fin des règles, on fait un bain complet (ghusl). Sans eau, on peut faire le tayammum avec de la terre propre (Coran 5:6). Votre parrain ou votre marraine vous l’explique avec discrétion."]],
+ verse:{ar:"إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ وَيُحِبُّ الْمُتَطَهِّرِينَ",fr:"« Allah aime ceux qui se repentent et ceux qui se purifient »",ref:"Sourate Al-Baqara (2:222)"},
+ reflect:["Qu’est-ce que la propreté change dans mon état d’esprit avant de rencontrer quelqu’un d’important ?"],
+ practice:["Faites le wudu avec votre parrain ou votre marraine : il ou elle le fait d’abord, puis vous, en disant les étapes à voix haute.","Le lendemain, refaites-le seul(e), sans regarder la page.","Au début, dites Bismillah. À la fin, vous pouvez dire la Shahada (rapporté par Muslim)."],
+ retain:["Le wudu se fait en sept étapes, avec de l’eau propre.","Les besoins naturels, le sommeil profond et la perte de connaissance l’annulent.","Après certaines situations, on fait le ghusl ; sans eau, le tayammum."],
+ quiz:[
+  {t:"order",q:"Remettez les étapes du wudu dans l’ordre.",items:["Avoir l’intention et dire Bismillah","Se laver les mains (3 fois)","Se rincer la bouche, puis le nez (3 fois)","Se laver le visage (3 fois)","Se laver les bras jusqu’aux coudes (3 fois)","Passer la main mouillée sur la tête et les oreilles","Se laver les pieds jusqu’aux chevilles (3 fois)"]},
+  {t:"qcm",q:"Que dit-on au début du wudu ?",o:["Bismillah","Allahu akbar","Alhamdulillah"],a:0,why:"On commence avec l’intention et en disant Bismillah."},
+  {t:"qcm",q:"Combien de fois lave-t-on les mains, le visage et les bras ?",o:["Une fois","Trois fois","Cinq fois"],a:1,why:"Chacun se lave trois fois."},
+  {t:"qcm",q:"Qu’est-ce qui annule le wudu ?",o:["Manger","Parler","Aller aux toilettes"],a:2,why:"Les besoins naturels, un sommeil profond et la perte de connaissance annulent le wudu."}]}
+};
+const PLAN=[
+ {mod:1,name:"Module 1 · Les fondements de la foi",lessons:[[1,"Qui est Dieu ?"],[2,"Le Tawhid"],[3,"Le Prophète ﷺ et les messagers"],[4,"Le Coran"],[5,"Les piliers de la foi"],[6,"La Shahada et son sens"]]},
+ {mod:2,name:"Module 2 · La pratique de base",lessons:[[7,"La purification (wudu)"],[8,"Les cinq prières (1)"],[9,"Les cinq prières (2)"],[10,"Le jeûne et la zakat"],[11,"Comportement, famille, halal et haram"],[12,"Révision et évaluation"]]}
+];
+const AVAIL=Object.keys(LESSONS).map(Number);
+const qTotal=id=>LESSONS[id].quiz.length;
+
+/* ---------- données d'exemple ---------- */
+function seed(){
+ const L=[["u1","Amina","F","26-40",1,"BJ","p1","inscrit","agent"],["u2","Ibrahim","M","18-25",1,"BJ","p2","inscrit","agent"],["u3","Salimatou","F","26-40",1,"BJ","p3","inscrit","agent"],["u4","Moussa","M","26-40",1,"BJ","p1","inscrit","agent"],["u5","Rachida","F","26-40",1,"CA","","libre","direct"],["u6","Yacouba","M","26-40",1,"BJ","p5","inscrit","agent"],["u7","Nafissatou","F","18-25",2,"BJ","p6","inscrit","agent"],["u8","Idrissa","M","41-60",2,"GB","","libre","direct"],["u9","Hawa","F","26-40",1,"BJ","p1","attente","direct"],["u10","Souleymane","M","18-25",1,"BJ","p1","attente","direct"]]
+  .map(([id,name,sex,age,level,cc,mosq,st,by])=>({id,name,sex,age,level,cc,mosq,st,by,volet:"B"}));
+ const D=(s,t)=>({s,t});
+ const done={u9:{},u10:{},u1:{1:D(3,3)},u2:{1:D(2,3)},u3:{1:D(3,3),2:D(3,3),7:D(3,4)},u4:{},u5:{1:D(3,3),2:D(2,3)},u6:{},u7:{1:D(3,3),2:D(3,3),7:D(4,4)},u8:{1:D(3,3),2:D(3,3),7:D(4,4)}};
+ const pat={u9:"",u10:"",u1:"pppppa",u2:"ppaapp",u3:"pppppp",u4:"pppape",u5:"ppppap",u6:"paapaa",u7:"pppppp",u8:"ppppep"};
+ const sessions=[...Array(6)].map((_,i)=>{const m={};L.forEach(l=>{if(pat[l.id])m[l.id]=pat[l.id][i]});return{date:dayISO(-14+i*2-1),marks:m}});
+ return{
+  role:null,learners:L,done,sessions,reflect:{},practice:{},
+  hw:[
+   {id:"h1",title:"Bismillah et Alhamdulillah",type:"text",due:dayISO(-3),brief:"Pendant 3 jours, dites Bismillah avant de manger et Alhamdulillah après. Chaque soir, notez trois bienfaits reçus."},
+   {id:"h2",title:"Dire les étapes du wudu à voix haute",type:"audio",due:dayISO(4),brief:"Enregistrez-vous en disant les 7 étapes du wudu dans l’ordre. Parlez doucement, il n’y a pas de note : vous êtes là pour progresser."},
+   {id:"h3",title:"Ma phrase de confiance",type:"photo",due:dayISO(6),brief:"Copiez dans votre cahier la phrase « Tawakkaltu ‘ala Allah » et envoyez une photo de votre page."}],
+  subs:[
+   {hw:"h1",u:"u1",text:"Jour 1 : la santé de ma famille, un repas chaud, un bon travail. Jour 2 : un message d’un ami, la pluie, un moment de calme. Jour 3 : ma sœur est guérie, le courage, une bonne nouvelle.",date:dayISO(-3),status:"corrigé",note:3,comment:"Bravo Amina, vous avez été régulière. Continuez avec la même simplicité.",pending:false},
+   {hw:"h1",u:"u2",text:"J’ai dit Bismillah deux jours sur trois. Mes bienfaits : ma mère va mieux, un petit travail, du temps avec mes amis.",date:dayISO(-2),status:"rendu",pending:false},
+   {hw:"h1",u:"u3",text:"Merci à Dieu pour la santé, pour le travail et pour mes enfants.",date:dayISO(-2),status:"rendu",pending:false}],
+  val:{u7:{date:dayISO(-20),no:"NH-N1-0001"},u8:{date:dayISO(-20),no:"NH-N1-0002"}},
+  rdv:[{u:"u2",date:dayISO(-9),note:"Premier échange, à l’aise. Questions sur la prière du vendredi."},{u:"u4",date:dayISO(-16),note:"A du mal à venir le soir (travail). À proposer le week-end."}],
+  reports:[{code:"SG-2026-001",date:dayISO(-12),type:"Inquiétude sur le comportement d’un adulte",facts:"Exemple fictif de signalement, pour la démonstration.",urgent:false,status:"En cours"}],
+  sat:[5,4,5,4,4],set:{fs:1,discreet:false,lang:guessLang(),mode:"groupe"}
+ };
+}
+function guessLang(){const l=(navigator.language||"fr").slice(0,2);return["fr","en","ar"].includes(l)?l:"fr"}
+let S=store()||seed();
+if(!S.set)S.set={fs:1,discreet:false,lang:guessLang(),mode:"groupe"};
+if(!S.set.lang)S.set.lang=guessLang();if(!S.set.mode)S.set.mode="groupe";
+
+/* ---------- calculs ---------- */
+const learner=id=>S.learners.find(l=>l.id===id);
+const reg=()=>S.learners.filter(l=>l.st!=="attente");
+function assid(id){let p=0,a=0;S.sessions.forEach(s=>{const m=s.marks[id];if(m==="p")p++;else if(m==="a")a++});return p+a?Math.round(100*p/(p+a)):null}
+const lessonsDone=id=>AVAIL.filter(n=>S.done[id]&&S.done[id][n]).length;
+function avgScore(id){let s=0,t=0;AVAIL.forEach(n=>{const d=S.done[id]&&S.done[id][n];if(d){s+=d.s;t+=d.t}});return t?Math.round(100*s/t):null}
+function readiness(id){
+ const as=assid(id),sc=avgScore(id),ld=lessonsDone(id);
+ const c=[["Assiduité d’au moins 70 %",as!==null&&as>=70,as===null?"—":as+" %"],["Toutes les leçons du niveau terminées",ld===AVAIL.length,ld+" / "+AVAIL.length+" dans ce prototype"],["Moyenne aux quiz d’au moins 66 %",sc!==null&&sc>=66,sc===null?"—":sc+" %"]];
+ return{items:c,ok:c.every(x=>x[1])}}
+const me=()=>S.role==="apprenant"?learner("u1"):null;
+const hwDue=h=>h.due;
+
+const I18N=(function(){const en={
+"Apprendre le Coran, l’arabe et les bases de l’islam":"Learn the Qur’an, Arabic and the basics of Islam",
+"Gratuit pour tous, partout dans le monde.":"Free for everyone, everywhere in the world.",
+"Sans paiement, sans publicité. Vos données ne sont jamais vendues.":"No payment, no ads. Your data is never sold.",
+"Commencer à apprendre":"Start learning",
+"Découvrir la démonstration":"Explore the demo",
+"Apprenant":"Learner","Formateur":"Teacher","Parrain":"Mentor","ONG":"NGO",
+"Suivre les leçons, faire les exercices et rendre les devoirs":"Follow lessons, do exercises and hand in homework",
+"Faire l’appel, donner et corriger les devoirs, valider un niveau":"Take attendance, set and mark homework, validate a level",
+"Suivre ses filleuls et noter ses rencontres, en confidentialité":"Follow your mentees and note your meetings, in confidence",
+"Voir les chiffres, gérer la protection, suivre le programme":"See the figures, manage safeguarding, follow the programme",
+"Prototype de démonstration.":"Demo prototype.",
+"Les noms et les chiffres sont des exemples. Les données restent seulement sur cet appareil. Version finale : inscription libre par e-mail ou téléphone de n’importe quel pays, et classes en ligne ou près de chez soi.":"Names and figures are examples. Data stays on this device only. Final version: free sign-up by e-mail or phone from any country, with online classes or classes near you.",
+"Créer mon espace":"Create my space","Prénom ou pseudonyme":"First name or nickname","Mon pays":"My country","Autre":"Other",
+"Comment je veux apprendre":"How I want to learn","Seul(e), à mon rythme":"On my own, at my pace","Avec un groupe en ligne":"With an online group","Avec un groupe près de chez moi":"With a group near me",
+"E-mail ou téléphone (facultatif)":"E-mail or phone (optional)","Commencer gratuitement":"Start for free","Annuler":"Cancel",
+"Pas de nom de famille nécessaire":"No family name needed","Pour retrouver mon compte ; un numéro de n’importe quel pays":"To recover my account; a number from any country",
+"En ligne":"Online","Hors ligne":"Offline",
+"Niveau 1 · mois 1 à 3":"Level 1 · months 1 to 3",
+"Prochaine séance en ligne":"Next online session",
+"Cette heure est affichée dans votre fuseau horaire. À Cotonou : 16 h 00.":"This time is shown in your own time zone. In Cotonou: 4:00 pm.",
+"Vous apprenez à votre rythme":"You are learning at your own pace",
+"Les exercices se corrigent tout seuls. Pour être accompagné(e), vous pouvez rejoindre un groupe en ligne quand vous le souhaitez.":"Exercises are marked automatically. For support, you can join an online group whenever you like.",
+"Rejoindre un groupe en ligne":"Join an online group",
+"Module 1 · Les fondements de la foi":"Module 1 · The foundations of faith","Module 2 · La pratique de base":"Module 2 · Basic practice",
+"Prêt · environ 15 minutes":"Ready · about 15 minutes","Contenu en préparation":"Content being prepared",
+"Dans la version finale, les leçons sont téléchargées par module pour être suivies":"In the final version, lessons are downloaded by module so you can follow them",
+"sans connexion":"without a connection",
+", et la leçon suivante s’ouvre selon les règles choisies par l’ONG.":", and the next lesson opens according to the rules chosen by the NGO.",
+"Parcours":"Course","Devoirs":"Homework","Progrès":"Progress","Moi":"Me",
+"Mes devoirs":"My homework","Corrigé":"Marked","À faire":"To do","Rendu":"Handed in","En retard":"Late","En attente d’envoi":"Waiting to send",
+"Mes progrès":"My progress","Leçons":"Lessons","Présence":"Attendance",
+"Pour obtenir l’attestation du niveau 1":"To earn the level 1 certificate",
+"Assiduité d’au moins 70 %":"Attendance of at least 70%","Toutes les leçons du niveau terminées":"All the level’s lessons completed",
+"Moyenne aux quiz d’au moins 66 %":"Quiz average of at least 66%","Validation par le formateur":"Validation by the teacher",
+"Mon avis sur ce module":"My opinion of this module","Un geste suffit : cela aide l’ONG à améliorer les cours.":"One tap is enough: it helps the NGO improve the courses.",
+"Voir mon attestation":"See my certificate",
+"Taille du texte":"Text size","Signaler une inquiétude":"Report a concern","Langue":"Language",
+"Dans ce prototype, les menus sont en français, anglais et arabe ; les leçons sont en français. Les leçons en anglais, arabe, fon, yoruba, goun et autres langues sont prévues, ajoutées par l’ONG sans nouveau développement.":"In this prototype the menus are in French, English and Arabic; the lessons are in French. Lessons in English, Arabic, Fon, Yoruba, Goun and other languages are planned, added by the NGO without new development.",
+"Mon accompagnement":"My support","Je veux apprendre":"I want to learn","Hors ligne ":"Offline",
+"Vous êtes en ligne.":"You are online.","Vous êtes hors ligne : vos réponses sont gardées et partiront au retour du réseau.":"You are offline: your answers are kept and will be sent when the network returns.",
+"Changer de profil":"Switch profile","Remettre les données d’exemple":"Reset the example data",
+"Mode discret":"Discreet mode","Le nom de l’application devient « Mon cours » et les notifications n’affichent aucun mot religieux. Utile si l’entourage n’est pas informé.":"The app’s name becomes “My course” and notifications show no religious words. Useful if those around you are not informed.",
+"Devoir":"Homework","Mon travail":"My work","Retour du formateur":"Teacher’s feedback",
+"Ma réponse":"My answer","Écrivez ici…":"Write here…","Envoyer mon devoir":"Send my homework",
+"Mon enregistrement":"My recording","Ma photo":"My photo",
+"Sur le téléphone, ce bouton ouvre le micro ou l’appareil photo. Le fichier part vers le formateur, même si la connexion est coupée au moment de l’envoi.":"On a phone, this button opens the microphone or the camera. The file goes to the teacher, even if the connection drops at the moment of sending.",
+"Idée clé":"Key idea","Texte":"Text","Verset":"Verse","Réflexion":"Reflection","Pratique":"Practice","À retenir":"Key points","Questions":"Questions",
+"Précédent":"Previous","Suivant":"Next","Écouter":"Listen","▶ Écouter":"▶ Listen",
+"Le texte arabe est repris des livrets de l’ONG. L’audio de récitation sera fourni par l’ONG (voix et droits à valider) ; la lecture suivie mot à mot est prévue dans la version finale.":"The Arabic text comes from the NGO’s booklets. The recitation audio will be supplied by the NGO (voice and rights to be validated); word-by-word follow-along reading is planned for the final version.",
+"Pause réflexion":"Pause to reflect","Mes notes (visibles de moi seul)":"My notes (visible only to me)","Facultatif":"Optional",
+"Cette semaine, je fais…":"This week, I will…","Votre parrain ou votre marraine verra ce que vous avez coché.":"Your mentor will see what you have ticked.",
+"Effacer":"Clear","Valider":"Check","Question suivante":"Next question","Terminer":"Finish","Leçon terminée":"Lesson complete","Retour au parcours":"Back to the course",
+"Parfait !":"Perfect!","Bien joué !":"Well done!","Continuez, vous y arrivez.":"Keep going, you can do it.",
+"Oui !":"Yes!","Pas tout à fait.":"Not quite.","L’ordre est bon !":"The order is right!","Tout est juste !":"All correct!","Choisir…":"Choose…",
+"Groupe":"Group","Formateur (exemple)":"Teacher (example)",
+"Groupe en ligne du samedi · Niveau 1":"Saturday online group · Level 1",
+"Absences":"Absences","À valider":"To validate",
+"Données d’exemple. Un apprenant avec moins de 70 % de présence est signalé pour que le formateur ou le parrain le contacte.":"Example data. A learner below 70% attendance is flagged so the teacher or mentor can get in touch.",
+"Séance du jour":"Today’s session","Présent":"Present","Excusé":"Excused","Absent":"Absent",
+"L’appel se met à jour tout de suite et fonctionne sans connexion. Un absent « excusé » ne baisse pas le taux de présence.":"Attendance updates immediately and works without a connection. An “excused” absence does not lower the attendance rate.",
+"+ Nouveau":"+ New","Rien à corriger.":"Nothing to mark.","Devoirs donnés":"Homework set",
+"Conditions du niveau 1":"Level 1 conditions","Valider le niveau et délivrer l’attestation":"Validate the level and issue the certificate",
+"Le bouton s’ouvre quand toutes les conditions sont remplies.":"The button unlocks when all conditions are met.",
+"Ma correction":"My marking","Note sur 3":"Mark out of 3","Commentaire":"Comment","Encouragez, puis précisez un point à améliorer.":"Encourage first, then point out one thing to improve.","Envoyer la correction":"Send the marking",
+"Nouveau devoir":"New homework","Titre":"Title","Consigne":"Instructions","Type de rendu":"Submission type","Réponse écrite":"Written answer","Enregistrement audio":"Audio recording","Photo du cahier":"Photo of the notebook","Date limite":"Deadline","Donner le devoir":"Set the homework",
+"Parrain Ismaël (exemple)":"Mentor Ismaël (example)","Confidentiel.":"Confidential.",
+"Vos notes ne sont visibles que de vous. N’écrivez qu’un prénom ou un code, et ne partagez rien sans l’accord de la personne.":"Your notes are visible only to you. Write only a first name or a code, and share nothing without the person’s agreement.",
+"Rencontres":"Meetings","Noter une rencontre":"Note a meeting","Enregistrer la rencontre":"Save the meeting","Rendez-vous à prévoir":"Meeting due",
+"Ce qui s’est dit, les besoins repérés…":"What was said, needs noticed…","Filleuls":"Mentees",
+"Règle de l’ONG : rendez-vous au moins tous les 15 jours. Un parrain pour un homme, une marraine pour une femme.":"NGO rule: a meeting at least every 15 days. A male mentor for a man, a female mentor for a woman.",
+"Équipe de l’ONG":"NGO team","Programme Nour Al-Hidaya":"Nour Al-Hidaya programme","Tableau de bord":"Dashboard",
+"Inscrits":"Enrolled","Présence moy.":"Avg. attendance","Leçons faites":"Lessons done","Niveaux validés":"Levels validated",
+"Par niveau":"By level","Niveau 1":"Level 1","Niveau 2":"Level 2","Niveau 3":"Level 3","Femmes et hommes":"Women and men","Femmes":"Women","Hommes":"Men","Par pays":"By country","Par âge":"By age","Satisfaction":"Satisfaction",
+"Copier la liste (tableur)":"Copy the list (spreadsheet)",
+"Ces chiffres correspondent aux indicateurs du plan stratégique : inscrits par niveau, sexe et âge, assiduité, complétion, niveaux validés, satisfaction. La version finale les exporte en Excel et PDF, sans noms.":"These figures match the strategic plan’s indicators: enrolment by level, sex and age, attendance, completion, levels validated, satisfaction. The final version exports them to Excel and PDF, without names.",
+"Chiffres":"Figures","Protection":"Safeguarding","Point focal protection":"Safeguarding focal point","Signalements":"Reports",
+"Accès réservé au point focal. Le registre ne montre que des codes. Aucune suppression possible.":"Access limited to the focal point. The register shows codes only. Nothing can be deleted.",
+"En cours":"In progress","Nouveau":"New","Ouvrir la fiche (point focal)":"Open the file (focal point)","Faire un signalement":"Make a report",
+"Ce formulaire reprend la fiche de signalement de l’ONG. En cas de danger immédiat, appelez d’abord les secours ou les autorités de votre pays.":"This form follows the NGO’s reporting sheet. In immediate danger, call the emergency services or your country’s authorities first.",
+"De quoi s’agit-il ?":"What is it about?","Inquiétude sur le comportement d’un adulte":"Concern about an adult’s behaviour","Enfant ou personne en danger":"Child or person at risk","Pression ou rejet vécu par un converti":"Pressure or rejection experienced by a convert","Autre inquiétude":"Other concern",
+"Ce que j’ai vu ou entendu (faits, sans interpréter)":"What I saw or heard (facts, without interpreting)","Il y a un danger immédiat":"There is immediate danger","Envoyer au point focal":"Send to the focal point",
+"Envoyé même sans connexion. Ne promettez jamais le secret absolu à la personne concernée.":"Sent even without a connection. Never promise absolute secrecy to the person concerned.",
+"Attestation":"Certificate","ONG WAFA AL-TURATH INTERNATIONAL":"WAFA AL-TURATH INTERNATIONAL NGO","Attestation de fin de niveau 1":"Level 1 completion certificate","Programme Nour Al-Hidaya ":"Nour Al-Hidaya programme","décernée à":"awarded to",
+"pour avoir suivi avec assiduité les leçons du niveau 1 et réussi ses évaluations.":"for diligently following the level 1 lessons and passing the assessments.",
+"Le Responsable pédagogique":"The Head of Studies","Le Président":"The President",
+"Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.":"Demo template. The final version uses the NGO’s official template, generates the PDF file and adds a QR code to verify the certificate.",
+"Retour":"Back","Parcours ":"Course",
+"Agent de mosquée":"Mosque agent","Inscrire les bénéficiaires de sa mosquée et tenir le registre":"Register the people of your mosque and keep the register",
+"Responsable de recensement · Pôle 1":"Registration officer · Hub 1","Inscrire":"Register","Registre":"Register","Inscrire une personne":"Register a person",
+"Même fiche que sur le papier. Vous pouvez la remplir sans connexion : elle part dès que le réseau revient. Le kit de bienvenue est remis à tous les inscrits, selon des critères écrits.":"Same form as the paper one. You can fill it in without a connection: it is sent as soon as the network returns. The welcome kit is given to everyone enrolled, according to written criteria.",
+"Sexe":"Sex","Âge":"Age","Femme":"Woman","Homme":"Man","Moins de 18 ans":"Under 18","18 à 24 ans":"18 to 24","25 à 34 ans":"25 to 34","35 à 44 ans":"35 to 44","45 ans et plus":"45 and over",
+"Ce que la personne cherche":"What the person is looking for","Être accompagnée après sa conversion (12 mois, avec un parrain ou une marraine)":"Support after conversion (12 months, with a mentor)","Apprendre le Coran et l’arabe":"Learn the Qur’an and Arabic",
+"Téléphone (facultatif)":"Phone (optional)","Langue de la personne":"Person’s language","Français":"French","Fon":"Fon","Yoruba":"Yoruba","Goun":"Goun","Arabe":"Arabic","Anglais":"English",
+"Mineur : l’autorisation écrite des parents a été obtenue":"Minor: written permission from the parents has been obtained","La personne a donné son accord pour l’enregistrement de ses données":"The person has agreed to their data being recorded",
+"Enregistrer dans le registre":"Save in the register","Registre des bénéficiaires":"Beneficiary register",
+"Vous ne voyez que les personnes de votre mosquée, avec les informations utiles à l’inscription. Les notes des parrains et les résultats détaillés ne vous sont pas visibles.":"You only see the people of your mosque, with the information needed for registration. Mentors’ notes and detailed results are not visible to you.",
+"Demande directe":"Direct request","Confirmer l’inscription":"Confirm registration","Aucune demande en attente.":"No request waiting.","Accompagnement":"Mentoring","Coran et arabe":"Qur’an and Arabic",
+"Je suis":"I am","Une femme":"A woman","Un homme":"A man","Mon âge":"My age","Ce que je cherche":"What I am looking for","Découvrir l’islam et être accompagné(e) après ma conversion":"Discover Islam and be supported after my conversion",
+"Ma mosquée (facultatif)":"My mosque (optional)","Aucune, ou je suis loin":"None, or I live far away","Par mosquée":"By mosque","En attente":"Waiting","à attribuer":"to be assigned",
+"Demande d’accompagnement envoyée":"Support request sent","Demande directe ":"Direct request",
+"Fiche d’inscription":"Registration form",
+"Même fiche que sur le papier, remplie sur votre téléphone, même sans connexion : elle part dès que le réseau revient. Pas de smartphone ? Remplissez la fiche papier, puis saisissez-la ici plus tard.":"Same form as on paper, filled in on your phone, even offline: it is sent as soon as the network returns. No smartphone? Fill in the paper form, then enter it here later.",
+"Inscription gratuite et libre. Aucune aide n’est liée à une décision personnelle. L’identité est protégée.":"Free, voluntary registration. No aid is tied to a personal decision. Identity is protected.",
+"Volet":"Strand",
+"Volet B · Parcours Al-Hidaya (nouveau converti)":"Strand B · Al-Hidaya path (new convert)",
+"Volet C · Coran et langue arabe":"Strand C · Qur’an and Arabic",
+"Nom et prénom":"Full name",
+"Tranche d’âge":"Age range",
+"Moins de 18 ans":"Under 18",
+"18 à 25 ans":"18 to 25",
+"26 à 40 ans":"26 to 40",
+"41 à 60 ans":"41 to 60",
+"61 ans et plus":"61 and over",
+"Téléphone / WhatsApp":"Phone / WhatsApp",
+"Commune, arrondissement, quartier":"Town, district, neighbourhood",
+"Langue parlée":"Spoken language",
+"Lecture et écriture":"Reading and writing",
+"Lit le français":"Reads French",
+"Lit l’arabe":"Reads Arabic",
+"Ne lit pas":"Does not read",
+"Date d’entrée dans l’islam (facultatif)":"Date of entering Islam (optional)",
+"Niveau en arabe":"Arabic level",
+"Aucun":"None",
+"Lit les lettres":"Reads letters",
+"Lit le Coran avec aide":"Reads the Qur’an with help",
+"Lit couramment":"Reads fluently",
+"Objectif":"Goal",
+"Lire le Coran":"Read the Qur’an",
+"Mémoriser":"Memorise",
+"Comprendre l’arabe":"Understand Arabic",
+"Comment a-t-on connu le programme ?":"How did they hear of the programme?",
+"Mosquée":"Mosque",
+"Halaqa":"Halaqa",
+"Livret":"Booklet",
+"Affiche":"Poster",
+"Proche":"Relative or friend",
+"Réseaux sociaux":"Social media",
+"Profession ou activité":"Occupation",
+"Pôle de formation choisi":"Chosen training hub",
+"Jours et horaires possibles":"Possible days and times",
+"Parrain ou marraine":"Mentor",
+"À attribuer par l’ONG":"To be assigned by the NGO",
+"Souhait de la personne":"Person’s wish",
+"Obligatoire. J’accepte que mes données soient enregistrées pour le suivi du programme, de façon confidentielle.":"Required. I agree my data is recorded for programme follow-up, confidentially.",
+"J’accepte d’être contacté(e) par téléphone ou WhatsApp pour les rendez-vous.":"I agree to be contacted by phone or WhatsApp about appointments.",
+"J’accepte d’être cité(e) ou photographié(e) pour un témoignage (accord écrit à part, retirable).":"I agree to be quoted or photographed for a testimonial (separate written consent, withdrawable).",
+"Mineur : l’accord écrit d’un parent a été obtenu":"Minor: a parent’s written consent was obtained",
+"Cette fiche a d’abord été remplie sur papier":"This form was first filled in on paper",
+"Fiche papier":"Paper form",
+"Feuille de présence":"Attendance sheet",
+"Formateur ou moniteur de mosquée : même feuille que sur le papier (pôle, niveau, leçon, langue de la séance). Le formateur la signe, le responsable la vise.":"Teacher or mosque monitor: same sheet as on paper (hub, level, lesson, session language). The teacher signs it, the manager countersigns.",
+"Règle du guide du parrain : un rendez-vous au moins tous les 15 jours, un contact par mois et la fiche mensuelle remise au formateur. Un parrain pour un homme, une marraine pour une femme.":"Mentor guide rule: a meeting at least every 15 days, a contact each month and the monthly sheet given to the teacher. A male mentor for a man, a female mentor for a woman.",
+"Attestations":"Certificates",
+"cible ≥ 70 %":"target ≥ 70%",
+"Obligatoire.":"Required.",
+"J’accepte que mes données soient enregistrées pour le suivi du programme, de façon confidentielle.":" I agree my data is recorded for programme follow-up, confidentially.",
+};
+const ar={
+"Apprendre le Coran, l’arabe et les bases de l’islam":"تعلّم القرآن واللغة العربية وأساسيات الإسلام",
+"Gratuit pour tous, partout dans le monde.":"مجاني للجميع في كل أنحاء العالم.",
+"Sans paiement, sans publicité. Vos données ne sont jamais vendues.":"بلا مقابل وبلا إعلانات. بياناتك لا تُباع أبدًا.",
+"Commencer à apprendre":"ابدأ التعلّم",
+"Découvrir la démonstration":"استكشف النسخة التجريبية",
+"Apprenant":"متعلّم","Formateur":"معلّم","Parrain":"مرشد","ONG":"المنظمة",
+"Suivre les leçons, faire les exercices et rendre les devoirs":"متابعة الدروس وحلّ التمارين وتسليم الواجبات",
+"Faire l’appel, donner et corriger les devoirs, valider un niveau":"تسجيل الحضور وتكليف الواجبات وتصحيحها واعتماد المستوى",
+"Suivre ses filleuls et noter ses rencontres, en confidentialité":"متابعة المتعلّمين الذين ترافقهم وتدوين اللقاءات بسرّية",
+"Voir les chiffres, gérer la protection, suivre le programme":"عرض الأرقام وإدارة الحماية ومتابعة البرنامج",
+"Prototype de démonstration.":"نموذج تجريبي.",
+"Les noms et les chiffres sont des exemples. Les données restent seulement sur cet appareil. Version finale : inscription libre par e-mail ou téléphone de n’importe quel pays, et classes en ligne ou près de chez soi.":"الأسماء والأرقام أمثلة فقط. تبقى البيانات على هذا الجهاز وحده. في النسخة النهائية: تسجيل حرّ بالبريد الإلكتروني أو الهاتف من أي بلد، وصفوف عبر الإنترنت أو قريبة منك.",
+"Créer mon espace":"إنشاء مساحتي","Prénom ou pseudonyme":"الاسم الأول أو اسم مستعار","Mon pays":"بلدي","Autre":"آخر",
+"Comment je veux apprendre":"كيف أريد أن أتعلّم","Seul(e), à mon rythme":"بمفردي وبوتيرتي","Avec un groupe en ligne":"مع مجموعة عبر الإنترنت","Avec un groupe près de chez moi":"مع مجموعة قريبة من مكان سكني",
+"E-mail ou téléphone (facultatif)":"البريد الإلكتروني أو الهاتف (اختياري)","Commencer gratuitement":"ابدأ مجانًا","Annuler":"إلغاء",
+"Pas de nom de famille nécessaire":"لا حاجة لاسم العائلة","Pour retrouver mon compte ; un numéro de n’importe quel pays":"لاسترجاع حسابي؛ ويمكن إدخال رقم من أي بلد",
+"En ligne":"متصل","Hors ligne":"غير متصل",
+"Niveau 1 · mois 1 à 3":"المستوى 1 · الأشهر 1 إلى 3",
+"Prochaine séance en ligne":"الحصة القادمة عبر الإنترنت",
+"Cette heure est affichée dans votre fuseau horaire. À Cotonou : 16 h 00.":"يُعرض هذا الوقت بحسب منطقتك الزمنية. في كوتونو: الساعة 16:00.",
+"Vous apprenez à votre rythme":"أنت تتعلّم بوتيرتك",
+"Les exercices se corrigent tout seuls. Pour être accompagné(e), vous pouvez rejoindre un groupe en ligne quand vous le souhaitez.":"تُصحَّح التمارين تلقائيًا. وإذا أردت المرافقة يمكنك الانضمام إلى مجموعة عبر الإنترنت في أي وقت.",
+"Rejoindre un groupe en ligne":"الانضمام إلى مجموعة عبر الإنترنت",
+"Module 1 · Les fondements de la foi":"الوحدة 1 · أسس الإيمان","Module 2 · La pratique de base":"الوحدة 2 · الممارسة الأساسية",
+"Prêt · environ 15 minutes":"جاهز · نحو 15 دقيقة","Contenu en préparation":"المحتوى قيد الإعداد",
+"Dans la version finale, les leçons sont téléchargées par module pour être suivies":"في النسخة النهائية تُنزَّل الدروس وحدةً وحدةً لتتابعها",
+"sans connexion":"دون اتصال بالإنترنت",
+", et la leçon suivante s’ouvre selon les règles choisies par l’ONG.":"، ويُفتح الدرس التالي وفق القواعد التي تحددها المنظمة.",
+"Parcours":"المسار","Devoirs":"الواجبات","Progrès":"التقدّم","Moi":"أنا",
+"Mes devoirs":"واجباتي","Corrigé":"مُصحَّح","À faire":"للإنجاز","Rendu":"مُسلَّم","En retard":"متأخر","En attente d’envoi":"بانتظار الإرسال",
+"Mes progrès":"تقدّمي","Leçons":"الدروس","Présence":"الحضور",
+"Pour obtenir l’attestation du niveau 1":"للحصول على شهادة المستوى 1",
+"Assiduité d’au moins 70 %":"حضور لا يقل عن 70٪","Toutes les leçons du niveau terminées":"إتمام جميع دروس المستوى",
+"Moyenne aux quiz d’au moins 66 %":"معدّل الاختبارات لا يقل عن 66٪","Validation par le formateur":"اعتماد المعلّم",
+"Mon avis sur ce module":"رأيي في هذه الوحدة","Un geste suffit : cela aide l’ONG à améliorer les cours.":"لمسة واحدة تكفي: فهي تساعد المنظمة على تحسين الدروس.",
+"Voir mon attestation":"عرض شهادتي",
+"Taille du texte":"حجم النص","Signaler une inquiétude":"الإبلاغ عن قلق","Langue":"اللغة",
+"Dans ce prototype, les menus sont en français, anglais et arabe ; les leçons sont en français. Les leçons en anglais, arabe, fon, yoruba, goun et autres langues sont prévues, ajoutées par l’ONG sans nouveau développement.":"في هذا النموذج التجريبي القوائم بالفرنسية والإنجليزية والعربية، والدروس بالفرنسية. ومن المقرر إضافة دروس بالإنجليزية والعربية والفون واليوروبا والغون ولغات أخرى تضيفها المنظمة دون تطوير جديد.",
+"Mon accompagnement":"مرافقتي","Je veux apprendre":"أريد أن أتعلّم",
+"Vous êtes en ligne.":"أنت متصل بالإنترنت.","Vous êtes hors ligne : vos réponses sont gardées et partiront au retour du réseau.":"أنت غير متصل: إجاباتك محفوظة وستُرسل عند عودة الشبكة.",
+"Changer de profil":"تغيير الملف","Remettre les données d’exemple":"إعادة البيانات التجريبية",
+"Mode discret":"الوضع الخفي","Le nom de l’application devient « Mon cours » et les notifications n’affichent aucun mot religieux. Utile si l’entourage n’est pas informé.":"يصبح اسم التطبيق «دورتي» ولا تعرض الإشعارات أي كلمة دينية. مفيد إذا لم يكن المحيطون بك على علم.",
+"Devoir":"واجب","Mon travail":"عملي","Retour du formateur":"ملاحظات المعلّم",
+"Ma réponse":"إجابتي","Écrivez ici…":"اكتب هنا…","Envoyer mon devoir":"إرسال واجبي",
+"Mon enregistrement":"تسجيلي","Ma photo":"صورتي",
+"Sur le téléphone, ce bouton ouvre le micro ou l’appareil photo. Le fichier part vers le formateur, même si la connexion est coupée au moment de l’envoi.":"على الهاتف يفتح هذا الزر الميكروفون أو الكاميرا. يصل الملف إلى المعلّم حتى لو انقطع الاتصال لحظة الإرسال.",
+"Idée clé":"الفكرة الرئيسة","Texte":"النص","Verset":"الآية","Réflexion":"تأمّل","Pratique":"تطبيق","À retenir":"للحفظ","Questions":"أسئلة",
+"Précédent":"السابق","Suivant":"التالي","▶ Écouter":"▶ استمع",
+"Le texte arabe est repris des livrets de l’ONG. L’audio de récitation sera fourni par l’ONG (voix et droits à valider) ; la lecture suivie mot à mot est prévue dans la version finale.":"النص العربي مأخوذ من كتيّبات المنظمة. وستوفّر المنظمة التسجيل الصوتي للتلاوة (الصوت والحقوق قيد الاعتماد)، والقراءة المتتبَّعة كلمةً كلمة مقرَّرة في النسخة النهائية.",
+"Pause réflexion":"وقفة تأمّل","Mes notes (visibles de moi seul)":"ملاحظاتي (تظهر لي وحدي)","Facultatif":"اختياري",
+"Cette semaine, je fais…":"هذا الأسبوع سأقوم بـ…","Votre parrain ou votre marraine verra ce que vous avez coché.":"سيرى مرشدك ما حدّدتَه.",
+"Effacer":"مسح","Valider":"تحقّق","Question suivante":"السؤال التالي","Terminer":"إنهاء","Leçon terminée":"اكتمل الدرس","Retour au parcours":"العودة إلى المسار",
+"Parfait !":"ممتاز!","Bien joué !":"أحسنت!","Continuez, vous y arrivez.":"واصل، أنت قادر.",
+"Oui !":"نعم!","Pas tout à fait.":"ليس تمامًا.","L’ordre est bon !":"الترتيب صحيح!","Tout est juste !":"كل شيء صحيح!","Choisir…":"اختر…",
+"Groupe":"المجموعة","Formateur (exemple)":"معلّم (مثال)",
+"Groupe en ligne du samedi · Niveau 1":"مجموعة السبت عبر الإنترنت · المستوى 1",
+"Absences":"غيابات","À valider":"بانتظار الاعتماد",
+"Données d’exemple. Un apprenant avec moins de 70 % de présence est signalé pour que le formateur ou le parrain le contacte.":"بيانات تجريبية. يُنبَّه إلى المتعلّم الذي يقل حضوره عن 70٪ ليتواصل معه المعلّم أو المرشد.",
+"Séance du jour":"حصة اليوم","Présent":"حاضر","Excusé":"معذور","Absent":"غائب",
+"L’appel se met à jour tout de suite et fonctionne sans connexion. Un absent « excusé » ne baisse pas le taux de présence.":"يُحدَّث الحضور فورًا ويعمل دون اتصال. الغياب «بعذر» لا يخفض نسبة الحضور.",
+"+ Nouveau":"+ جديد","Rien à corriger.":"لا شيء للتصحيح.","Devoirs donnés":"الواجبات المكلَّف بها",
+"Conditions du niveau 1":"شروط المستوى 1","Valider le niveau et délivrer l’attestation":"اعتماد المستوى وإصدار الشهادة",
+"Le bouton s’ouvre quand toutes les conditions sont remplies.":"يُفعَّل الزر عند استيفاء جميع الشروط.",
+"Ma correction":"تصحيحي","Note sur 3":"الدرجة من 3","Commentaire":"تعليق","Encouragez, puis précisez un point à améliorer.":"شجّع أولًا ثم اذكر نقطة واحدة للتحسين.","Envoyer la correction":"إرسال التصحيح",
+"Nouveau devoir":"واجب جديد","Titre":"العنوان","Consigne":"التعليمات","Type de rendu":"نوع التسليم","Réponse écrite":"إجابة مكتوبة","Enregistrement audio":"تسجيل صوتي","Photo du cahier":"صورة من الدفتر","Date limite":"الموعد النهائي","Donner le devoir":"تكليف الواجب",
+"Parrain Ismaël (exemple)":"المرشد إسماعيل (مثال)","Confidentiel.":"سرّي.",
+"Vos notes ne sont visibles que de vous. N’écrivez qu’un prénom ou un code, et ne partagez rien sans l’accord de la personne.":"ملاحظاتك لا يراها غيرك. اكتب الاسم الأول أو رمزًا فقط، ولا تشارك شيئًا دون موافقة الشخص.",
+"Rencontres":"اللقاءات","Noter une rencontre":"تدوين لقاء","Enregistrer la rencontre":"حفظ اللقاء","Rendez-vous à prévoir":"موعد مطلوب",
+"Ce qui s’est dit, les besoins repérés…":"ما دار في اللقاء والاحتياجات التي لوحظت…","Filleuls":"المرافَقون",
+"Règle de l’ONG : rendez-vous au moins tous les 15 jours. Un parrain pour un homme, une marraine pour une femme.":"قاعدة المنظمة: لقاء كل 15 يومًا على الأقل. مرشد للرجل ومرشدة للمرأة.",
+"Équipe de l’ONG":"فريق المنظمة","Programme Nour Al-Hidaya":"برنامج نور الهداية","Tableau de bord":"لوحة المتابعة",
+"Inscrits":"المسجَّلون","Présence moy.":"متوسط الحضور","Leçons faites":"الدروس المنجزة","Niveaux validés":"المستويات المعتمدة",
+"Par niveau":"حسب المستوى","Niveau 1":"المستوى 1","Niveau 2":"المستوى 2","Niveau 3":"المستوى 3","Femmes et hommes":"النساء والرجال","Femmes":"نساء","Hommes":"رجال","Par pays":"حسب البلد","Par âge":"حسب العمر","Satisfaction":"الرضا",
+"Copier la liste (tableur)":"نسخ القائمة (جدول)",
+"Ces chiffres correspondent aux indicateurs du plan stratégique : inscrits par niveau, sexe et âge, assiduité, complétion, niveaux validés, satisfaction. La version finale les exporte en Excel et PDF, sans noms.":"تطابق هذه الأرقام مؤشرات الخطة الاستراتيجية: التسجيل حسب المستوى والجنس والعمر، والحضور، والإتمام، والمستويات المعتمدة، والرضا. وتصدّرها النسخة النهائية إلى Excel وPDF دون أسماء.",
+"Chiffres":"الأرقام","Protection":"الحماية","Point focal protection":"مسؤول الحماية","Signalements":"البلاغات",
+"Accès réservé au point focal. Le registre ne montre que des codes. Aucune suppression possible.":"الدخول مقصور على مسؤول الحماية. السجل يعرض رموزًا فقط ولا يمكن الحذف.",
+"En cours":"قيد المعالجة","Nouveau":"جديد","Ouvrir la fiche (point focal)":"فتح الملف (مسؤول الحماية)","Faire un signalement":"تقديم بلاغ",
+"Ce formulaire reprend la fiche de signalement de l’ONG. En cas de danger immédiat, appelez d’abord les secours ou les autorités de votre pays.":"يتبع هذا النموذج استمارة البلاغ الخاصة بالمنظمة. وفي حال الخطر الوشيك اتصل أولًا بالإسعاف أو بسلطات بلدك.",
+"De quoi s’agit-il ?":"ما الموضوع؟","Inquiétude sur le comportement d’un adulte":"قلق من تصرّف شخص بالغ","Enfant ou personne en danger":"طفل أو شخص في خطر","Pression ou rejet vécu par un converti":"ضغط أو رفض يتعرّض له مهتدٍ جديد","Autre inquiétude":"قلق آخر",
+"Ce que j’ai vu ou entendu (faits, sans interpréter)":"ما رأيته أو سمعته (وقائع دون تفسير)","Il y a un danger immédiat":"هناك خطر وشيك","Envoyer au point focal":"إرسال إلى مسؤول الحماية",
+"Envoyé même sans connexion. Ne promettez jamais le secret absolu à la personne concernée.":"يُرسَل حتى دون اتصال. لا تعد الشخص المعني أبدًا بسرّية مطلقة.",
+"Attestation":"الشهادة","ONG WAFA AL-TURATH INTERNATIONAL":"منظمة وفاء التراث الدولية","Attestation de fin de niveau 1":"شهادة إتمام المستوى 1","décernée à":"تُمنح إلى",
+"pour avoir suivi avec assiduité les leçons du niveau 1 et réussi ses évaluations.":"لمواظبته على دروس المستوى 1 ونجاحه في التقويمات.",
+"Le Responsable pédagogique":"المسؤول التربوي","Le Président":"الرئيس",
+"Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.":"نموذج تجريبي. تعتمد النسخة النهائية نموذج المنظمة الرسمي وتُنتج ملف PDF وتضيف رمز QR للتحقق من الشهادة.",
+"Agent de mosquée":"وكيل المسجد","Inscrire les bénéficiaires de sa mosquée et tenir le registre":"تسجيل المستفيدين من مسجده ومسك السجل",
+"Responsable de recensement · Pôle 1":"مسؤول الإحصاء · المحور 1","Inscrire":"تسجيل","Registre":"السجل","Inscrire une personne":"تسجيل شخص",
+"Même fiche que sur le papier. Vous pouvez la remplir sans connexion : elle part dès que le réseau revient. Le kit de bienvenue est remis à tous les inscrits, selon des critères écrits.":"هي نفسها استمارة الورق. يمكنك ملؤها دون اتصال وتُرسل فور عودة الشبكة. تُسلَّم حقيبة الترحيب لجميع المسجَّلين وفق معايير مكتوبة.",
+"Sexe":"الجنس","Âge":"العمر","Femme":"امرأة","Homme":"رجل","Moins de 18 ans":"أقل من 18 سنة","18 à 24 ans":"من 18 إلى 24","25 à 34 ans":"من 25 إلى 34","35 à 44 ans":"من 35 إلى 44","45 ans et plus":"45 فما فوق",
+"Ce que la personne cherche":"ما يبحث عنه الشخص","Être accompagnée après sa conversion (12 mois, avec un parrain ou une marraine)":"مرافقة بعد الدخول في الإسلام (12 شهرًا مع مرشد أو مرشدة)","Apprendre le Coran et l’arabe":"تعلّم القرآن والعربية",
+"Téléphone (facultatif)":"الهاتف (اختياري)","Langue de la personne":"لغة الشخص","Français":"الفرنسية","Fon":"الفون","Yoruba":"اليوروبا","Goun":"الغون","Arabe":"العربية","Anglais":"الإنجليزية",
+"Mineur : l’autorisation écrite des parents a été obtenue":"قاصر: تم الحصول على إذن كتابي من الوالدين","La personne a donné son accord pour l’enregistrement de ses données":"وافق الشخص على تسجيل بياناته",
+"Enregistrer dans le registre":"الحفظ في السجل","Registre des bénéficiaires":"سجل المستفيدين",
+"Vous ne voyez que les personnes de votre mosquée, avec les informations utiles à l’inscription. Les notes des parrains et les résultats détaillés ne vous sont pas visibles.":"لا ترى إلا أشخاص مسجدك مع المعلومات اللازمة للتسجيل. أما ملاحظات المرشدين والنتائج التفصيلية فلا تظهر لك.",
+"Demande directe":"طلب مباشر","Confirmer l’inscription":"تأكيد التسجيل","Aucune demande en attente.":"لا توجد طلبات بالانتظار.","Accompagnement":"مرافقة","Coran et arabe":"القرآن والعربية",
+"Je suis":"أنا","Une femme":"امرأة","Un homme":"رجل","Mon âge":"عمري","Ce que je cherche":"ما أبحث عنه","Découvrir l’islam et être accompagné(e) après ma conversion":"أريد اكتشاف الإسلام والمرافقة بعد دخولي فيه",
+"Ma mosquée (facultatif)":"مسجدي (اختياري)","Aucune, ou je suis loin":"لا مسجد، أو أنا بعيد","Par mosquée":"حسب المسجد","En attente":"بالانتظار","à attribuer":"يُعيَّن لاحقًا",
+"Demande d’accompagnement envoyée":"أُرسل طلب المرافقة",
+"Fiche d’inscription":"استمارة التسجيل",
+"Même fiche que sur le papier, remplie sur votre téléphone, même sans connexion : elle part dès que le réseau revient. Pas de smartphone ? Remplissez la fiche papier, puis saisissez-la ici plus tard.":"نفس الاستمارة الورقية، تُملأ على هاتفك حتى دون اتصال، وتُرسل فور عودة الشبكة. لا هاتف ذكي؟ املأ الاستمارة الورقية ثم أدخلها هنا لاحقًا.",
+"Inscription gratuite et libre. Aucune aide n’est liée à une décision personnelle. L’identité est protégée.":"التسجيل مجاني وحر. لا ترتبط أي مساعدة بقرار شخصي. الهوية محمية.",
+"Volet":"المحور",
+"Volet B · Parcours Al-Hidaya (nouveau converti)":"المحور ب · مسار الهداية (مسلم جديد)",
+"Volet C · Coran et langue arabe":"المحور ج · القرآن واللغة العربية",
+"Nom et prénom":"الاسم الكامل",
+"Tranche d’âge":"الفئة العمرية",
+"Moins de 18 ans":"أقل من 18 سنة",
+"18 à 25 ans":"من 18 إلى 25 سنة",
+"26 à 40 ans":"من 26 إلى 40 سنة",
+"41 à 60 ans":"من 41 إلى 60 سنة",
+"61 ans et plus":"61 سنة فأكثر",
+"Téléphone / WhatsApp":"الهاتف / واتساب",
+"Commune, arrondissement, quartier":"البلدية، الدائرة، الحي",
+"Langue parlée":"اللغة المحكية",
+"Lecture et écriture":"القراءة والكتابة",
+"Lit le français":"يقرأ الفرنسية",
+"Lit l’arabe":"يقرأ العربية",
+"Ne lit pas":"لا يقرأ",
+"Date d’entrée dans l’islam (facultatif)":"تاريخ دخول الإسلام (اختياري)",
+"Niveau en arabe":"المستوى في العربية",
+"Aucun":"لا شيء",
+"Lit les lettres":"يقرأ الحروف",
+"Lit le Coran avec aide":"يقرأ القرآن بمساعدة",
+"Lit couramment":"يقرأ بطلاقة",
+"Objectif":"الهدف",
+"Lire le Coran":"قراءة القرآن",
+"Mémoriser":"الحفظ",
+"Comprendre l’arabe":"فهم العربية",
+"Comment a-t-on connu le programme ?":"كيف عرفوا البرنامج؟",
+"Mosquée":"مسجد",
+"Halaqa":"حلقة",
+"Livret":"كتيب",
+"Affiche":"ملصق",
+"Proche":"قريب",
+"Réseaux sociaux":"وسائل التواصل",
+"Profession ou activité":"المهنة أو النشاط",
+"Pôle de formation choisi":"محور التدريب المختار",
+"Jours et horaires possibles":"الأيام والأوقات الممكنة",
+"Parrain ou marraine":"الكفيل أو الكفيلة",
+"À attribuer par l’ONG":"تحدده المنظمة",
+"Souhait de la personne":"رغبة الشخص",
+"Obligatoire. J’accepte que mes données soient enregistrées pour le suivi du programme, de façon confidentielle.":"إلزامي. أوافق على تسجيل بياناتي لمتابعة البرنامج بسرية.",
+"J’accepte d’être contacté(e) par téléphone ou WhatsApp pour les rendez-vous.":"أوافق على التواصل معي هاتفيًا أو عبر واتساب بشأن المواعيد.",
+"J’accepte d’être cité(e) ou photographié(e) pour un témoignage (accord écrit à part, retirable).":"أوافق على الاقتباس أو التصوير لشهادة (بموافقة كتابية منفصلة يمكن سحبها).",
+"Mineur : l’accord écrit d’un parent a été obtenu":"قاصر: تم الحصول على موافقة كتابية من أحد الوالدين",
+"Cette fiche a d’abord été remplie sur papier":"هذه الاستمارة ملئت أولًا على الورق",
+"Fiche papier":"استمارة ورقية",
+"Feuille de présence":"ورقة الحضور",
+"Formateur ou moniteur de mosquée : même feuille que sur le papier (pôle, niveau, leçon, langue de la séance). Le formateur la signe, le responsable la vise.":"المعلم أو مراقب المسجد: نفس الورقة الورقية (المحور، المستوى، الدرس، لغة الحصة). يوقعها المعلم ويعتمدها المسؤول.",
+"Règle du guide du parrain : un rendez-vous au moins tous les 15 jours, un contact par mois et la fiche mensuelle remise au formateur. Un parrain pour un homme, une marraine pour une femme.":"قاعدة دليل الكفيل: لقاء كل 15 يومًا على الأقل، واتصال شهري، وتسليم الاستمارة الشهرية للمعلم. كفيل للرجل وكفيلة للمرأة.",
+"Attestations":"الشهادات",
+"cible ≥ 70 %":"الهدف ≥ 70%",
+"Obligatoire.":"إلزامي.",
+"J’accepte que mes données soient enregistrées pour le suivi du programme, de façon confidentielle.":" أوافق على تسجيل بياناتي لمتابعة البرنامج بسرية.",
+};
+const pat=[
+ [/^Demandes à confirmer \((\d+)\)$/,"Requests to confirm ($1)","طلبات للتأكيد ($1)"],
+ [/^Inscrits \((\d+)\)$/,"Enrolled ($1)","المسجَّلون ($1)"],
+ [/^(\d+) demandes? d’inscription$/,"$1 registration request(s)","$1 طلب(ات) تسجيل"],
+ [/^en attente de confirmation par les agents de mosquée\.$/,"waiting for confirmation by the mosque agents.","بانتظار تأكيد وكلاء المساجد."],
+ [/^(Femme|Homme) · (.+) ans · (Accompagnement|Coran et arabe)$/,"$1 · $2 years · $3","$1 · $2 سنة · $3"],
+ [/^(.+) · niveau (\d) · parrain : (.+)$/,"$1 · level $2 · mentor: $3","$1 · المستوى $2 · المرشد: $3"],
+ [/^(.+) · niveau (\d) · inscrit$/,"$1 · level $2 · enrolled","$1 · المستوى $2 · مسجَّل"],
+ [/^Pôle (\d) · mosquée \(exemple\)$/,"Hub $1 · mosque (example)","المحور $1 · مسجد (مثال)"],
+ [/^Pôle (\d)$/,"Hub $1","المحور $1"],
+ [/^Aucune mosquée \(en ligne\)$/,"No mosque (online)","بلا مسجد (عبر الإنترنت)"],
+ [/^L’agent de (.+) va vous contacter pour confirmer votre inscription\. En attendant, vous pouvez déjà suivre les leçons ci-dessous\.$/,"The agent of $1 will contact you to confirm your registration. Meanwhile, you can already follow the lessons below.","سيتواصل معك وكيل $1 لتأكيد تسجيلك. وفي الأثناء يمكنك متابعة الدروس أدناه."],
+ [/^L’équipe de l’ONG va vous contacter pour vous proposer un groupe en ligne\. En attendant, vous pouvez déjà suivre les leçons ci-dessous\.$/,"The NGO team will contact you to offer you an online group. Meanwhile, you can already follow the lessons below.","سيتواصل معك فريق المنظمة لاقتراح مجموعة عبر الإنترنت. وفي الأثناء يمكنك متابعة الدروس أدناه."],
+
+ [/^Bonjour (.+)$/,"Hello $1","مرحبًا $1"],
+ [/^(\d+) leçons? terminées? sur (\d+) disponibles dans ce prototype$/,"$1 of $2 lessons available in this prototype completed","أُنجز $1 من $2 دروس متاحة في هذا النموذج"],
+ [/^Continuer : leçon (\d+) · (.+)$/,"Continue: lesson $1 · $2","متابعة: الدرس $1 · $2"],
+ [/^Toutes les leçons disponibles sont terminées\. Bravo !$/,"All available lessons are complete. Well done!","اكتملت جميع الدروس المتاحة. أحسنت!"],
+ [/^Quiz : (\d+) \/ (\d+)$/,"Quiz: $1 / $2","الاختبار: $1 / $2"],
+ [/^(Réponse écrite|Enregistrement audio|Photo du cahier) · pour le (.+)$/,"$1 · due $2","$1 · قبل $2"],
+ [/^Pour le (.+)$/,"Due $1","قبل $1"],
+ [/^Pour le (.+) · (\d+)\/(\d+) rendus$/,"Due $1 · $2/$3 handed in","قبل $1 · سُلِّم $2/$3"],
+ [/^(\d+) \/ (\d+) dans ce prototype$/,"$1 / $2 in this prototype","$1 / $2 في هذا النموذج"],
+ [/^Leçon (\d+)$/,"Lesson $1","الدرس $1"],
+ [/^Question (\d+) sur (\d+)$/,"Question $1 of $2","السؤال $1 من $2"],
+ [/^(\d+) apprenants$/,"$1 learners","$1 متعلّمين"],
+ [/^Présence (\d+|—) %? ?· (\d+)\/(\d+) leçons$/,"Attendance $1% · $2/$3 lessons","الحضور $1٪ · $2/$3 دروس"],
+ [/^Présence (\d+) % · (\d+)\/(\d+) leçons$/,"Attendance $1% · $2/$3 lessons","الحضور $1٪ · $2/$3 دروس"],
+ [/^(\d+)\/(\d+) leçons · présence (\d+) %$/,"$1/$2 lessons · attendance $3%","$1/$2 دروس · الحضور $3٪"],
+ [/^À corriger \((\d+)\)$/,"To mark ($1)","للتصحيح ($1)"],
+ [/^(.+) · rendu le (.+)$/,"$1 · handed in $2","$1 · سُلِّم في $2"],
+ [/^Dans (\d+) j$/,"In $1 d","بعد $1 يوم"],
+ [/^(\d+) en attente$/,"$1 waiting","$1 بانتظار الإرسال"],
+ [/^(\d+) pays$/,"$1 countries","$1 بلدان"],
+ [/^(\d+) avis$/,"$1 ratings","$1 تقييمات"],
+ [/^(Femme|Homme) · (.+) ans · niveau (\d)$/,"$1 · $2 years · level $3","$1 · $2 سنة · المستوى $3"],
+ [/^Présence moy\.$/,"Avg. attendance","متوسط الحضور"],
+ [/^délivrée le (.+)$/i,"Issued $1","صدرت في $1"],
+ [/^(\d+) \/ (\d+)$/,"$1 / $2","$1 / $2"],
+ [/^(.+) · (Inquiétude sur le comportement d’un adulte|Enfant ou personne en danger|Pression ou rejet vécu par un converti|Autre inquiétude)$/,"$1 · $2","$1 · $2"]
+];
+return {en,ar,pat};
+})();
+function tx(root){const L=S.set.lang;if(L==="fr")return;const D=I18N[L]||{};const P=I18N.pat;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const ns=[];while(w.nextNode())ns.push(w.currentNode);
+  const conv=k=>{if(D[k])return D[k];for(const p of P){const m=k.match(p[0]);if(m){const tp=L==="en"?p[1]:p[2];return tp.replace(/\$(\d)/g,(x,i)=>D[m[i]]||m[i])}}return null};
+ ns.forEach(n=>{const k=n.nodeValue.trim();if(!k||n.parentElement.closest(".prose,.verse .ar,.verse .fr,.verse .ref,.key,.seq,.chips,.opt,.prac span,.num"))return;const r=conv(k);if(r)n.nodeValue=n.nodeValue.replace(k,r)});
+ root.querySelectorAll("[placeholder],[aria-label]").forEach(e=>{["placeholder","aria-label"].forEach(a=>{const v=e.getAttribute(a);if(v&&D[v])e.setAttribute(a,D[v])})})}
+/* ---------- état d'interface ---------- */
+let R={tab:null,view:null,lesson:null,hw:null,attest:null,learner:null,report:false};
+const toast=m=>{const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2400)};
+const online=()=>navigator.onLine!==false;
+
+/* ---------- rendu ---------- */
+const MOSQ=[["p1","Pôle 1 · mosquée (exemple)"],["p2","Pôle 2 · mosquée (exemple)"],["p3","Pôle 3 · mosquée (exemple)"],["p4","Pôle 4 · mosquée (exemple)"],["p5","Pôle 5 · mosquée (exemple)"],["p6","Pôle 6 · mosquée (exemple)"]];
+const mosqName=id=>(MOSQ.find(m=>m[0]===id)||[0,"Aucune mosquée (en ligne)"])[1];
+const ROLES={
+ apprenant:{ic:"A",label:"Apprenant",who:"Amina",desc:"Suivre les leçons, faire les exercices et rendre les devoirs",tabs:[["parcours","Parcours","book"],["devoirs","Devoirs","task"],["progres","Progrès","chart"],["moi","Moi","user"]]},
+ agent:{ic:"R",label:"Agent de mosquée",who:"Responsable de recensement · Pôle 1",desc:"Inscrire les bénéficiaires de sa mosquée et tenir le registre",tabs:[["inscrire","Inscrire","user"],["registre","Registre","users"],["moi","Moi","user"]]},
+ formateur:{ic:"F",label:"Formateur",who:"Formateur (exemple)",desc:"Faire l’appel, donner et corriger les devoirs, valider un niveau",tabs:[["groupe","Groupe","users"],["appel","Présence","check"],["devoirs","Devoirs","task"],["moi","Moi","user"]]},
+ parrain:{ic:"P",label:"Parrain",who:"Parrain Ismaël (exemple)",desc:"Suivre ses filleuls et noter ses rencontres, en confidentialité",tabs:[["filleuls","Filleuls","heart"],["moi","Moi","user"]]},
+ admin:{ic:"O",label:"ONG",who:"Équipe de l’ONG",desc:"Voir les chiffres, gérer la protection, suivre le programme",tabs:[["chiffres","Chiffres","chart"],["protection","Protection","shield"],["moi","Moi","user"]]}
+};
+function render(){
+ const app=$("#app");document.body.classList.toggle("disc",!!S.set.discreet);
+ document.documentElement.style.setProperty("--fs",S.set.fs);document.documentElement.lang=S.set.lang;document.documentElement.dir=S.set.lang==="ar"?"rtl":"ltr";
+ if(!S.role){app.innerHTML=loginView();tx(app);return}
+ const ro=ROLES[S.role];if(!R.tab||!ro.tabs.some(t=>t[0]===R.tab))R.tab=ro.tabs[0][0];
+ let inner="",title=S.set.discreet?"Mon cours":"Nour Al-Hidaya",sub=ro.who,back=false;
+ if(R.lesson){inner=lessonView();back=true;title=LESSONS[R.lesson.id].title}
+ else if(R.hw){inner=hwDetail();back=true;title="Devoir"}
+ else if(R.attest){inner=attestView();back=true;title="Attestation"}
+ else if(R.learner){inner=learnerDetail();back=true;title=learner(R.learner).name}
+ else if(R.report){inner=reportForm();back=true;title="Signaler une inquiétude"}
+ else inner=tabView();
+ const pend=S.subs.filter(s=>s.pending).length;
+ const status=online()?(pend?`<span class="pill off">${pend} en attente</span>`:`<span class="pill">En ligne</span>`):`<span class="pill off">Hors ligne</span>`;
+ const nav=back?"":`<nav class="bar">${ro.tabs.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}">${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
+ app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div>${status}</header><main>${inner}</main>${nav}`;
+ tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
+}
+function langBar(){return `<div class="langs">${[["fr","Français"],["en","English"],["ar","العربية"]].map(([k,n])=>`<button data-a="lang" data-v="${k}" class="${S.set.lang===k?"on":""}" ${k==="ar"?'lang="ar"':""}>${n}</button>`).join("")}</div>`}
+function loginView(){
+ const reg=R.signup;
+ return `<div class="login"><div class="brand"><img src="${LOGO}" alt=""><h1>Nour Al-Hidaya</h1><div class="ar">نور الهداية</div><p class="muted small" style="margin:6px 0 0">Apprendre le Coran, l’arabe et les bases de l’islam</p></div>
+ ${langBar()}
+ <div class="free"><b>Gratuit pour tous, partout dans le monde.</b><br>Sans paiement, sans publicité. Vos données ne sont jamais vendues.</div>
+ ${reg?`<div class="card"><h3>Créer mon espace</h3><div class="list" style="margin-top:10px">
+  <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
+  <div><label class="lbl" for="sc">Mon pays</label><select id="sc">${CCS.map(c=>`<option value="${c}">${esc(country(c))}</option>`).join("")}<option value="XX">Autre</option></select></div>
+  <div><label class="lbl" for="sx">Je suis</label><select id="sx"><option value="F">Une femme</option><option value="M">Un homme</option></select></div>
+  <div><label class="lbl" for="sa">Mon âge</label><select id="sa">${AGES.map(a=>`<option value="${a[0]}" ${a[0]==="26-40"?"selected":""}>${a[1]}</option>`).join("")}</select></div>
+  <div><label class="lbl" for="sv">Ce que je cherche</label><select id="sv"><option value="C">Apprendre le Coran et l’arabe</option><option value="B">Découvrir l’islam et être accompagné(e) après ma conversion</option></select></div>
+  <div><label class="lbl" for="sq">Ma mosquée (facultatif)</label><select id="sq"><option value="">Aucune, ou je suis loin</option>${MOSQ.map(m=>`<option value="${m[0]}">${esc(m[1])}</option>`).join("")}</select></div>
+  <div><label class="lbl" for="sm">Comment je veux apprendre</label><select id="sm"><option value="seul">Seul(e), à mon rythme</option><option value="groupe">Avec un groupe en ligne</option><option value="presentiel">Avec un groupe près de chez moi</option></select></div>
+  <div><label class="lbl" for="se">E-mail ou téléphone (facultatif)</label><input id="se" type="text" inputmode="email" placeholder="Pour retrouver mon compte ; un numéro de n’importe quel pays"></div>
+  <button class="btn gold full" data-a="signup">Commencer gratuitement</button><button class="btn ghost full" data-a="signupx">Annuler</button></div></div>`
+ :`<button class="btn gold full" data-a="signupo">Commencer à apprendre</button>`}
+ <div class="lbl" style="margin-top:6px">Découvrir la démonstration</div>
+ ${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-a="login" data-v="${k}"><span class="ic">${r.ic}</span><span><b>${r.label}</b><span class="muted small">${r.desc}</span></span></button>`).join("")}
+ <div class="note info"><b>Prototype de démonstration.</b> Les noms et les chiffres sont des exemples. Les données restent seulement sur cet appareil. Version finale : inscription libre par e-mail ou téléphone de n’importe quel pays, et classes en ligne ou près de chez soi.</div>
+ </div>`}
+function tabView(){
+ const k=S.role+":"+R.tab;
+ return({
+  "apprenant:parcours":vParcours,"apprenant:devoirs":vDevoirsL,"apprenant:progres":vProgres,
+  "agent:inscrire":vInscrire,"agent:registre":vRegistre,"formateur:groupe":vGroupe,"formateur:appel":vAppel,"formateur:devoirs":vDevoirsF,
+  "parrain:filleuls":vFilleuls,"admin:chiffres":vChiffres,"admin:protection":vProtection
+ })[k]?.()||vMoi()}
+
+/* --- apprenant --- */
+function vParcours(){
+ const u=me(),tot=AVAIL.length,d=lessonsDone(u.id),pct=Math.round(100*d/tot);
+ const next=AVAIL.find(n=>!(S.done[u.id]&&S.done[u.id][n]));
+ return `<div class="hero"><div class="lbl" style="color:#EBCB7C">Niveau 1 · mois 1 à 3</div><h2>Bonjour ${esc(u.name)}</h2><div class="small" style="opacity:.9;margin-top:4px">${d} leçon${d>1?"s":""} terminée${d>1?"s":""} sur ${tot} disponibles dans ce prototype</div><div class="bar-p"><i style="width:${pct}%"></i></div>
+ ${next?`<button class="btn gold full" style="margin-top:14px" data-a="lesson" data-v="${next}">Continuer : leçon ${next} · ${esc(LESSONS[next].title)}</button>`:`<div style="margin-top:12px">Toutes les leçons disponibles sont terminées. Bravo !</div>`}</div>
+ ${sessionCard()}
+ ${PLAN.map(m=>`<div><div class="lbl" style="margin:4px 0 8px">${m.name}</div><div class="list">${m.lessons.map(([n,t])=>{
+  const ok=AVAIL.includes(n),dn=S.done[u.id]&&S.done[u.id][n];
+  return ok?`<button class="item" data-a="lesson" data-v="${n}"><span class="num ${dn?"done":""}">${dn?"✓":n}</span><span class="sp"><b>${esc(t)}</b><br><span class="small muted">${dn?`Quiz : ${dn.s} / ${dn.t}`:"Prêt · environ 15 minutes"}</span></span><span class="muted flip">›</span></button>`
+   :`<div class="item lock"><span class="num">${n}</span><span class="sp"><b>${esc(t)}</b><br><span class="small muted">Contenu en préparation</span></span><span>🔒</span></div>`}).join("")}</div></div>`).join("")}
+ <div class="note">Dans la version finale, les leçons sont téléchargées par module pour être suivies <b>sans connexion</b>, et la leçon suivante s’ouvre selon les règles choisies par l’ONG.</div>`}
+function sessionCard(){
+ const u=me();
+ if(u&&u.st==="attente")return `<div class="card" style="border-color:var(--gold)"><div class="row"><h3 class="sp">Demande d’accompagnement envoyée</h3><span class="tag warn">En attente</span></div><p class="small muted" style="margin:6px 0 0">${u.mosq?"L’agent de "+esc(mosqName(u.mosq))+" va vous contacter pour confirmer votre inscription.":"L’équipe de l’ONG va vous contacter pour vous proposer un groupe en ligne."} En attendant, vous pouvez déjà suivre les leçons ci-dessous.</p></div>`;
+ if(S.set.mode==="seul")return `<div class="card"><h3>Vous apprenez à votre rythme</h3><p class="small muted" style="margin:4px 0 8px">Les exercices se corrigent tout seuls. Pour être accompagné(e), vous pouvez rejoindre un groupe en ligne quand vous le souhaitez.</p><button class="btn ghost sm" data-a="mode2">Rejoindre un groupe en ligne</button></div>`;
+ const d=new Date();d.setUTCDate(d.getUTCDate()+((6-d.getUTCDay()+7)%7||7));d.setUTCHours(15,0,0,0);
+ const mine=d.toLocaleString(loc(),{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
+ return `<div class="card"><div class="lbl">Prochaine séance en ligne</div><h3 style="margin:2px 0 4px">${esc(mine)}</h3><p class="small muted" style="margin:0">Cette heure est affichée dans votre fuseau horaire. À Cotonou : 16 h 00.</p></div>`}
+function vDevoirsL(){
+ const u=me();
+ return `<h2>Mes devoirs</h2><div class="list">${S.hw.map(h=>{const s=S.subs.find(x=>x.hw===h.id&&x.u===u.id);
+  const st=s?(s.status==="corrigé"?`<span class="tag ok">Corrigé</span>`:s.pending?`<span class="tag warn">En attente d’envoi</span>`:`<span class="tag gold">Rendu</span>`):(h.due<dayISO()?`<span class="tag bad">En retard</span>`:`<span class="tag">À faire</span>`);
+  return `<button class="item" data-a="hw" data-v="${h.id}"><span class="sp"><b>${esc(h.title)}</b><br><span class="small muted">${h.type==="text"?"Réponse écrite":h.type==="audio"?"Enregistrement audio":"Photo du cahier"} · pour le ${fmtS(h.due)}</span></span>${st}</button>`}).join("")}</div>`}
+function hwDetail(){
+ const h=S.hw.find(x=>x.id===R.hw),u=S.role==="apprenant"?me():learner(R.hwu||"u1");
+ const s=S.subs.find(x=>x.hw===h.id&&x.u===u.id);
+ let body="";
+ if(S.role==="apprenant"){
+  if(s){body=`<div class="card"><div class="lbl">Mon travail</div><p style="margin:6px 0 0">${s.text?esc(s.text):"Fichier envoyé : "+esc(s.file||"")}</p>${s.pending?`<p class="small" style="color:var(--warn)">En attente : il sera envoyé dès que la connexion revient.</p>`:""}</div>
+   ${s.status==="corrigé"?`<div class="card" style="border-color:var(--ok)"><div class="row"><b>Retour du formateur</b><span class="sp"></span><span class="tag ok">${s.note} / 3</span></div><p style="margin:6px 0 0">${esc(s.comment)}</p></div>`:`<div class="note info">Rendu le ${fmt(s.date)}. Le formateur va le corriger.</div>`}`}
+  else if(h.type==="text")body=`<label class="lbl" for="hwt">Ma réponse</label><textarea id="hwt" placeholder="Écrivez ici…"></textarea><button class="btn full" data-a="sendtext">Envoyer mon devoir</button>`;
+  else body=`<label class="lbl" for="hwf">${h.type==="audio"?"Mon enregistrement":"Ma photo"}</label><input id="hwf" type="file" ${h.type==="audio"?'accept="audio/*" capture':'accept="image/*" capture="environment"'} style="width:100%;padding:12px;border:1.5px dashed var(--line);border-radius:12px;background:var(--surface)"><button class="btn full" data-a="sendfile">Envoyer mon devoir</button>
+   <p class="small muted">Sur le téléphone, ce bouton ouvre le micro ou l’appareil photo. Le fichier part vers le formateur, même si la connexion est coupée au moment de l’envoi.</p>`;
+ }
+ return `<div class="card"><h3>${esc(h.title)}</h3><p class="small muted" style="margin:4px 0 8px">Pour le ${fmt(h.due)}</p><p style="margin:0">${esc(h.brief)}</p></div>${body}`}
+function vProgres(){
+ const u=me(),as=assid(u.id),r=readiness(u.id),v=S.val[u.id];
+ return `<h2>Mes progrès</h2><div class="kpis"><div class="kpi"><span class="lbl">Leçons</span><b>${lessonsDone(u.id)}/${AVAIL.length}</b></div><div class="kpi"><span class="lbl">Présence</span><b>${as===null?"—":as+" %"}</b></div></div>
+ <div class="card"><h3>Pour obtenir l’attestation du niveau 1</h3><div class="list" style="margin-top:10px;gap:8px">${r.items.map(i=>`<div class="chk-row"><span class="tag ${i[1]?"ok":""}">${i[1]?"✓":"…"}</span><span class="sp">${i[0]}<br><span class="muted small">${i[2]}</span></span></div>`).join("")}<div class="chk-row"><span class="tag ${v?"ok":""}">${v?"✓":"…"}</span><span class="sp">Validation par le formateur</span></div></div>
+ ${v?`<button class="btn gold full" style="margin-top:12px" data-a="attest" data-v="${u.id}">Voir mon attestation</button>`:""}</div>
+ <div class="card"><h3>Mon avis sur ce module</h3><p class="small muted" style="margin:2px 0 8px">Un geste suffit : cela aide l’ONG à améliorer les cours.</p><div class="row" style="gap:6px">${[1,2,3,4,5].map(n=>`<button class="btn ghost sm sp" data-a="sat" data-v="${n}" aria-label="${n} sur 5">${"★".repeat(n)}</button>`).join("")}</div></div>`}
+
+/* leçon */
+const STEPS=["Idée clé","Texte","Verset","Réflexion","Pratique","À retenir","Questions"];
+function startLesson(id){const done=S.done[S.role==="apprenant"?"u1":"u1"]&&S.done.u1[id];R.lesson={id,step:0,q:{i:0,score:0,fb:null,seq:[],sel:{},fin:false}}}
+function lessonView(){
+ const{id,step}=R.lesson,L=LESSONS[id];
+ const bar=`<div class="steps">${STEPS.map((_,i)=>`<i class="${i<step?"on":i===step?"cur":""}"></i>`).join("")}</div><div class="row small muted"><span>${STEPS[step]}</span><span class="sp"></span><span>${step+1} / ${STEPS.length}</span></div>`;
+ let b="";
+ if(step===0)b=`<div class="lbl">Leçon ${id}</div><h2 style="margin:2px 0 4px">${esc(L.title)}</h2><div class="ar" style="font-size:1.5rem;color:var(--gold)">${L.ar}</div><div class="key" style="margin-top:14px">${esc(L.key)}</div>`;
+ if(step===1)b=`<div class="prose">${L.text.map(([h,p])=>`<h3>${esc(h)}</h3>${p.split("\n").map(x=>`<p style="margin-bottom:${p.includes("\n")?4:10}px">${esc(x)}</p>`).join("")}`).join("")}</div>`;
+ if(step===2)b=`<div class="verse"><div class="ar">${L.verse.ar}</div><div class="fr">${esc(L.verse.fr)}</div><div class="ref">${esc(L.verse.ref)}</div><button class="audio" data-a="audio">▶ Écouter</button></div><div class="note" style="margin-top:2px">Le texte arabe est repris des livrets de l’ONG. L’audio de récitation sera fourni par l’ONG (voix et droits à valider) ; la lecture suivie mot à mot est prévue dans la version finale.</div>`;
+ if(step===3){const v=S.reflect["u1:"+id]||"";b=`<div class="card" style="background:var(--gold-soft)"><div class="lbl">Pause réflexion</div>${L.reflect.map(q=>`<p class="prose" style="margin:8px 0 0">${esc(q)}</p>`).join("")}</div><label class="lbl" for="refl">Mes notes (visibles de moi seul)</label><textarea id="refl" data-a="refl" placeholder="Facultatif">${esc(v)}</textarea>`}
+ if(step===4){const c=S.practice["u1:"+id]||[];b=`<div class="lbl">Cette semaine, je fais…</div>${L.practice.map((p,i)=>`<label class="chk prac ${c.includes(i)?"on":""}"><input type="checkbox" data-a="prac" data-v="${i}" ${c.includes(i)?"checked":""}><span>${esc(p)}</span></label>`).join("")}<div class="small muted">Votre parrain ou votre marraine verra ce que vous avez coché.</div>`}
+ if(step===5)b=`<div class="card" style="background:var(--ok-soft)"><div class="lbl" style="color:var(--ok)">À retenir</div>${L.retain.map(r=>`<div class="chk-row" style="margin-top:8px"><span style="color:var(--ok);font-weight:700">✓</span><span>${esc(r)}</span></div>`).join("")}</div>`;
+ if(step===6)b=quizView();
+ const q=R.lesson.q,last=step===6;
+ const nav=!last?`<div class="row"><button class="btn ghost" data-a="prev" ${step===0?"disabled":""}>Précédent</button><span class="sp"></span><button class="btn" data-a="next">Suivant</button></div>`:(q.fin?"":`<div class="row"><button class="btn ghost" data-a="prev">Précédent</button></div>`);
+ return bar+b+nav}
+function quizView(){
+ const{id,q}=R.lesson,L=LESSONS[id],n=L.quiz.length;
+ if(q.fin){const stars=q.score===n?"Parfait !":q.score>=n/2?"Bien joué !":"Continuez, vous y arrivez.";
+  return `<div class="card" style="text-align:center"><div class="lbl">Leçon terminée</div><h2 style="margin:6px 0">${q.score} / ${n}</h2><p style="margin:0 0 12px">${stars}</p><button class="btn gold full" data-a="finish">Retour au parcours</button></div>`}
+ const Q=L.quiz[q.i];let h=`<div class="lbl">Question ${q.i+1} sur ${n}</div><h3 style="margin:2px 0 12px">${esc(Q.q)}</h3>`;
+ if(Q.t==="qcm"){h+=Q.o.map((o,i)=>{let c="opt";if(q.fb){if(i===Q.a)c+=" right";else if(i===q.fb.pick)c+=" wrong"}return `<button class="${c}" data-a="pick" data-v="${i}" ${q.fb?"disabled":""}>${esc(o)}</button>`}).join("");
+  if(q.fb)h+=`<div class="fb ${q.fb.ok?"ok":"no"}"><b>${q.fb.ok?"Oui !":"Pas tout à fait."}</b> ${esc(Q.why)}</div>`}
+ if(Q.t==="order"){const rest=Q.items.map((t,i)=>i).filter(i=>!q.seq.includes(i));const shuffled=q.shuf||(q.shuf=[...Q.items.keys()].sort((a,b)=>((a*5+3)%7)-((b*5+3)%7)));
+  h+=`<div class="seq">${q.seq.map(i=>`<div>${esc(Q.items[i])}</div>`).join("")}</div><div class="chips">${shuffled.map(i=>`<button class="chip" data-a="seq" data-v="${i}" ${q.seq.includes(i)||q.fb?"disabled":""}>${esc(Q.items[i])}</button>`).join("")}</div>`;
+  if(!q.fb)h+=`<div class="row" style="margin-top:12px"><button class="btn ghost sm" data-a="seqclr">Effacer</button><span class="sp"></span><button class="btn sm" data-a="seqok" ${q.seq.length<Q.items.length?"disabled":""}>Valider</button></div>`;
+  else h+=`<div class="fb ${q.fb.ok?"ok":"no"}"><b>${q.fb.ok?"L’ordre est bon !":"Pas tout à fait."}</b> ${q.fb.ok?"":"L’ordre correct : "+Q.items.map((t,i)=>(i+1)+". "+t).join(" ")}</div>`}
+ if(Q.t==="match"){const opts=q.mo||(q.mo=Q.p.map(p=>p[1]).sort());
+  h+=Q.p.map((p,i)=>`<div class="sel-row"><b>${esc(p[0])}</b><select id="m${i}" ${q.fb?"disabled":""}><option value="">Choisir…</option>${opts.map(o=>`<option ${q.sel[i]===o?"selected":""}>${esc(o)}</option>`).join("")}</select></div>`).join("");
+  if(!q.fb)h+=`<button class="btn full" data-a="matchok">Valider</button>`;
+  else h+=`<div class="fb ${q.fb.ok?"ok":"no"}"><b>${q.fb.ok?"Tout est juste !":"Pas tout à fait."}</b> ${Q.p.map(p=>esc(p[0])+" : "+esc(p[1])).join(" · ")}</div>`}
+ if(q.fb)h+=`<button class="btn full" data-a="qnext">${q.i+1<n?"Question suivante":"Terminer"}</button>`;
+ return h}
+
+/* --- formateur --- */
+function vGroupe(){
+ const g=reg().filter(l=>l.level===1&&l.id!=="u5");
+ return `<div><div class="lbl">Groupe en ligne du samedi · Niveau 1</div><h2>${g.length} apprenants</h2></div>
+ <div class="list">${g.map(l=>{const a=assid(l.id),ld=lessonsDone(l.id),alert=a!==null&&a<70;
+  return `<button class="item" data-a="learner" data-v="${l.id}"><span class="num ${S.val[l.id]?"done":""}">${esc(l.name[0])}</span><span class="sp"><b>${esc(l.name)}</b> ${alert?'<span class="tag bad">Absences</span>':""}${readiness(l.id).ok&&!S.val[l.id]?'<span class="tag gold">À valider</span>':""}<br><span class="small muted">Présence ${a===null?"—":a+" %"} · ${ld}/${AVAIL.length} leçons</span><div class="bar-p" style="margin-top:6px"><i style="width:${Math.round(100*ld/AVAIL.length)}%"></i></div></span></button>`}).join("")}</div>
+ <div class="note">Données d’exemple. Un apprenant avec moins de 70 % de présence est signalé pour que le formateur ou le parrain le contacte.</div>`}
+function learnerDetail(){
+ const l=learner(R.learner),r=readiness(l.id),v=S.val[l.id];
+ return `<div class="card"><div class="row"><span class="num">${esc(l.name[0])}</span><div class="sp"><h3>${esc(l.name)}</h3><span class="small muted">${l.sex==="F"?"Femme":"Homme"} · ${ageL(l.age)} · niveau ${l.level}</span></div></div></div>
+ <div class="card"><h3>Conditions du niveau 1</h3><div class="list" style="margin-top:10px;gap:8px">${r.items.map(i=>`<div class="chk-row"><span class="tag ${i[1]?"ok":"warn"}">${i[1]?"✓":"!"}</span><span class="sp">${i[0]}<br><span class="small muted">${i[2]}</span></span></div>`).join("")}</div>
+ ${v?`<button class="btn gold full" style="margin-top:12px" data-a="attest" data-v="${l.id}">Voir l’attestation ${v.no}</button>`:`<button class="btn full" style="margin-top:12px" data-a="validate" data-v="${l.id}" ${r.ok?"":"disabled"}>Valider le niveau et délivrer l’attestation</button>${r.ok?"":`<p class="small muted" style="margin:8px 0 0">Le bouton s’ouvre quand toutes les conditions sont remplies.</p>`}`}</div>
+ <div class="card"><h3>Leçons</h3><div class="list" style="margin-top:8px;gap:6px">${AVAIL.map(n=>{const d=S.done[l.id]&&S.done[l.id][n];return `<div class="chk-row"><span class="tag ${d?"ok":""}">${d?"✓":"…"}</span><span class="sp">${n}. ${esc(LESSONS[n].title)}</span><span class="small muted">${d?d.s+"/"+d.t:""}</span></div>`}).join("")}</div></div>`}
+function vAppel(){
+ const t=dayISO();let s=S.sessions.find(x=>x.date===t);const g=reg().filter(l=>l.level===1&&l.id!=="u5");
+ return `<div><div class="lbl">Feuille de présence</div><h2>${fmt(t)}</h2></div>
+ <div class="note info">Formateur ou moniteur de mosquée : même feuille que sur le papier (pôle, niveau, leçon, langue de la séance). Le formateur la signe, le responsable la vise.</div><div class="list">${g.map(l=>{const m=s?s.marks[l.id]:null;return `<div class="card"><div class="row"><b class="sp">${esc(l.name)}</b><span class="small muted">${assid(l.id)??"—"} %</span></div><div class="tri" style="margin-top:8px"><button class="p ${m==="p"?"on":""}" data-a="mark" data-u="${l.id}" data-v="p">Présent</button><button class="e ${m==="e"?"on":""}" data-a="mark" data-u="${l.id}" data-v="e">Excusé</button><button class="a ${m==="a"?"on":""}" data-a="mark" data-u="${l.id}" data-v="a">Absent</button></div></div>`}).join("")}</div>
+ <div class="note info">L’appel se met à jour tout de suite et fonctionne sans connexion. Un absent « excusé » ne baisse pas le taux de présence.</div>`}
+function vDevoirsF(){
+ const pend=S.subs.filter(s=>s.status==="rendu");
+ return `<div class="row"><h2 class="sp">Devoirs</h2><button class="btn sm" data-a="newhw">+ Nouveau</button></div>
+ ${R.newhw?newHwForm():""}
+ <div class="lbl">À corriger (${pend.length})</div><div class="list">${pend.length?pend.map(s=>{const h=S.hw.find(x=>x.id===s.hw),l=learner(s.u);return `<button class="item" data-a="corr" data-v="${s.hw}|${s.u}"><span class="num">${esc(l.name[0])}</span><span class="sp"><b>${esc(l.name)}</b><br><span class="small muted">${esc(h.title)} · rendu le ${fmtS(s.date)}</span></span><span class="muted flip">›</span></button>`}).join(""):`<div class="card muted">Rien à corriger.</div>`}</div>
+ <div class="lbl" style="margin-top:6px">Devoirs donnés</div><div class="list">${S.hw.map(h=>{const rend=S.subs.filter(s=>s.hw===h.id).length;return `<div class="item"><span class="sp"><b>${esc(h.title)}</b><br><span class="small muted">Pour le ${fmtS(h.due)} · ${rend}/${S.learners.filter(l=>l.level===1).length} rendus</span></span></div>`}).join("")}</div>`}
+function newHwForm(){return `<div class="card"><h3>Nouveau devoir</h3><div class="list" style="margin-top:8px"><div><label class="lbl" for="nt">Titre</label><input id="nt" type="text"></div><div><label class="lbl" for="nb">Consigne</label><textarea id="nb"></textarea></div><div><label class="lbl" for="ny">Type de rendu</label><select id="ny"><option value="text">Réponse écrite</option><option value="audio">Enregistrement audio</option><option value="photo">Photo du cahier</option></select></div><div><label class="lbl" for="nd">Date limite</label><input id="nd" type="text" value="${dayISO(7)}"></div><div class="row"><button class="btn ghost sp" data-a="newhw">Annuler</button><button class="btn sp" data-a="savehw">Donner le devoir</button></div></div></div>`}
+function corrView(){}
+/* --- parrain --- */
+function vFilleuls(){
+ return `<div class="note priv"><b>Confidentiel.</b> Vos notes ne sont visibles que de vous. N’écrivez qu’un prénom ou un code, et ne partagez rien sans l’accord de la personne.</div>
+ ${["u2","u4"].map(id=>{const l=learner(id),rs=S.rdv.filter(r=>r.u===id).sort((a,b)=>b.date.localeCompare(a.date)),last=rs[0],nx=last?Math.ceil((new Date(last.date)-new Date(dayISO()))/864e5)+15:0;
+  return `<div class="card"><div class="row"><span class="num">${esc(l.name[0])}</span><div class="sp"><h3>${esc(l.name)}</h3><span class="small muted">${lessonsDone(id)}/${AVAIL.length} leçons · présence ${assid(id)??"—"} %</span></div>${nx<=3?`<span class="tag warn">${nx<=0?"Rendez-vous à prévoir":"Dans "+nx+" j"}</span>`:`<span class="tag">Dans ${nx} j</span>`}</div>
+  <div class="hr" style="margin:10px 0"></div><div class="lbl">Rencontres</div>${rs.map(r=>`<div class="small" style="margin:6px 0"><b>${fmtS(r.date)}</b> · ${esc(r.note)}</div>`).join("")}
+  <label class="lbl" for="rn-${id}" style="display:block;margin-top:8px">Noter une rencontre</label><textarea id="rn-${id}" style="min-height:70px" placeholder="Ce qui s’est dit, les besoins repérés…"></textarea><button class="btn sm" style="margin-top:8px" data-a="rdv" data-v="${id}">Enregistrer la rencontre</button></div>`}).join("")}
+ <div class="note info">Règle du guide du parrain : un rendez-vous au moins tous les 15 jours, un contact par mois et la fiche mensuelle remise au formateur. Un parrain pour un homme, une marraine pour une femme.</div>`}
+/* --- agent de mosquée --- */
+const AGES=[["-18","Moins de 18 ans"],["18-25","18 à 25 ans"],["26-40","26 à 40 ans"],["41-60","41 à 60 ans"],["61+","61 ans et plus"]];
+const ageL=a=>(AGES.find(x=>x[0]===a)||[0,a])[1].toLowerCase();
+function vInscrire(){
+ const sel=(id,arr,def)=>`<select id="${id}">${arr.map(a=>`<option value="${a[0]}" ${a[0]===def?"selected":""}>${a[1]}</option>`).join("")}</select>`;
+ return `<div><div class="lbl">Responsable de recensement · Pôle 1</div><h2>Fiche d’inscription</h2></div>
+ <div class="note info">Même fiche que sur le papier, remplie sur votre téléphone, même sans connexion : elle part dès que le réseau revient. Pas de smartphone ? Remplissez la fiche papier, puis saisissez-la ici plus tard.</div>
+ <div class="note">Inscription gratuite et libre. Aucune aide n’est liée à une décision personnelle. L’identité est protégée.</div>
+ <div class="card"><div class="list">
+  <div><label class="lbl" for="av">Volet</label><select id="av" data-a="avolet"><option value="B">Volet B · Parcours Al-Hidaya (nouveau converti)</option><option value="C">Volet C · Coran et langue arabe</option></select></div>
+  <div><label class="lbl" for="an">Nom et prénom</label><input id="an" type="text" autocomplete="off"></div>
+  <div><label class="lbl" for="as">Sexe</label>${sel("as",[["F","Femme"],["M","Homme"]],"F")}</div>
+  <div><label class="lbl" for="aa">Tranche d’âge</label>${sel("aa",AGES,"26-40")}</div>
+  <div><label class="lbl" for="ap">Téléphone / WhatsApp</label><input id="ap" type="text" inputmode="tel"></div>
+  <div><label class="lbl" for="aq">Commune, arrondissement, quartier</label><input id="aq" type="text"></div>
+  <div><label class="lbl" for="al">Langue parlée</label>${sel("al",[["fr","Français"],["fon","Fon"],["yo","Yoruba"],["gou","Goun"],["xx","Autre"]],"fr")}</div>
+  <div class="vB"><label class="lbl" for="alr">Lecture et écriture</label>${sel("alr",[["fr","Lit le français"],["ar","Lit l’arabe"],["non","Ne lit pas"],["xx","Autre"]],"fr")}</div>
+  <div class="vB"><label class="lbl" for="ad">Date d’entrée dans l’islam (facultatif)</label><input id="ad" type="text" placeholder="mois / année"></div>
+  <div class="vC" hidden><label class="lbl" for="acn">Niveau en arabe</label>${sel("acn",[["0","Aucun"],["1","Lit les lettres"],["2","Lit le Coran avec aide"],["3","Lit couramment"]],"0")}</div>
+  <div class="vC" hidden><label class="lbl" for="aob">Objectif</label>${sel("aob",[["lire","Lire le Coran"],["memo","Mémoriser"],["arabe","Comprendre l’arabe"],["xx","Autre"]],"lire")}</div>
+  <div><label class="lbl" for="aco">Comment a-t-on connu le programme ?</label>${sel("aco",[["mosq","Mosquée"],["halaqa","Halaqa"],["livret","Livret"],["affiche","Affiche"],["proche","Proche"],["res","Réseaux sociaux"],["xx","Autre"]],"mosq")}</div>
+  <div><label class="lbl" for="apr">Profession ou activité</label><input id="apr" type="text"></div>
+  <div><label class="lbl" for="apo">Pôle de formation choisi</label><select id="apo">${MOSQ.map(m=>`<option value="${m[0]}">${esc(m[1])}</option>`).join("")}</select></div>
+  <div><label class="lbl" for="ajh">Jours et horaires possibles</label><input id="ajh" type="text"></div>
+  <div class="vB"><label class="lbl" for="apa">Parrain ou marraine</label>${sel("apa",[["att","À attribuer par l’ONG"],["ch","Souhait de la personne"]],"att")}</div>
+  <label class="chk"><input type="checkbox" id="ac"><span><b>Obligatoire.</b> J’accepte que mes données soient enregistrées pour le suivi du programme, de façon confidentielle.</span></label>
+  <label class="chk"><input type="checkbox" id="acx"><span>J’accepte d’être contacté(e) par téléphone ou WhatsApp pour les rendez-vous.</span></label>
+  <label class="chk"><input type="checkbox" id="atm"><span>J’accepte d’être cité(e) ou photographié(e) pour un témoignage (accord écrit à part, retirable).</span></label>
+  <label class="chk"><input type="checkbox" id="am"><span>Mineur : l’accord écrit d’un parent a été obtenu</span></label>
+  <label class="chk"><input type="checkbox" id="asp"><span>Cette fiche a d’abord été remplie sur papier</span></label>
+  <button class="btn gold full" data-a="ins">Enregistrer dans le registre</button></div></div>`}
+function vRegistre(){
+ const mine=S.learners.filter(l=>l.mosq==="p1"),wait=mine.filter(l=>l.st==="attente"),ok=mine.filter(l=>l.st!=="attente");
+ return `<div><div class="lbl">Registre des bénéficiaires</div><h2>${esc(mosqName("p1"))}</h2></div>
+ <div class="note priv">Vous ne voyez que les personnes de votre mosquée, avec les informations utiles à l’inscription. Les notes des parrains et les résultats détaillés ne vous sont pas visibles.</div>
+ <div class="lbl">Demandes à confirmer (${wait.length})</div>
+ <div class="list">${wait.length?wait.map(l=>`<div class="card"><div class="row"><span class="num">${esc(l.name[0])}</span><div class="sp"><b>${esc(l.name)}</b><br><span class="small muted">${l.sex==="F"?"Femme":"Homme"} · ${ageL(l.age)} · ${l.volet==="C"?"Coran et arabe":"Accompagnement"}</span></div><span class="tag warn">Demande directe</span></div><div class="row" style="margin-top:10px"><button class="btn sm sp" data-a="confirm" data-v="${l.id}">Confirmer l’inscription</button></div></div>`).join(""):`<div class="card muted">Aucune demande en attente.</div>`}</div>
+ <div class="lbl" style="margin-top:6px">Inscrits (${ok.length})</div>
+ <div class="list">${ok.map(l=>`<div class="item"><span class="num">${esc(l.name[0])}</span><span class="sp"><b>${esc(l.name)}</b> ${l.by==="agent"?"":l.by==="papier"?'<span class="tag">Fiche papier</span>':'<span class="tag">En ligne</span>'}<br><span class="small muted">${l.code?esc(l.code)+" · ":""}${l.volet==="C"?"Coran et arabe":"Accompagnement"} · niveau ${l.level} · ${l.volet==="B"?"parrain : "+(["u2","u4"].includes(l.id)?"Ismaël":"à attribuer"):"inscrit"}</span></span></div>`).join("")}</div>`}
+/* --- ONG --- */
+function vChiffres(){
+ const R0=reg(),n=R0.length,cnt=f=>R0.filter(f).length,wait=S.learners.filter(l=>l.st==="attente").length;
+ const as=R0.map(l=>assid(l.id)).filter(x=>x!==null),asm=Math.round(as.reduce((a,b)=>a+b,0)/as.length);
+ const comp=Math.round(100*R0.reduce((a,l)=>a+lessonsDone(l.id),0)/(n*AVAIL.length));
+ const sat=(S.sat.reduce((a,b)=>a+b,0)/S.sat.length).toFixed(1);
+ const bars=(arr)=>`<div class="bars">${arr.map(([k,v])=>`<div class="r"><span>${k}</span><div><i style="width:${n?Math.round(100*v/n):0}%"></i></div><b>${v}</b></div>`).join("")}</div>`;
+ const csv="Nom;Sexe;Âge;Pays;Mosquée;Niveau;Présence %;Leçons;Validé\n"+R0.map(l=>[l.name,l.sex,l.age,l.cc,mosqName(l.mosq),l.level,assid(l.id),lessonsDone(l.id),S.val[l.id]?"oui":"non"].join(";")).join("\n");
+ R.csv=csv;
+ return `<div><div class="lbl">Programme Nour Al-Hidaya</div><h2>Tableau de bord</h2></div>
+ <div class="kpis"><div class="kpi"><span class="lbl">Inscrits</span><b>${n}</b><span class="small muted">${new Set(R0.map(l=>l.cc)).size} pays</span></div><div class="kpi"><span class="lbl">Présence moy.</span><b>${asm} %</b><span class="small muted">cible ≥ 70 %</span></div><div class="kpi"><span class="lbl">Leçons faites</span><b>${comp} %</b></div><div class="kpi"><span class="lbl">Attestations</span><b>${Object.keys(S.val).length}</b></div></div>
+ <div class="card"><h3>Par niveau</h3><div style="margin-top:10px">${bars([["Niveau 1",cnt(l=>l.level===1)],["Niveau 2",cnt(l=>l.level===2)],["Niveau 3",0]])}</div></div>
+ <div class="card"><h3>Femmes et hommes</h3><div style="margin-top:10px">${bars([["Femmes",cnt(l=>l.sex==="F")],["Hommes",cnt(l=>l.sex==="M")]])}</div></div>
+ ${wait?`<div class="note info"><b>${wait} demande${wait>1?"s":""} d’inscription</b> en attente de confirmation par les agents de mosquée.</div>`:""}
+ <div class="card"><h3>Par mosquée</h3><div style="margin:10px 0 0">${bars([...MOSQ.map(m=>[m[1].split(" ·")[0],cnt(l=>l.mosq===m[0])]),["En ligne",cnt(l=>!l.mosq)]])}</div></div>
+ <div class="card"><h3>Par pays</h3><div style="margin:10px 0 0">${bars([...new Set(R0.map(l=>l.cc))].map(c=>[country(c),cnt(l=>l.cc===c)]))}</div></div>
+ <div class="card"><h3>Par âge</h3><div style="margin-top:10px">${bars(AGES.map(a=>[a[1].replace(" ans",""),cnt(l=>l.age===a[0])]))}</div></div>
+ <div class="card"><div class="row"><h3 class="sp">Satisfaction</h3><b style="font-family:var(--serif);font-size:1.4rem">${Math.round(sat*20)} %</b></div><div class="small muted">${S.sat.length} avis · cible ≥ 75 %</div></div>
+ <button class="btn ghost full" data-a="csv">Copier la liste (tableur)</button>
+ <div class="note">Ces chiffres correspondent aux indicateurs du plan stratégique : inscrits par niveau, sexe et âge, assiduité, complétion, niveaux validés, satisfaction. La version finale les exporte en Excel et PDF, sans noms.</div>`}
+function vProtection(){
+ return `<div><div class="lbl">Point focal protection</div><h2>Signalements</h2></div>
+ <div class="note priv">Accès réservé au point focal. Le registre ne montre que des codes. Aucune suppression possible.</div>
+ <div class="list">${S.reports.map(r=>`<div class="card"><div class="row"><b class="sp">${r.code}</b><span class="tag ${r.urgent?"bad":"gold"}">${esc(r.status)}</span></div><div class="small muted">${fmt(r.date)} · ${esc(r.type)}</div>${R.open===r.code?`<p style="margin:8px 0 0">${esc(r.facts)}</p>`:`<button class="btn ghost sm" style="margin-top:8px" data-a="openrep" data-v="${r.code}">Ouvrir la fiche (point focal)</button>`}</div>`).join("")}</div>
+ <button class="btn gold full" data-a="report">Faire un signalement</button>`}
+function reportForm(){return `<div class="note info">Ce formulaire reprend la fiche de signalement de l’ONG. En cas de danger immédiat, appelez d’abord les secours ou les autorités de votre pays.</div>
+ <div><label class="lbl" for="rt">De quoi s’agit-il ?</label><select id="rt"><option>Inquiétude sur le comportement d’un adulte</option><option>Enfant ou personne en danger</option><option>Pression ou rejet vécu par un converti</option><option>Autre inquiétude</option></select></div>
+ <div><label class="lbl" for="rf">Ce que j’ai vu ou entendu (faits, sans interpréter)</label><textarea id="rf"></textarea></div>
+ <label class="chk"><input type="checkbox" id="ru"><span>Il y a un danger immédiat</span></label>
+ <button class="btn full" data-a="sendrep">Envoyer au point focal</button><p class="small muted">Envoyé même sans connexion. Ne promettez jamais le secret absolu à la personne concernée.</p>`}
+function vMoi(){
+ return `<h2>Moi</h2>
+ <div class="card"><h3>Taille du texte</h3><div class="row" style="margin-top:10px"><button class="btn ghost sm sp" data-a="fs" data-v="-0.1">A−</button><b class="sp" style="text-align:center">${Math.round(S.set.fs*100)} %</b><button class="btn ghost sm sp" data-a="fs" data-v="0.1">A+</button></div></div>
+ <label class="chk ${S.set.discreet?"on":""}"><input type="checkbox" data-a="disc" ${S.set.discreet?"checked":""}><span><b>Mode discret</b><br><span class="small muted">Le nom de l’application devient « Mon cours » et les notifications n’affichent aucun mot religieux. Utile si l’entourage n’est pas informé.</span></span></label>
+ <button class="btn ghost full" data-a="report">Signaler une inquiétude</button>
+ <div class="card"><h3>Langue</h3><div style="margin:10px 0 8px">${langBar()}</div><p class="small muted" style="margin:0">Dans ce prototype, les menus sont en français, anglais et arabe ; les leçons sont en français. Les leçons en anglais, arabe, fon, yoruba, goun et autres langues sont prévues, ajoutées par l’ONG sans nouveau développement.</p></div>
+ ${S.role==="apprenant"?`<div class="card"><h3>Mon accompagnement</h3><div class="list" style="margin-top:10px"><div><label class="lbl" for="mo">Je veux apprendre</label><select id="mo" data-a="mode"><option value="seul" ${S.set.mode==="seul"?"selected":""}>Seul(e), à mon rythme</option><option value="groupe" ${S.set.mode==="groupe"?"selected":""}>Avec un groupe en ligne</option><option value="presentiel" ${S.set.mode==="presentiel"?"selected":""}>Avec un groupe près de chez moi</option></select></div><div><label class="lbl" for="mc">Mon pays</label><select id="mc" data-a="cc">${CCS.map(c=>`<option value="${c}" ${learner("u1").cc===c?"selected":""}>${esc(country(c))}</option>`).join("")}<option value="XX">Autre</option></select></div></div></div>`:""}
+ <div class="card"><h3>Hors ligne</h3><p class="small muted" style="margin:4px 0 0">${online()?"Vous êtes en ligne.":"Vous êtes hors ligne : vos réponses sont gardées et partiront au retour du réseau."}</p></div>
+ <button class="btn ghost full" data-a="logout">Changer de profil</button>
+ <button class="btn ghost full" data-a="reset">Remettre les données d’exemple</button>`}
+function attestView(){
+ const l=learner(R.attest),v=S.val[l.id];
+ return `<div class="cert"><small>ONG WAFA AL-TURATH INTERNATIONAL</small><div class="ar">شهادة</div><h2>Attestation de fin de niveau 1</h2><small>Programme Nour Al-Hidaya</small><p style="margin:14px 0 0">décernée à</p><div class="nm">${esc(l.name)}</div><p style="margin:6px 0">pour avoir suivi avec assiduité les leçons du niveau 1 et réussi ses évaluations.</p><small>Délivrée le ${fmt(v.date)} · N° ${v.no}</small><div class="row" style="justify-content:space-around;margin-top:16px"><small>Le Responsable pédagogique</small><small>Le Président</small></div></div>
+ <div class="note">Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.</div>`}
+
+/* ---------- actions ---------- */
+function finishLessonScore(){const{id,q}=R.lesson;S.done.u1[id]={s:q.score,t:LESSONS[id].quiz.length};save()}
+const A={
+ login(v){S.role=v;R.tab=null;save()},
+ lang(v){S.set.lang=v;save()},
+ signupo(){R.signup=true},signupx(){R.signup=false},
+ signup(){const n=$("#sn").value.trim();if(!n){toast("Choisissez un prénom ou un pseudonyme");return false}
+  const l=learner("u1");l.name=n;l.cc=$("#sc").value;l.sex=$("#sx").value;l.age=$("#sa").value;l.volet=$("#sv").value;l.mosq=$("#sq").value;l.by="direct";S.set.mode=$("#sm").value;l.st=S.set.mode==="seul"?"libre":"attente";S.done.u1={};S.subs=S.subs.filter(x=>x.u!=="u1");
+  Object.keys(S.practice).concat(Object.keys(S.reflect)).forEach(k=>{if(k.startsWith("u1:")){delete S.practice[k];delete S.reflect[k]}});S.sessions.forEach(x=>delete x.marks.u1);delete S.val.u1;
+  S.role="apprenant";R.signup=false;R.tab=null;save();toast("Bienvenue ! Votre espace est prêt")},
+ mode(){S.set.mode=$("#mo").value;const l=learner("u1");if(l.st==="libre"&&S.set.mode!=="seul")l.st="attente";else if(l.st==="attente"&&S.set.mode==="seul")l.st="libre";save()},
+ cc(){learner("u1").cc=$("#mc").value;save()},
+ logout(){S.role=null;save()},
+ tab(v){R.tab=v;R.newhw=false},
+ back(){R.lesson=R.hw=R.attest=R.learner=null;R.report=false;R.hwu=null},
+ lesson(v){startLesson(+v)},
+ hw(v){R.hw=v},
+ prev(){R.lesson.step--},
+ next(){R.lesson.step++},
+ audio(){toast("Audio : fourni par l’ONG dans la version finale")},
+ pick(v){const{id,q}=R.lesson,Q=LESSONS[id].quiz[q.i];if(q.fb)return;const ok=+v===Q.a;q.fb={ok,pick:+v};if(ok)q.score++},
+ seq(v){R.lesson.q.seq.push(+v)},
+ seqclr(){R.lesson.q.seq=[]},
+ seqok(){const{id,q}=R.lesson,Q=LESSONS[id].quiz[q.i];const ok=q.seq.every((x,i)=>x===i);q.fb={ok};if(ok)q.score++},
+ matchok(){const{id,q}=R.lesson,Q=LESSONS[id].quiz[q.i];let ok=true;Q.p.forEach((p,i)=>{const v=$("#m"+i).value;q.sel[i]=v;if(v!==p[1])ok=false});if(Object.keys(q.sel).length&&Q.p.some((p,i)=>!q.sel[i])){toast("Choisissez une réponse pour chaque nom");return false}q.fb={ok};if(ok)q.score++},
+ qnext(){const{id,q}=R.lesson;if(q.i+1<LESSONS[id].quiz.length){q.i++;q.fb=null;q.seq=[];q.sel={};q.shuf=null;q.mo=null}else{q.fin=true;finishLessonScore()}},
+ finish(){R.lesson=null;toast("Leçon enregistrée ✓")},
+ prac(v,e){const k="u1:"+R.lesson.id;const a=S.practice[k]||(S.practice[k]=[]);const i=+v;if(a.includes(i))a.splice(a.indexOf(i),1);else a.push(i);save()},
+ sendtext(){const t=$("#hwt").value.trim();if(!t){toast("Écrivez d’abord votre réponse");return false}submit({text:t})},
+ sendfile(){const f=$("#hwf").files[0];if(!f){toast("Choisissez d’abord un fichier");return false}submit({file:f.name})},
+ sat(v){S.sat.push(+v);save();toast("Merci pour votre avis")},
+ attest(v){R.attest=v},
+ learner(v){R.learner=v},
+ validate(v){const n=Object.keys(S.val).length+1;S.val[v]={date:dayISO(),no:"NH-N1-"+String(n).padStart(4,"0")};save();toast("Attestation délivrée");},
+ mark(v,e){const t=dayISO();let s=S.sessions.find(x=>x.date===t);if(!s){s={date:t,marks:{}};S.sessions.push(s)}s.marks[e.dataset.u]=v;save()},
+ newhw(){R.newhw=!R.newhw},
+ savehw(){const t=$("#nt").value.trim(),b=$("#nb").value.trim();if(!t||!b){toast("Ajoutez un titre et une consigne");return false}S.hw.push({id:"h"+(S.hw.length+1),title:t,brief:b,type:$("#ny").value,due:$("#nd").value||dayISO(7)});R.newhw=false;save();toast("Devoir envoyé au groupe")},
+ corr(v){const[h,u]=v.split("|");R.hw=h;R.hwu=u;R.corr=true},
+ rdv(v){const t=$("#rn-"+v).value.trim();if(!t){toast("Écrivez une note");return false}S.rdv.push({u:v,date:dayISO(),note:t});save();toast("Rencontre enregistrée")},
+ csv(){const t=R.csv;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste copiée, à coller dans un tableur")).catch(()=>toast("Copie impossible ici"))},
+ openrep(v){R.open=v},
+ report(){R.report=true},
+ sendrep(){const f=$("#rf").value.trim();if(!f){toast("Décrivez ce que vous avez vu");return false}const n=S.reports.length+1;S.reports.push({code:"SG-2026-"+String(n).padStart(3,"0"),date:dayISO(),type:$("#rt").value,facts:f,urgent:$("#ru").checked,status:"Nouveau"});R.report=false;save();toast("Transmis au point focal")},
+ avolet(){const v=$("#av").value;document.querySelectorAll(".vB").forEach(e=>e.hidden=v!=="B");document.querySelectorAll(".vC").forEach(e=>e.hidden=v!=="C");return false},
+ ins(){const n=$("#an").value.trim();if(!n){toast("Écrivez le nom et le prénom");return false}
+  if(!$("#ac").checked){toast("L’accord pour l’enregistrement des données est nécessaire");return false}
+  if($("#aa").value==="-18"&&!$("#am").checked){toast("L’accord écrit d’un parent est nécessaire pour un mineur");return false}
+  const v=$("#av").value,k=S.learners.length+1,pole=$("#apo").value;
+  S.learners.push({id:"u"+k+Date.now()%1000,name:n.split(" ")[0],sex:$("#as").value,age:$("#aa").value,level:1,cc:"BJ",mosq:pole,st:"inscrit",by:$("#asp").checked?"papier":"agent",volet:v,code:(v==="B"?"AH":"AC")+"-"+pole.toUpperCase()+"-"+String(k).padStart(4,"0")});save();toast("Inscrit(e) au registre ✓");R.tab="registre"},
+ confirm(v){learner(v).st="inscrit";save();toast("Inscription confirmée. L’apprenant en est informé.")},
+ mode2(){S.set.mode="groupe";const l=learner("u1");if(l.st==="libre")l.st="attente";save();toast("Demande envoyée")},
+ fs(v){S.set.fs=Math.min(1.4,Math.max(.9,Math.round((S.set.fs+ +v)*10)/10));save()},
+ disc(){S.set.discreet=!S.set.discreet;save()},
+ reset(){S=seed();R={tab:null};save();toast("Données d’exemple rétablies")}
+};
+function submit(o){const u="u1",h=R.hw;const pend=!online();S.subs=S.subs.filter(s=>!(s.hw===h&&s.u===u));S.subs.push({hw:h,u,date:dayISO(),status:"rendu",pending:pend,...o});save();toast(pend?"Gardé : il partira avec le réseau":"Devoir envoyé ✓")}
+
+/* correction par le formateur */
+const origHw=hwDetail;
+hwDetail=function(){
+ if(S.role!=="formateur"||!R.corr)return origHw();
+ const h=S.hw.find(x=>x.id===R.hw),l=learner(R.hwu),s=S.subs.find(x=>x.hw===h.id&&x.u===l.id);
+ return `<div class="card"><div class="lbl">${esc(l.name)} · ${esc(h.title)}</div><p style="margin:6px 0 0">${s.text?esc(s.text):"Fichier : "+esc(s.file)}</p></div>
+ <div class="card"><h3>Ma correction</h3><div class="list" style="margin-top:8px"><div><label class="lbl" for="cn">Note sur 3</label><select id="cn"><option>3</option><option>2</option><option>1</option><option>0</option></select></div><div><label class="lbl" for="cc">Commentaire</label><textarea id="cc" placeholder="Encouragez, puis précisez un point à améliorer."></textarea></div><button class="btn full" data-a="sendcorr">Envoyer la correction</button></div></div>`};
+A.sendcorr=function(){const s=S.subs.find(x=>x.hw===R.hw&&x.u===R.hwu);s.status="corrigé";s.note=+$("#cn").value;s.comment=$("#cc").value.trim()||"Merci pour votre travail.";save();R.hw=null;R.corr=false;toast("Correction envoyée")};
+const backOrig=A.back;A.back=function(){R.corr=false;backOrig()};
+
+/* ---------- événements ---------- */
+document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t||t.tagName==="TEXTAREA"||t.tagName==="SELECT")return;if(t.type==="checkbox"&&t.dataset.a==="refl")return;
+ const f=A[t.dataset.a];if(!f)return;if(f(t.dataset.v,t)===false)return;render();});
+document.addEventListener("change",e=>{const t=e.target;if(t.tagName==="SELECT"&&A[t.dataset.a]){if(A[t.dataset.a]()!==false)render()}});
+document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect["u1:"+R.lesson.id]=e.target.value;save()}});
+window.addEventListener("online",()=>{S.subs.forEach(s=>s.pending=false);save();render();toast("Connexion revenue : tout est envoyé")});
+window.addEventListener("offline",render);
+render();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
