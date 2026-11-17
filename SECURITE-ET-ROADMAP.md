@@ -77,3 +77,14 @@ La première revue est une inspection statique du code. Les tests d'exécution, 
 - Cette étape initialise le SDK uniquement : aucun compte utilisateur n'est encore créé, aucune connexion réelle n'est encore reliée à l'écran existant et aucune donnée n'est envoyée vers Firestore.
 - Les règles Firestore restent en refus par défaut. Aucun déploiement Firebase ni Cloudflare n'a été effectué.
 - Prochaine étape : concevoir le parcours de connexion par e-mail et mot de passe Firebase, sans réutiliser les codes PIN locaux comme identifiants de production. Les rôles devront ensuite être attribués par un mécanisme administratif de confiance.
+
+
+## Mise à jour — authentification des apprenants (17 novembre 2026)
+
+- Le prototype propose désormais une inscription Firebase par e-mail et mot de passe (8 caractères minimum), suivie d'une vérification de l'adresse e-mail.
+- À l'inscription, un profil minimal est créé dans `users/{uid}` : rôle fixe `apprenant`, adresse e-mail et préférences de base.
+- La connexion vérifie l'adresse e-mail et charge le profil depuis Firestore. Les sessions Firebase persistantes sont restaurées à l'ouverture de l'application.
+- Les règles Firestore autorisent chaque utilisateur à lire son propre profil, à le créer uniquement comme apprenant et à modifier certains champs sans pouvoir changer son rôle ou son e-mail. Les autres collections restent interdites.
+- Les anciens accès locaux par identifiant/PIN et les rôles du personnel restent en mode démonstration uniquement ; aucune migration automatique des comptes fictifs n'est effectuée.
+- Limite importante : les profils sont centralisés, mais les cours, progrès, devoirs et autres données fonctionnelles restent encore locaux à l'appareil. La synchronisation multi-appareils et la gestion administrative des rôles constituent des étapes distinctes.
+- Les règles de sécurité sont préparées dans le dépôt, mais ne sont pas déployées sur Firebase depuis cette modification.
