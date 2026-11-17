@@ -23,6 +23,7 @@
       ready: true,
       app: app,
       auth: window.firebase.auth(),
+      db: window.firebase.firestore(),
       projectId: firebaseConfig.projectId
     };
   } catch (error) {
