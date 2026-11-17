@@ -32,7 +32,8 @@ service cloud.firestore {
         && request.resource.data.role == resource.data.role
         && request.resource.data.email == resource.data.email;
 
-      allow delete: if false;
+      // Autorise la suppression du seul profil apprenant par son propriétaire.
+      allow delete: if signedInAs(userId) && resource.data.role == "apprenant";
     }
 
     // Tout le reste reste fermé jusqu'à l'ajout de règles métier vérifiées.
