@@ -8,6 +8,7 @@ const CACHE_NAME = "nour-al-hidaya-shell-v6";
 const APP_FILES = [
   "./",
   "./index.html",
+  "./firebase-init.js",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
