@@ -66,3 +66,14 @@ Cette correction réduit le risque qu'une future donnée privée ou réponse d'A
 ## Limites des vérifications
 
 La première revue est une inspection statique du code. Les tests d'exécution, les tests multi-comptes, les tests mobiles, les tests hors connexion et les tests Firebase restent à effectuer.
+
+
+## Mise à jour — initialisation Firebase (17 novembre 2026)
+
+- L'application Web Firebase « Nour Al-Hidaya Web » du projet `wat-connect` a été confirmée.
+- Le SDK Firebase Web (App et Authentication, version 11.10.0) est chargé dans le prototype.
+- Le fichier local `firebase-init.js` initialise le projet et expose l'objet Firebase à l'application lorsque le SDK est disponible.
+- Ce fichier est inclus dans le cache de l'interface ; les scripts et services Firebase externes ne sont pas mis en cache.
+- Cette étape initialise le SDK uniquement : aucun compte utilisateur n'est encore créé, aucune connexion réelle n'est encore reliée à l'écran existant et aucune donnée n'est envoyée vers Firestore.
+- Les règles Firestore restent en refus par défaut. Aucun déploiement Firebase ni Cloudflare n'a été effectué.
+- Prochaine étape : concevoir le parcours de connexion par e-mail et mot de passe Firebase, sans réutiliser les codes PIN locaux comme identifiants de production. Les rôles devront ensuite être attribués par un mécanisme administratif de confiance.
