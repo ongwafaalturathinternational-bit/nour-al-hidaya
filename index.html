@@ -192,6 +192,7 @@ label.chk.on{border-color:var(--ok);background:var(--ok-soft)}
 <!-- SDK Firebase : initialisation du projet, sans activer encore les comptes réels. -->
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
 <script>
 "use strict";
@@ -1064,10 +1065,12 @@ function loginView(){
   <div><label class="lbl" for="sv">Ce que je cherche</label><select id="sv"><option value="C">Apprendre le Coran et l’arabe</option><option value="B">Découvrir l’islam et être accompagné(e) après ma conversion</option></select></div>
   <div><label class="lbl" for="sq">Ma mosquée (facultatif)</label><select id="sq"><option value="">Aucune, ou je suis loin</option>${MOSQ.map(m=>`<option value="${m[0]}">${esc(m[1])}</option>`).join("")}</select></div>
   <div><label class="lbl" for="sm">Comment je veux apprendre</label><select id="sm"><option value="seul">Seul(e), avec l’application, à mon rythme</option><option value="groupe">Avec un groupe en ligne</option><option value="presentiel">Cours en présentiel près de chez moi (l’application en complément)</option></select></div>
-  <div><label class="lbl" for="se">E-mail ou téléphone (facultatif)</label><input id="se" type="text" inputmode="email" placeholder="Pour retrouver mon compte ; un numéro de n’importe quel pays"></div>
+  <div><label class="lbl" for="se">Adresse e-mail (obligatoire)</label><input id="se" type="email" autocomplete="email" required placeholder="vous@exemple.com" dir="ltr"></div>
+  <div><label class="lbl" for="spw">Créer un mot de passe</label><input id="spw" type="password" autocomplete="new-password" minlength="8" required placeholder="8 caractères minimum" dir="ltr"></div>
+  <p class="small muted">Un e-mail de vérification sera envoyé avant l’accès à votre espace.</p>
   <button class="btn gold full" data-a="signup">Commencer gratuitement</button><button class="btn ghost full" data-a="signupx">Annuler</button></div></div>`
  :`<button class="btn gold full" data-a="signupo">Commencer à apprendre</button>`}
- <div class="card"><h3>J’ai un accès</h3><p class="small muted" style="margin:4px 0 10px">Chaque personne du programme reçoit un identifiant et un code d’accès, créés automatiquement à son inscription.</p><div class="list"><div><label class="lbl" for="lid">Identifiant</label><input id="lid" type="text" autocomplete="off" placeholder="Ex. AH-P1-0001" dir="ltr"></div><div><label class="lbl" for="lpin">Code d’accès</label><input id="lpin" type="password" inputmode="numeric" autocomplete="off" dir="ltr"></div><button class="btn full" data-a="loginid">Entrer</button></div></div>
+ <div class="card"><h3>J’ai déjà un compte</h3><p class="small muted" style="margin:4px 0 10px">Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.</p><div class="list"><div><label class="lbl" for="liemail">Adresse e-mail</label><input id="liemail" type="email" autocomplete="email" placeholder="vous@exemple.com" dir="ltr"></div><div><label class="lbl" for="lipass">Mot de passe</label><input id="lipass" type="password" autocomplete="current-password" dir="ltr"></div><button class="btn full" data-a="loginFirebase">Se connecter</button></div></div>
  <div class="note info"><b>Les cours en présentiel continuent.</b> L’application s’y ajoute pour celles et ceux qui préfèrent suivre les cours sur leur téléphone, seuls ou en groupe.</div>
  ${DEMO_MODE?`<div class="lbl" style="margin-top:6px">Mode démonstration activé — comptes fictifs</div>${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-a="login" data-v="${k}"><span class="ic">${r.ic}</span><span><b>${r.label}</b> <span class="small muted" dir="ltr">(${roleId(k)})</span><span class="muted small">${r.desc}</span></span></button>`).join("")}`:`<div class="note info"><b>Mode démonstration désactivé.</b> Pour tester les espaces et les comptes fictifs, ouvrez ce prototype avec <code>?demo=1</code> à la fin de son adresse. Les inscriptions et données de cette version restent locales à cet appareil.</div>`}
  <div class="note info"><b>Prototype de démonstration.</b> Les noms et les chiffres sont des exemples. Les données restent seulement sur cet appareil. Aucune inscription n’est encore transmise à l’ONG.</div>
@@ -1353,6 +1356,26 @@ function attestView(){
  return `<div class="cert"><small>ONG WAFA AL-TURATH INTERNATIONAL</small><div class="ar">شهادة</div><h2>Attestation de fin de niveau 1</h2><small>Programme Nour Al-Hidaya</small><p style="margin:14px 0 0">décernée à</p><div class="nm">${esc(l.name)}</div><p style="margin:6px 0">pour avoir suivi avec assiduité les leçons du niveau 1 et réussi ses évaluations.</p><small>Délivrée le ${fmt(v.date)} · N° ${v.no}</small><div class="row" style="justify-content:space-around;margin-top:16px"><small>Le Responsable pédagogique</small><small>Le Bureau exécutif</small></div></div>
  <div class="note">Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.</div>`}
 
+/* ---------- authentification Firebase ---------- */
+async function enterFirebaseUser(user){
+  if(!user.emailVerified){
+    try{await user.sendEmailVerification()}catch(e){}
+    await WATFirebase.auth.signOut();
+    toast("Vérifiez votre adresse e-mail avant de vous connecter.");
+    return false;
+  }
+  const snap=await WATFirebase.db.collection("users").doc(user.uid).get();
+  if(!snap.exists||snap.data().role!=="apprenant"){
+    await WATFirebase.auth.signOut();
+    toast("Profil introuvable ou accès non autorisé. Contactez l’ONG.");
+    return false;
+  }
+  const p=snap.data(),id=user.uid;
+  let l=learner(id);
+  if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
+  else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};R.signup=false;R.tab=null;save();render();return true;
+}
 /* ---------- actions ---------- */
 function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save()}
 const A={
@@ -1407,14 +1430,37 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
  gsl(v,e){S.groups[+v].slot=e.value;save();return false},
  gpar(v,e){if(e.value)S.par[v]=e.value;else delete S.par[v];save();return false},
   lang(v){S.set.lang=v;save()},
+ async loginFirebase(){
+  const email=$("#liemail").value.trim().toLowerCase(),password=$("#lipass").value;
+  if(!email||!password){toast("Saisissez votre adresse e-mail et votre mot de passe");return false}
+  if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible");return false}
+  try{const credential=await WATFirebase.auth.signInWithEmailAndPassword(email,password);await enterFirebaseUser(credential.user)}
+  catch(error){console.error("Connexion Firebase :",error);const messages={"auth/invalid-credential":"Adresse e-mail ou mot de passe incorrect.","auth/user-disabled":"Ce compte est désactivé.","auth/too-many-requests":"Trop de tentatives. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Connexion impossible. Vérifiez vos identifiants.")}
+},
  signupo(){R.signup=true},signupx(){R.signup=false},
-signup(){const n=$("#sn").value.trim();if(!n){toast("Choisissez un prénom ou un pseudonyme");return false}
-  const k=S.learners.length+1,id="u"+k+Date.now()%1000;S.set.mode=$("#sm").value;
-  const l={id,name:n,sex:$("#sx").value,age:$("#sa").value,level:1,cc:$("#sc").value,mosq:$("#sq").value,st:S.set.mode==="seul"?"libre":"attente",by:"direct",volet:$("#sv").value};
-  l.code=mkcode(l,k);l.pin=pinGen();S.learners.push(l);S.done[id]={};feed(l,"inscription directe");S.cur=id;S.role="apprenant";S.access={name:n,code:l.code,pin:l.pin};R.signup=false;R.tab=null;save();toast("Bienvenue ! Votre accès est créé")},
+async signup(){
+  const n=$("#sn").value.trim(),email=$("#se").value.trim().toLowerCase(),password=$("#spw").value;
+  if(!n){toast("Choisissez un prénom ou un pseudonyme");return false}
+  if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){toast("Saisissez une adresse e-mail valide");return false}
+  if(!password||password.length<8){toast("Le mot de passe doit contenir au moins 8 caractères");return false}
+  if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible");return false}
+  try{
+    const credential=await WATFirebase.auth.createUserWithEmailAndPassword(email,password);
+    const profile={email,displayName:n,role:"apprenant",country:$("#sc").value,interest:$("#sv").value,mosque:$("#sq").value||"",learningMode:$("#sm").value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+    await WATFirebase.db.collection("users").doc(credential.user.uid).set(profile);
+    await credential.user.sendEmailVerification();
+    await WATFirebase.auth.signOut();
+    R.signup=false;render();
+    toast("Compte créé. Vérifiez votre boîte e-mail avant de vous connecter.");
+  }catch(error){
+    console.error("Inscription Firebase :",error);
+    const messages={"auth/email-already-in-use":"Cette adresse e-mail possède déjà un compte.","auth/invalid-email":"Adresse e-mail invalide.","auth/weak-password":"Choisissez un mot de passe plus robuste.","auth/network-request-failed":"Connexion Internet indisponible."};
+    toast(messages[error.code]||"Impossible de créer le compte. Réessayez.");
+  }
+},
   mode(){S.set.mode=$("#mo").value;const l=learner(CUR());if(l.st==="libre"&&S.set.mode!=="seul")l.st="attente";else if(l.st==="attente"&&S.set.mode==="seul")l.st="libre";save()},
  cc(){learner(CUR()).cc=$("#mc").value;save()},
- logout(){S.role=null;S.access=null;save()},
+ async logout(){try{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut()}catch(e){console.error(e)}S.role=null;S.access=null;save()},
  tab(v){R.tab=v;R.newhw=false},
  back(){R.lesson=R.hw=R.attest=R.learner=null;R.cl=null;R.rl=false;R.cf=null;R.report=false;R.hwu=null},
  lesson(v){startLesson(+v)},
@@ -1671,11 +1717,18 @@ function welcomeMsg(el,l){S.set.lang=l;save();document.documentElement.lang=l;do
 
 /* ---------- événements ---------- */
 document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type!=="checkbox"))return;if(t.type==="checkbox"&&t.dataset.a==="refl")return;
- const f=A[t.dataset.a];if(!f)return;if(f(t.dataset.v,t)===false)return;render();});
+ const f=A[t.dataset.a];if(!f)return;const result=f(t.dataset.v,t);if(result===false)return;
+ if(result&&typeof result.then==="function"){t.disabled=true;result.then(()=>render()).catch(error=>{console.error(error);toast("Une erreur est survenue.")}).finally(()=>{t.disabled=false});return}
+ render();});
 document.addEventListener("change",e=>{const t=e.target;if((t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type==="text"))&&A[t.dataset.a]){if(A[t.dataset.a](t.dataset.v,t)!==false)render()}});
 document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect[CUR()+":"+R.lesson.id]=e.target.value;save()}});
 window.addEventListener("online",()=>{S.subs.forEach(s=>s.pending=false);save();render();toast("Connexion revenue : tout est envoyé")});
 window.addEventListener("offline",render);
+if(window.WATFirebase&&WATFirebase.ready){
+ WATFirebase.auth.onAuthStateChanged(user=>{
+  if(user&&user.emailVerified)enterFirebaseUser(user).catch(error=>{console.error("Restauration session :",error);toast("Impossible de charger votre profil.")});
+ });
+}
 render();
 if(!/nowelcome/.test(location.hash))showSplash(!S.set.welcomed);
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(r=>{r.update();navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!window.__rl){window.__rl=1;location.reload()}})}).catch(()=>{})}
