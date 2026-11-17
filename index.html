@@ -1360,6 +1360,7 @@ function attestView(){
 
 /* ---------- authentification Firebase ---------- */
 async function enterFirebaseUser(user){
+  try{await user.reload()}catch(e){}
   if(!user.emailVerified){
     try{await user.sendEmailVerification()}catch(e){}
     await WATFirebase.auth.signOut();
@@ -1441,6 +1442,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
 },
  signupo(){R.signup=true},signupx(){R.signup=false},
 async signup(){
+  let createdUser=null;
   const n=$("#sn").value.trim(),email=$("#se").value.trim().toLowerCase(),password=$("#spw").value;
   if(!n){toast("Choisissez un prénom ou un pseudonyme");return false}
   if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){toast("Saisissez une adresse e-mail valide");return false}
@@ -1448,6 +1450,7 @@ async signup(){
   if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible");return false}
   try{
     const credential=await WATFirebase.auth.createUserWithEmailAndPassword(email,password);
+    createdUser=credential.user;
     const profile={email,displayName:n,role:"apprenant",country:$("#sc").value,interest:$("#sv").value,mosque:$("#sq").value||"",learningMode:$("#sm").value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
     await WATFirebase.db.collection("users").doc(credential.user.uid).set(profile);
     await credential.user.sendEmailVerification();
@@ -1456,7 +1459,12 @@ async signup(){
     toast("Compte créé. Vérifiez votre boîte e-mail avant de vous connecter.");
   }catch(error){
     console.error("Inscription Firebase :",error);
-    const messages={"auth/email-already-in-use":"Cette adresse e-mail possède déjà un compte.","auth/invalid-email":"Adresse e-mail invalide.","auth/weak-password":"Choisissez un mot de passe plus robuste.","auth/network-request-failed":"Connexion Internet indisponible."};
+    if(createdUser){
+      try{await WATFirebase.db.collection("users").doc(createdUser.uid).delete()}catch(cleanupError){}
+      try{await createdUser.delete()}catch(cleanupError){}
+      try{await WATFirebase.auth.signOut()}catch(cleanupError){}
+    }
+    const messages={"auth/email-already-in-use":"Cette adresse e-mail possède déjà un compte.","auth/invalid-email":"Adresse e-mail invalide.","auth/weak-password":"Choisissez un mot de passe plus robuste.","auth/network-request-failed":"Connexion Internet indisponible.","permission-denied":"Les règles de sécurité Firebase ne sont pas encore publiées. Ne réessayez pas avant leur activation."};
     toast(messages[error.code]||"Impossible de créer le compte. Réessayez.");
   }
 },
