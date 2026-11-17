@@ -299,6 +299,8 @@ function seed(){
 }
 function guessLang(){const l=(navigator.language||"fr").slice(0,2);return["fr","en","ar"].includes(l)?l:"fr"}
 let S=store()||seed();
+// Ne jamais restaurer un ancien rôle local hors du mode de démonstration : seul Firebase authentifie les comptes réels.
+if(!DEMO_MODE){S.role=null;S.access=null;}
 const mkcode=(l,k)=>(l.volet==="C"?"AC":"AH")+"-"+(l.mosq?l.mosq.toUpperCase():"EL")+"-"+String(k).padStart(4,"0");
 S.learners.forEach((l,i)=>{if(!l.code)l.code=mkcode(l,i+1)});
 const pinGen=()=>String(Math.floor(100000+Math.random()*900000));
@@ -1072,8 +1074,8 @@ function loginView(){
  :`<button class="btn gold full" data-a="signupo">Commencer à apprendre</button>`}
  <div class="card"><h3>J’ai déjà un compte</h3><p class="small muted" style="margin:4px 0 10px">Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.</p><div class="list"><div><label class="lbl" for="liemail">Adresse e-mail</label><input id="liemail" type="email" autocomplete="email" placeholder="vous@exemple.com" dir="ltr"></div><div><label class="lbl" for="lipass">Mot de passe</label><input id="lipass" type="password" autocomplete="current-password" dir="ltr"></div><button class="btn full" data-a="loginFirebase">Se connecter</button></div></div>
  <div class="note info"><b>Les cours en présentiel continuent.</b> L’application s’y ajoute pour celles et ceux qui préfèrent suivre les cours sur leur téléphone, seuls ou en groupe.</div>
- ${DEMO_MODE?`<div class="lbl" style="margin-top:6px">Mode démonstration activé — comptes fictifs</div>${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-a="login" data-v="${k}"><span class="ic">${r.ic}</span><span><b>${r.label}</b> <span class="small muted" dir="ltr">(${roleId(k)})</span><span class="muted small">${r.desc}</span></span></button>`).join("")}`:`<div class="note info"><b>Mode démonstration désactivé.</b> Pour tester les espaces et les comptes fictifs, ouvrez ce prototype avec <code>?demo=1</code> à la fin de son adresse. Les inscriptions et données de cette version restent locales à cet appareil.</div>`}
- <div class="note info"><b>Prototype de démonstration.</b> Les noms et les chiffres sont des exemples. Les données restent seulement sur cet appareil. Aucune inscription n’est encore transmise à l’ONG.</div>
+ ${DEMO_MODE?`<div class="lbl" style="margin-top:6px">Mode démonstration activé — comptes fictifs</div>${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-a="login" data-v="${k}"><span class="ic">${r.ic}</span><span><b>${r.label}</b> <span class="small muted" dir="ltr">(${roleId(k)})</span><span class="muted small">${r.desc}</span></span></button>`).join("")}`:`<div class="note info"><b>Mode démonstration désactivé.</b> Les comptes fictifs ne sont pas accessibles. Vous pouvez créer un compte apprenant avec une adresse e-mail et un mot de passe ; son profil de base sera enregistré dans WAT Connect.</div>`}
+ <div class="note info"><b>Version en cours de développement.</b> Les comptes et profils apprenants sont centralisés dans Firebase. Les cours, progrès et devoirs ne sont pas encore synchronisés entre appareils.</div>
  </div>`}
 function tabView(){
  const k=S.role+":"+R.tab;
