@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sécurité par défaut : aucune lecture ni écriture n'est autorisée.
+    // Remplacer progressivement par des règles ciblées après validation
+    // du modèle de données, des rôles et des tests d'accès.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
