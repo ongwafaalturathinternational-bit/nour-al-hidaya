@@ -34,6 +34,84 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+
+    // Accès par périmètre : un rôle seul ne suffit jamais à ouvrir une collection.
+    function staffHasScope(scope) {
+      return activeStaff()
+        && staffAccessData(request.auth.uid).scopes is list
+        && scope in staffAccessData(request.auth.uid).scopes;
+    }
+
+    // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
+    match /members/{memberId} {
+      allow read: if staffHasScope("members.read") || staffHasScope("members.manage");
+
+      allow create: if staffHasScope("members.manage")
+        && request.resource.data.keys().hasOnly([
+          "fullName", "email", "phone", "memberType", "status", "position",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "fullName", "memberType", "status", "createdAt", "createdBy",
+          "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() >= 2
+        && request.resource.data.fullName.size() <= 120
+        && request.resource.data.memberType in ["fondateur", "membre", "benevole"]
+        && request.resource.data.status in ["actif", "inactif", "suspendu"]
+        && (!("email" in request.resource.data) || (
+          request.resource.data.email is string
+          && request.resource.data.email.size() <= 160
+        ))
+        && (!("phone" in request.resource.data) || (
+          request.resource.data.phone is string
+          && request.resource.data.phone.size() <= 30
+        ))
+        && (!("position" in request.resource.data) || (
+          request.resource.data.position is string
+          && request.resource.data.position.size() <= 100
+        ))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow update: if staffHasScope("members.manage")
+        && request.resource.data.keys().hasOnly([
+          "fullName", "email", "phone", "memberType", "status", "position",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "fullName", "memberType", "status", "createdAt", "createdBy",
+          "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() >= 2
+        && request.resource.data.fullName.size() <= 120
+        && request.resource.data.memberType in ["fondateur", "membre", "benevole"]
+        && request.resource.data.status in ["actif", "inactif", "suspendu"]
+        && (!("email" in request.resource.data) || (
+          request.resource.data.email is string
+          && request.resource.data.email.size() <= 160
+        ))
+        && (!("phone" in request.resource.data) || (
+          request.resource.data.phone is string
+          && request.resource.data.phone.size() <= 30
+        ))
+        && (!("position" in request.resource.data) || (
+          request.resource.data.position is string
+          && request.resource.data.position.size() <= 100
+        ))
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      // Conservation de l'historique : désactiver une fiche au lieu de la supprimer.
+      allow delete: if false;
+    }
+
     match /users/{userId} {
       // Chaque nouvel utilisateur ne peut créer que son propre profil apprenant.
       allow create: if signedInAs(userId)
