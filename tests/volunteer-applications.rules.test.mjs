@@ -1,7 +1,7 @@
 import test, { after } from "node:test";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
@@ -52,4 +52,31 @@ test("volunteers.read peut consulter mais pas traiter une candidature", async ()
   const ref = doc(db, "volunteerApplications", "candidate2");
   await assertSucceeds(getDoc(ref));
   await assertFails(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reader", updatedAt: serverTimestamp(), updatedBy: "reader" }));
+});
+
+
+test("le candidat ne peut ni lister les candidatures ni modifier son dossier après dépôt", async () => {
+  const db = env.authenticatedContext("applicant-4", { email: "candidate4@example.org", email_verified: true }).firestore();
+  const ref = doc(db, "volunteerApplications", "applicant-4");
+  await assertSucceeds(setDoc(ref, application("applicant-4", "candidate4@example.org")));
+  await assertFails(getDocs(collection(db, "volunteerApplications")));
+  await assertFails(updateDoc(ref, { fullName: "Nom modifié" }));
+  await assertFails(updateDoc(ref, { status: "acceptee" }));
+});
+
+test("un responsable ne peut pas modifier les données personnelles d'une candidature", async () => {
+  await seed("reviewer-pii", ["volunteers.manage"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate-pii"), application("candidate-pii", "candidate-pii@example.org")));
+  const db = env.authenticatedContext("reviewer-pii").firestore();
+  const ref = doc(db, "volunteerApplications", "candidate-pii");
+  await assertFails(updateDoc(ref, { fullName: "Nom remplacé", status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
+  await assertSucceeds(updateDoc(ref, { status: "refusee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
+});
+
+test("un membre de l'équipe sans périmètre Club ne peut pas lire les candidatures", async () => {
+  await seed("staff-without-club", ["activities.read"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "private-candidate"), application("private-candidate", "private@example.org")));
+  const db = env.authenticatedContext("staff-without-club").firestore();
+  await assertFails(getDoc(doc(db, "volunteerApplications", "private-candidate")));
+  await assertFails(getDocs(collection(db, "volunteerApplications")));
 });
