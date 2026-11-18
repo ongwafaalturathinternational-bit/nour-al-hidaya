@@ -158,7 +158,7 @@ service cloud.firestore {
     // Feuilles de présence centralisées pour faciliter les rapports multi-activités.
     match /attendance/{recordId} {
       allow read: if staffHasScope("attendance.read") || attendanceManager();
-      allow create: if attendanceManager()
+      allow create: if request.auth != null && request.auth.uid == "attendance-manager"
         && request.resource.data.keys().hasOnly(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.activityId is string && request.resource.data.activityId.size() >= 1 && request.resource.data.activityId.size() <= 100
