@@ -21,3 +21,10 @@ test("le pointage peut sélectionner un bénévole du Club sans exposer le regis
   assert.match(html, /collection\("volunteers"\)/);
   assert.match(html, /participantType"\)\.value="benevole"/);
 });
+
+test("le module conserve un historique nominatif des présences par activité", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /x\.participantLabel\|\|"Participant"/);
+  assert.match(html, /labels\[x\.status\]/);
+  assert.match(html, /where\("activityId","==",id\)/);
+});
