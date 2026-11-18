@@ -44,6 +44,15 @@ service cloud.firestore {
         && staffAccessData(request.auth.uid).scopes.hasAny([scope]);
     }
 
+    // Contrôle dédié aux feuilles de présence : comparaison directe du périmètre.
+    function staffHasAttendanceScope(scope) {
+      return request.auth != null
+        && staffAccessExists(request.auth.uid)
+        && staffAccessData(request.auth.uid).active == true
+        && staffAccessData(request.auth.uid).scopes is list
+        && scope in staffAccessData(request.auth.uid).scopes;
+    }
+
     // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
 
     // Référentiel des programmes institutionnels WAT.
@@ -146,8 +155,8 @@ service cloud.firestore {
 
       // Les présences ont des périmètres dédiés, indépendants des droits sur les activités.
       match /attendance/{recordId} {
-        allow read: if staffHasScope("attendance.read") || staffHasScope("attendance.manage");
-        allow create: if staffHasScope("attendance.manage")
+        allow read: if staffHasAttendanceScope("attendance.read") || staffHasAttendanceScope("attendance.manage");
+        allow create: if staffHasAttendanceScope("attendance.manage")
           && request.resource.data.keys().hasOnly(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
           && request.resource.data.participantRef is string && request.resource.data.participantRef.size() >= 1 && request.resource.data.participantRef.size() <= 100
@@ -156,7 +165,7 @@ service cloud.firestore {
           && request.resource.data.status in ["present", "absent", "excuse"]
           && request.resource.data.recordedAt == request.time && request.resource.data.updatedAt == request.time
           && request.resource.data.recordedBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
-        allow update: if staffHasScope("attendance.manage")
+        allow update: if staffHasAttendanceScope("attendance.manage")
           && request.resource.data.keys().hasOnly(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
           && request.resource.data.participantRef == resource.data.participantRef
