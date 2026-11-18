@@ -62,3 +62,17 @@ test("le tableau des projets affiche une répartition dynamique et accessible", 
   assert.match(html, /function renderProjectDistribution\(\)/);
   assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
 });
+
+
+test("le Club propose une fiche bénévole détaillée avec historique soumis aux périmètres dédiés", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(html, /id="volunteerDetailDialog"/);
+  assert.match(html, /Voir la fiche/);
+  assert.match(html, /function showVolunteerDetails\(v\)/);
+  assert.match(html, /where\("participantRef","==",v\.id\)/);
+  assert.match(html, /canAttendanceRead/);
+  assert.match(html, /canProjectsRead/);
+  assert.match(html, /where\("volunteerId","==",v\.id\)/);
+  assert.match(html, /canRead=scopes\.includes\("volunteers\.read"\)/);
+  assert.doesNotMatch(html, /const scopes=[^;]*,canRead=/);
+});
