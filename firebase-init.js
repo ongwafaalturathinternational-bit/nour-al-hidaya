@@ -3,6 +3,32 @@
  */
 (function () {
   "use strict";
+
+  function installNetworkNotice() {
+    if (!document.body || document.getElementById("wat-network-notice")) return;
+    const notice = document.createElement("div");
+    notice.id = "wat-network-notice";
+    notice.setAttribute("role", "status");
+    notice.setAttribute("aria-live", "polite");
+    notice.style.cssText = "display:none;padding:9px 14px;background:#fff3cd;color:#664d03;border-bottom:1px solid #ead28a;font:14px/1.4 system-ui,sans-serif;text-align:center";
+    document.body.prepend(notice);
+    const refresh = () => {
+      const offline = !navigator.onLine;
+      notice.style.display = offline ? "block" : "none";
+      notice.textContent = offline
+        ? "Connexion Internet indisponible. Certaines fonctions nécessitant Firebase ne sont pas accessibles. Ne fermez pas la page pendant une opération en cours."
+        : "";
+    };
+    window.addEventListener("online", refresh);
+    window.addEventListener("offline", refresh);
+    refresh();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installNetworkNotice, { once: true });
+  } else {
+    installNetworkNotice();
+  }
   try {
     if (!window.firebase || !window.firebase.auth) {
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
