@@ -61,3 +61,19 @@ test("le calendrier des activités affiche une répartition dynamique et accessi
   assert.match(html, /function renderActivityDistribution\(\)/);
   assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
 });
+
+
+test("les fiches de présence peuvent être consultées et corrigées uniquement avec attendance.manage", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /async function updateAttendanceStatus\(/);
+  assert.match(html, /if\(canAttendanceManage\)/);
+  assert.match(html, /where\("activityId","==",id\)/);
+  assert.match(html, /L’historique est conservé/);
+});
+
+test("les détails d’activité sont chargés dans un script exécutable, pas dans un script externe", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /<script src="https:\/\/www\.gstatic\.com\/firebasejs\/11\.10\.0\/firebase-app-compat\.js"><\/script>/);
+  assert.match(html, /function showActivityDetails\(a\)/);
+  assert.match(html, /closeDetails/);
+});
