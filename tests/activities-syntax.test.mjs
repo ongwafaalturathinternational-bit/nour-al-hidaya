@@ -36,3 +36,11 @@ test("le tableau de bord des activités calcule les indicateurs depuis Firestore
   assert.match(html, /activities\.filter\(a=>a\.status==="planifiee"\)/);
   assert.match(html, /activities\.filter\(a=>a\.status==="realisee"\)/);
 });
+
+
+test("le registre des activités permet un filtre de statut combiné à la recherche", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /id="statusFilter"/);
+  assert.match(html, /!\$\("statusFilter"\)\.value\|\|a\.status===\$\("statusFilter"\)\.value/);
+  assert.match(html, /statusFilter"\)\.addEventListener\("change",render/);
+});
