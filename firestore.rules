@@ -115,6 +115,58 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Activités de terrain : planification et suivi institutionnel.
+    match /activities/{activityId} {
+      allow read: if staffHasScope("activities.read") || staffHasScope("activities.manage");
+      allow create: if staffHasScope("activities.manage")
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
+        && request.resource.data.description is string && request.resource.data.description.size() <= 2000
+        && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
+        && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
+        && request.resource.data.location is string && request.resource.data.location.size() <= 180
+        && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("activities.manage")
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
+        && request.resource.data.description is string && request.resource.data.description.size() <= 2000
+        && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
+        && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
+        && request.resource.data.location is string && request.resource.data.location.size() <= 180
+        && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+
+      // Les présences ont des périmètres dédiés, indépendants des droits sur les activités.
+      match /attendance/{recordId} {
+        allow read: if staffHasScope("attendance.read") || staffHasScope("attendance.manage");
+        allow create: if staffHasScope("attendance.manage")
+          && request.resource.data.keys().hasOnly(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
+          && request.resource.data.keys().hasAll(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
+          && request.resource.data.participantRef is string && request.resource.data.participantRef.size() >= 1 && request.resource.data.participantRef.size() <= 100
+          && request.resource.data.participantLabel is string && request.resource.data.participantLabel.size() >= 2 && request.resource.data.participantLabel.size() <= 120
+          && request.resource.data.participantType in ["membre", "benevole", "apprenant", "beneficiaire", "invite"]
+          && request.resource.data.status in ["present", "absent", "excuse"]
+          && request.resource.data.recordedAt == request.time && request.resource.data.updatedAt == request.time
+          && request.resource.data.recordedBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+        allow update: if staffHasScope("attendance.manage")
+          && request.resource.data.keys().hasOnly(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
+          && request.resource.data.keys().hasAll(["participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
+          && request.resource.data.participantRef == resource.data.participantRef
+          && request.resource.data.participantType == resource.data.participantType
+          && request.resource.data.participantLabel is string && request.resource.data.participantLabel.size() >= 2 && request.resource.data.participantLabel.size() <= 120
+          && request.resource.data.status in ["present", "absent", "excuse"]
+          && request.resource.data.recordedAt == resource.data.recordedAt && request.resource.data.recordedBy == resource.data.recordedBy
+          && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+        allow delete: if false;
+      }
+    }
+
     match /members/{memberId} {
       allow read: if staffHasScope("members.read") || staffHasScope("members.manage");
 
