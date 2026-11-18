@@ -25,3 +25,11 @@ test("le tableau de bord du Club calcule ses indicateurs à partir des données 
   assert.match(html, /applications\.length/);
   assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
+
+
+test("le tableau de bord des projets calcule les indicateurs depuis Firestore", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  for (const id of ["statProjects", "statOngoing", "statPlanned", "statCompleted"]) assert.ok(html.includes('id="' + id + '"'));
+  assert.match(html, /projects\.filter\(p=>p\.status==="en_cours"\)/);
+  assert.match(html, /projects\.filter\(p=>p\.status==="termine"\)/);
+});
