@@ -18,6 +18,8 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - Fiche bénévole : nom, coordonnées facultatives, compétences, intérêts, disponibilités et statut.
 - Statuts de dossier : en attente, actif, inactif, suspendu, rejeté.
 - Affectation à des projets et participation aux activités via les feuilles de présence.
+- Depuis le module Activités, un gestionnaire disposant aussi de volunteers.read ou volunteers.manage peut sélectionner directement un bénévole actif du Club pour enregistrer sa présence; son identifiant de fiche est conservé comme référence.
+- L'historique des présences d'une activité affiche le nom, le type de participant et le statut de présence.
 - Données privées, accessibles uniquement avec les périmètres volunteers.read ou volunteers.manage.
 - Les contributions financières détaillées restent dans le futur module Finances. Le registre du Club ne collecte aucune pièce ou écriture financière.
 
@@ -36,7 +38,7 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - Le formulaire public de candidature est ajouté : création/connexion à un compte, vérification obligatoire de l'e-mail et consentement explicite avant dépôt.
 - Les responsables autorisés peuvent examiner les candidatures, accepter ou refuser; une acceptation crée une fiche bénévole dans le registre du Club.
 - Les notifications automatiques et la synchronisation hors ligne restent à réaliser.
-- Les affectations sont enregistrées par projet; la présence effective à une activité reste tracée dans le module Activités.
+- Les affectations sont enregistrées par projet; la présence effective à une activité reste tracée dans le module Activités, avec sélection directe des bénévoles du Club lorsque le périmètre d'accès le permet.
 - Aucune donnée réelle de bénévole n'est préchargée.
 
 ## Validation
