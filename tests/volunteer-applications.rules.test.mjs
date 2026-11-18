@@ -17,7 +17,7 @@ async function seed(uid, scopes) {
 }
 function application(uid, email, extra = {}) {
   return { fullName: "Candidat Test", email, phone: "+22900000000", category: "occasionnel",
-    skills: ["logistique"], interests: ["humanitaire"], availability: "Week-ends",
+    skills: ["logistique"], interests: ["humanitaire"], availability: "Week-ends", privacyConsent: true, consentAt: serverTimestamp(),
     status: "en_attente", createdAt: serverTimestamp(), createdBy: uid,
     updatedAt: serverTimestamp(), updatedBy: uid, ...extra };
 }
