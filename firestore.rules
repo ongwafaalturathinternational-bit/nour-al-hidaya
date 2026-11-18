@@ -146,19 +146,10 @@ service cloud.firestore {
 
     }
 
-    // Le périmètre de présence est contrôlé explicitement, sans dépendre
-    // d'un rôle ni d'un accès accordé à un autre module.
-    function attendanceManager() {
-      return request.auth != null
-        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.active == true
-        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.scopes is list
-        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.scopes.hasAny(["attendance.manage"]);
-    }
-
     // Feuilles de présence centralisées pour faciliter les rapports multi-activités.
     match /attendance/{recordId} {
-      allow read: if staffHasScope("attendance.read") || attendanceManager();
-      allow create: if attendanceManager()
+      allow read: if staffHasScope("attendance.read") || staffHasScope("attendance.manage");
+      allow create: if staffHasScope("attendance.manage")
         && request.resource.data.keys().hasOnly(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.activityId is string && request.resource.data.activityId.size() >= 1 && request.resource.data.activityId.size() <= 100
@@ -169,7 +160,7 @@ service cloud.firestore {
         && request.resource.data.status in ["present", "absent", "excuse"]
         && request.resource.data.recordedAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.recordedBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
-      allow update: if attendanceManager()
+      allow update: if staffHasScope("attendance.manage")
         && request.resource.data.keys().hasOnly(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.activityId == resource.data.activityId
