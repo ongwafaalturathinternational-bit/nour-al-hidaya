@@ -1,0 +1,39 @@
+name: Firestore security rules
+
+on:
+  pull_request:
+    paths:
+      - "firestore.rules"
+      - "tests/firestore.rules.test.mjs"
+      - ".github/workflows/firestore-rules.yml"
+      - "firebase.json"
+  push:
+    branches:
+      - "audit/wat-connect-lot1-foundation"
+    paths:
+      - "firestore.rules"
+      - "tests/firestore.rules.test.mjs"
+      - ".github/workflows/firestore-rules.yml"
+      - "firebase.json"
+
+permissions:
+  contents: read
+
+jobs:
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les outils de test
+        run: npm install --no-save firebase-tools firebase @firebase/rules-unit-testing
+
+      - name: Compiler et tester les règles Firestore
+        run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/firestore.rules.test.mjs"
