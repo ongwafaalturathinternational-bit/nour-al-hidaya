@@ -54,3 +54,11 @@ test("les projets disposent de fiches détaillées accessibles", () => {
   assert.match(html, /Description/);
   assert.match(html, /closeDetails/);
 });
+
+
+test("le tableau des projets affiche une répartition dynamique et accessible", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /id="projectDistribution"/);
+  assert.match(html, /function renderProjectDistribution\(\)/);
+  assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
+});
