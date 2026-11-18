@@ -1421,7 +1421,7 @@ async function enterFirebaseUser(user){
   let l=learner(id);
   if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
   else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
-  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};await loadFirebaseProgress(id);R.signup=false;R.tab=null;save();render();return true;
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id)}catch(progressError){console.error("Chargement progression distante :",progressError)}R.signup=false;R.tab=null;save();render();return true;
 }
 /* ---------- actions ---------- */
 function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncProgress(user.uid,id,q.score,LESSONS[id].quiz.length)}
