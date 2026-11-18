@@ -7,6 +7,8 @@ on:
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
+      - "index.html"
+      - "tests/app-syntax.test.mjs"
 
 permissions:
   contents: read
@@ -28,4 +30,4 @@ jobs:
         run: npm install --no-save firebase-tools firebase @firebase/rules-unit-testing
 
       - name: Compiler et tester les règles Firestore
-        run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/firestore.rules.test.mjs"
+        run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/*.test.mjs"
