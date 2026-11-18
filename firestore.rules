@@ -37,9 +37,11 @@ service cloud.firestore {
 
     // Accès par périmètre : un rôle seul ne suffit jamais à ouvrir une collection.
     function staffHasScope(scope) {
-      return activeStaff()
+      return request.auth != null
+        && staffAccessExists(request.auth.uid)
+        && staffAccessData(request.auth.uid).active == true
         && staffAccessData(request.auth.uid).scopes is list
-        && scope in staffAccessData(request.auth.uid).scopes;
+        && staffAccessData(request.auth.uid).scopes.hasAny([scope]);
     }
 
     // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
