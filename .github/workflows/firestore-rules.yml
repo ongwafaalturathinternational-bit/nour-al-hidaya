@@ -5,6 +5,9 @@ on:
     paths:
       - "firestore.rules"
       - "administration.html"
+      - "programmes.html"
+      - "tests/programs.rules.test.mjs"
+      - "tests/programs-syntax.test.mjs"
       - "tests/members.rules.test.mjs"
       - "tests/admin-syntax.test.mjs"
       - "tests/firestore.rules.test.mjs"
