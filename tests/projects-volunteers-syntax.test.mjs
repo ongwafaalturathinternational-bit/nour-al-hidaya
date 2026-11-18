@@ -68,7 +68,10 @@ test("le Club propose une fiche bénévole détaillée avec historique soumis au
   const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
   assert.match(html, /id="volunteerDetailDialog"/);
   assert.match(html, /Voir la fiche/);
-  assert.match(html, /function showVolunteerDetails\(v\)/);\n  assert.match(html, /id="volunteerDistribution"/);\n  assert.match(html, /function renderVolunteerDistribution\(\)/);\n  assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
+  assert.match(html, /function showVolunteerDetails\(v\)/);
+  assert.match(html, /id="volunteerDistribution"/);
+  assert.match(html, /function renderVolunteerDistribution\(\)/);
+  assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
   assert.match(html, /where\("participantRef","==",v\.id\)/);
   assert.match(html, /canAttendanceRead/);
   assert.match(html, /canProjectsRead/);
