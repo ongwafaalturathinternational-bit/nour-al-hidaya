@@ -304,8 +304,8 @@ service cloud.firestore {
     match /volunteers/{volunteerId} {
       allow read: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow create: if staffHasScope("volunteers.manage")
-        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
         && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
@@ -317,8 +317,8 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("volunteers.manage")
-        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
         && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
