@@ -1732,7 +1732,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t
  render();});
 document.addEventListener("change",e=>{const t=e.target;if((t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type==="text"))&&A[t.dataset.a]){if(A[t.dataset.a](t.dataset.v,t)!==false)render()}});
 document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect[CUR()+":"+R.lesson.id]=e.target.value;save()}});
-window.addEventListener("online",()=>{S.subs.forEach(s=>s.pending=false);save();render();toast("Connexion revenue : tout est envoyé")});
+window.addEventListener("online",()=>{render();toast("Connexion rétablie. Les données pédagogiques ne sont pas encore synchronisées.")});
 window.addEventListener("offline",render);
 if(window.WATFirebase&&WATFirebase.ready){
  WATFirebase.auth.onAuthStateChanged(user=>{
