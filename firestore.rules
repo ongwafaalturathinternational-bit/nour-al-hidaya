@@ -304,8 +304,8 @@ service cloud.firestore {
     match /volunteers/{volunteerId} {
       allow read: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow create: if staffHasScope("volunteers.manage")
-        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
         && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
@@ -317,8 +317,8 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("volunteers.manage")
-        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
         && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
@@ -341,14 +341,16 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == applicationId
         && request.auth.token.email_verified == true
-        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["fullName", "email", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "email", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
         && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
         && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
         && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
+        && request.resource.data.privacyConsent == true
+        && request.resource.data.consentAt == request.time
         && request.resource.data.status == "en_attente"
         && (!("phone" in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
