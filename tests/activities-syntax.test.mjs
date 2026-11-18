@@ -44,3 +44,12 @@ test("le registre des activités permet un filtre de statut combiné à la reche
   assert.match(html, /!\$\("statusFilter"\)\.value\|\|a\.status===\$\("statusFilter"\)\.value/);
   assert.match(html, /statusFilter"\)\.addEventListener\("change",render/);
 });
+
+
+test("les activités disposent de fiches détaillées accessibles", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /<dialog id="detailDialog"/);
+  assert.match(html, /showActivityDetails\(a\)/);
+  assert.match(html, /Description/);
+  assert.match(html, /closeDetails/);
+});
