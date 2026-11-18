@@ -77,3 +77,20 @@ test("les détails d’activité sont chargés dans un script exécutable, pas d
   assert.match(html, /function showActivityDetails\(a\)/);
   assert.match(html, /closeDetails/);
 });
+
+
+test("les activités peuvent être rattachées à un projet sans rendre ce lien obligatoire", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /id="projectLinkField" hidden/);
+  assert.match(html, /canLinkProject=canManage&&\(scopes\.includes\("projects\.read"\)\|\|scopes\.includes\("projects\.manage"\)\)/);
+  assert.match(html, /if\(canLinkProject&&\$\("projectId"\)\.value\)data\.projectId=\$\("projectId"\)\.value/);
+  assert.match(html, /\["Projet associé",linkedProjects\.find/);
+});
+
+test("les règles Firestore valident le projet associé et conservent une liste blanche stricte", () => {
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  const block = rules.slice(rules.indexOf("match /activities/{activityId}"), rules.indexOf("// Feuilles de présence centralisées"));
+  assert.match(block, /"projectId"/);
+  assert.match(block, /exists\(\/databases\/\$\(database\)\/documents\/projects\/\$\(request\.resource\.data\.projectId\)\)/);
+  assert.equal((block.match(/!\("projectId" in request\.resource\.data\)/g)||[]).length, 2);
+});
