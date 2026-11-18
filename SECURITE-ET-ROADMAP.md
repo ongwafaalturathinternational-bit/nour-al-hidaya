@@ -79,6 +79,13 @@ La revue du code et la compilation des règles ont été effectuées. Les règle
 - Prochaine étape : concevoir le parcours de connexion par e-mail et mot de passe Firebase, sans réutiliser les codes PIN locaux comme identifiants de production. Les rôles devront ensuite être attribués par un mécanisme administratif de confiance.
 
 
+## Mise à jour — préparation de la synchronisation (18 novembre 2026)
+
+- Création de la branche de travail `audit/nour-al-hidaya-v6-sync-foundation`, à partir de la branche de prévalidation précédente. La branche précédente et la production restent intactes.
+- Correction d'un message trompeur lors du retour de la connexion Internet : l'application n'annonce plus que les données ont été envoyées. Elle indique désormais que la synchronisation pédagogique n'est pas encore disponible.
+- Les cours, progrès, devoirs, réflexions et autres données pédagogiques restent stockés localement dans le navigateur. Aucune synchronisation multi-appareils n'est activée par cette correction.
+- Étape suivante : tester explicitement l'isolation des profils dans les règles Firestore, puis concevoir un modèle de données distant pour la progression avant de coder la synchronisation.
+
 ## Mise à jour — authentification des apprenants (17 novembre 2026)
 
 - Le prototype propose désormais une inscription Firebase par e-mail et mot de passe (8 caractères minimum), suivie d'une vérification de l'adresse e-mail.
