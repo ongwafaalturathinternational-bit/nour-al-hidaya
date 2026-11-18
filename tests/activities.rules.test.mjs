@@ -26,7 +26,7 @@ function activity(uid, extra = {}) {
 }
 function attendance(uid, extra = {}) {
   return {
-    participantRef: "MEM-001", participantLabel: "Participant test",
+    activityId: "a", participantRef: "MEM-001", participantLabel: "Participant test",
     participantType: "benevole", status: "present",
     recordedAt: serverTimestamp(), recordedBy: uid,
     updatedAt: serverTimestamp(), updatedBy: uid, ...extra
@@ -52,11 +52,11 @@ test("les droits activités ne donnent pas accès aux présences", async () => {
   await seed("activity-only", ["activities.read", "activities.manage"]);
   await env.withSecurityRulesDisabled(async c => {
     await setDoc(doc(c.firestore(), "activities", "a"), activity("system"));
-    await setDoc(doc(c.firestore(), "activities", "a", "attendance", "p1"), attendance("system"));
+    await setDoc(doc(c.firestore(), "attendance", "p1"), attendance("system"));
   });
   const db = env.authenticatedContext("activity-only").firestore();
-  await assertFails(getDoc(doc(db, "activities", "a", "attendance", "p1")));
-  await assertFails(setDoc(doc(db, "activities", "a", "attendance", "p2"), attendance("activity-only")));
+  await assertFails(getDoc(doc(db, "attendance", "p1")));
+  await assertFails(setDoc(doc(db, "attendance", "p2"), attendance("activity-only")));
 });
 
 test("attendance.manage autorise la présence, lecture dédiée et aucune suppression", async () => {
