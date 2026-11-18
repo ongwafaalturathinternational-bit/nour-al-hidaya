@@ -94,3 +94,17 @@ test("les règles Firestore valident le projet associé et conservent une liste 
   assert.match(block, /exists\(\/databases\/\$\(database\)\/documents\/projects\/\$\(request\.resource\.data\.projectId\)\)/);
   assert.equal((block.match(/!\("projectId" in request\.resource\.data\)/g)||[]).length, 2);
 });
+
+test("le registre des présences propose des filtres dynamiques et un export CSV protégé", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /id="attendanceSearch"/);
+  assert.match(html, /id="attendanceFilter"/);
+  assert.match(html, /function filteredAttendance\(\)/);
+  assert.match(html, /function renderAttendance\(\)/);
+  assert.match(html, /function exportAttendanceCsv\(\)/);
+  assert.match(html, /if\(!canAttendanceRead\)return/);
+  assert.match(html, /\\uFEFF/);
+  assert.match(html, /replace\(\/"\/g,'""'\)/);
+  assert.match(html, /attendanceSearch"\)\.addEventListener\("input",renderAttendance\)/);
+  assert.match(html, /attendanceFilter"\)\.addEventListener\("change",renderAttendance\)/);
+});
