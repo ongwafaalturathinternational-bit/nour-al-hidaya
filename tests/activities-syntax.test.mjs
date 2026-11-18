@@ -108,3 +108,11 @@ test("le registre des présences propose des filtres dynamiques et un export CSV
   assert.match(html, /attendanceSearch"\)\.addEventListener\("input",renderAttendance\)/);
   assert.match(html, /attendanceFilter"\)\.addEventListener\("change",renderAttendance\)/);
 });
+
+test("le registre filtre les activités par projet uniquement avec le périmètre de lecture projets", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /id="projectFilter"[^>]*hidden/);
+  assert.match(html, /\$\("projectFilter"\)\.hidden=!canLinkProject/);
+  assert.match(html, /\$\(!?\$\("projectFilter"\)\.value\|\|a\.projectId===\$\("projectFilter"\)\.value\)/);
+  assert.match(html, /projectFilter"\)\.addEventListener\("change",render\)/);
+});
