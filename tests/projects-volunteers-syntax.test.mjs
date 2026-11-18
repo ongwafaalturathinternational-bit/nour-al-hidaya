@@ -79,3 +79,12 @@ test("le Club propose une fiche bénévole détaillée avec historique soumis au
   assert.match(html, /canRead=scopes\.includes\("volunteers\.read"\)/);
   assert.doesNotMatch(html, /const scopes=[^;]*,canRead=/);
 });
+
+
+test("les affectations du Club affichent un registre détaillé et permettent le suivi des états", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /className="assignment-table"/);
+  assert.match(html, /async function updateAssignmentStatus\(/);
+  assert.match(html, /where\("volunteerId"/);
+  assert.match(html, /Confirmee|Confirmée/);
+});
