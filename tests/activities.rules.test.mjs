@@ -1,4 +1,5 @@
 import test, { after } from "node:test";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
@@ -62,6 +63,9 @@ test("attendance.manage autorise la présence, lecture dédiée et aucune suppre
   await seed("attendance-manager", ["activities.read", "attendance.read", "attendance.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "activities", "a"), activity("system")));
   const db = env.authenticatedContext("attendance-manager").firestore();
+  const access = await getDoc(doc(db, "staffAccess", "attendance-manager"));
+  assert.equal(access.exists(), true);
+  assert.deepEqual(access.data().scopes, ["activities.read", "attendance.read", "attendance.manage"]);
   const ref = doc(db, "activities", "a", "attendance", "p1");
   await assertSucceeds(setDoc(ref, attendance("attendance-manager")));
   await assertSucceeds(getDoc(ref));
