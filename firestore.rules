@@ -150,10 +150,9 @@ service cloud.firestore {
     // d'un rôle ni d'un accès accordé à un autre module.
     function attendanceManager() {
       return request.auth != null
-        && staffAccessExists(request.auth.uid)
-        && staffAccessData(request.auth.uid).active == true
-        && staffAccessData(request.auth.uid).scopes is list
-        && "attendance.manage" in staffAccessData(request.auth.uid).scopes;
+        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.active == true
+        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.scopes is list
+        && get(/databases/$(database)/documents/staffAccess/$(request.auth.uid)).data.scopes.hasAny(["attendance.manage"]);
     }
 
     // Feuilles de présence centralisées pour faciliter les rapports multi-activités.
