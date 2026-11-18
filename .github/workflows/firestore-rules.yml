@@ -11,6 +11,8 @@ on:
       - "club-khuddam.html"
       - "tests/projects-volunteers.rules.test.mjs"
       - "tests/projects-volunteers-syntax.test.mjs"
+      - "tests/volunteer-applications.rules.test.mjs"
+      - "club-khuddam-inscription.html"
       - "tests/activities.rules.test.mjs"
       - "tests/activities-syntax.test.mjs"
       - "tests/programs.rules.test.mjs"
