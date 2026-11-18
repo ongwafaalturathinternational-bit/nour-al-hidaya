@@ -44,12 +44,15 @@ service cloud.firestore {
         && staffAccessData(request.auth.uid).scopes.hasAny([scope]);
     }
 
+    function attendanceAccess(userId) {
+      let access = get(/databases/$(database)/documents/staffAccess/$(userId)).data;
+      return access.active == true
+        && access.scopes is list
+        && access.scopes.hasAny(["attendance.manage"]);
+    }
+
     function attendanceManager() {
-      return request.auth != null
-        && staffAccessExists(request.auth.uid)
-        && staffAccessData(request.auth.uid).active == true
-        && staffAccessData(request.auth.uid).scopes is list
-        && staffAccessData(request.auth.uid).scopes.hasAny(["attendance.manage"]);
+      return request.auth != null && attendanceAccess(request.auth.uid);
     }
 
     // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
