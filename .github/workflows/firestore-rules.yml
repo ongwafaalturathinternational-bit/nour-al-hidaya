@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "firestore.rules"
+      - "administration.html"
+      - "tests/members.rules.test.mjs"
+      - "tests/admin-syntax.test.mjs"
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
