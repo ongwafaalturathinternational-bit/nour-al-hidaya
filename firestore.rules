@@ -153,6 +153,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["activityId", "participantRef", "participantLabel", "participantType", "status", "recordedAt", "recordedBy", "updatedAt", "updatedBy"])
         && request.resource.data.activityId is string && request.resource.data.activityId.size() >= 1 && request.resource.data.activityId.size() <= 100
+        && exists(/databases/$(database)/documents/activities/$(request.resource.data.activityId))
         && request.resource.data.participantRef is string && request.resource.data.participantRef.size() >= 1 && request.resource.data.participantRef.size() <= 100
         && request.resource.data.participantLabel is string && request.resource.data.participantLabel.size() >= 2 && request.resource.data.participantLabel.size() <= 120
         && request.resource.data.participantType in ["membre", "benevole", "apprenant", "beneficiaire", "invite"]
