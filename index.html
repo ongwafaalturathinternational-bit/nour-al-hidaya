@@ -1528,7 +1528,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
 },
  async forgotPassword(){
   const email=$("#liemail").value.trim().toLowerCase();
-  if(!email||!/^\\S+@\\S+\\.\\S+$/.test(email)){toast("Saisissez d’abord votre adresse e-mail dans le champ de connexion.");return false}
+  if(!email||!/^\S+@\S+\.\S+$/.test(email)){toast("Saisissez d’abord votre adresse e-mail dans le champ de connexion.");return false}
   if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible.");return false}
   try{await WATFirebase.auth.sendPasswordResetEmail(email);toast("Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.")}
   catch(error){console.error("Réinitialisation du mot de passe :",error);const messages={"auth/invalid-email":"Adresse e-mail invalide.","auth/too-many-requests":"Trop de demandes. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Impossible d’envoyer le lien. Réessayez plus tard.")}
