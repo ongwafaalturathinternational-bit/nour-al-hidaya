@@ -85,6 +85,6 @@ test("les affectations du Club affichent un registre détaillé et permettent le
   const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
   assert.match(html, /className="assignment-table"/);
   assert.match(html, /async function updateAssignmentStatus\(/);
-  assert.match(html, /where\("volunteerId"/);
+  assert.match(html, /collection\("volunteers"\)\.get\(\)/);
   assert.match(html, /Confirmee|Confirmée/);
 });
