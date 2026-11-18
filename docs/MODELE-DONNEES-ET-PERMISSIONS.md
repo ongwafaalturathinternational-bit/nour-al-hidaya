@@ -2,7 +2,7 @@
 
 ## Objectif
 
-Préparer la migration du prototype local vers Firebase sans ouvrir prématurément les données personnelles. Ce document est une proposition de conception, pas une configuration déjà déployée dans Firebase.
+Préparer la migration du prototype local vers Firebase sans ouvrir prématurément les données personnelles. Ce document décrit le modèle cible ; la matrice de permissions reste une proposition. Les règles actuellement déployées ne couvrent que le profil personnel de l'apprenant.
 
 ## Principes obligatoires
 
@@ -78,7 +78,9 @@ Les données privées ne doivent pas être ajoutées au cache général du Servi
 
 ## État actuel et prochaine validation
 
-- Le fichier `firestore.rules` de cette branche refuse toutes les lectures et écritures.
-- Ces règles ne sont pas encore déployées dans le projet Firebase.
+- Les règles Firestore déployées autorisent chaque utilisateur authentifié à créer, lire et modifier son propre document `users/{uid}` dans les limites des champs définis.
+- Les suppressions sont limitées aux profils dont le rôle est `apprenant`.
+- Toutes les autres collections et tous les autres documents restent interdits par défaut.
+- Le déploiement de ces règles sur le projet `wat-connect` a réussi le 18 novembre 2026.
 - Le modèle ci-dessus est à valider avant toute règle permissive.
 - Aucun raccordement Firestore ni test d'authentification n'est prétendu à ce stade.
