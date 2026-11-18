@@ -7,14 +7,6 @@ on:
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
-  push:
-    branches:
-      - "audit/wat-connect-lot1-foundation"
-    paths:
-      - "firestore.rules"
-      - "tests/firestore.rules.test.mjs"
-      - ".github/workflows/firestore-rules.yml"
-      - "firebase.json"
 
 permissions:
   contents: read
