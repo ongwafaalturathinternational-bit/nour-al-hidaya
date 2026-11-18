@@ -65,7 +65,7 @@ Cette correction réduit le risque qu'une future donnée privée ou réponse d'A
 
 ## Limites des vérifications
 
-La première revue est une inspection statique du code. Les tests d'exécution, les tests multi-comptes, les tests mobiles, les tests hors connexion et les tests Firebase restent à effectuer.
+La revue du code et la compilation des règles ont été effectuées. Les règles ont été déployées avec succès sur le projet Firebase. Les tests d'exécution dans un navigateur, d'inscription réelle, multi-comptes, mobiles et hors connexion restent à effectuer. L'application de cette branche n'est pas encore publiée : ne pas confondre ce dépôt avec le prototype actuellement en ligne.
 
 
 ## Mise à jour — initialisation Firebase (17 novembre 2026)
@@ -75,7 +75,7 @@ La première revue est une inspection statique du code. Les tests d'exécution, 
 - Le fichier local `firebase-init.js` initialise le projet et expose l'objet Firebase à l'application lorsque le SDK est disponible.
 - Ce fichier est inclus dans le cache de l'interface ; les scripts et services Firebase externes ne sont pas mis en cache.
 - Cette étape initialise le SDK uniquement : aucun compte utilisateur n'est encore créé, aucune connexion réelle n'est encore reliée à l'écran existant et aucune donnée n'est envoyée vers Firestore.
-- Les règles Firestore restent en refus par défaut. Aucun déploiement Firebase ni Cloudflare n'a été effectué.
+- Les règles Firestore ont été publiées le 18 novembre 2026 sur le projet `wat-connect`. Aucun déploiement de l'application sur Firebase Hosting ou Cloudflare n'a été effectué.
 - Prochaine étape : concevoir le parcours de connexion par e-mail et mot de passe Firebase, sans réutiliser les codes PIN locaux comme identifiants de production. Les rôles devront ensuite être attribués par un mécanisme administratif de confiance.
 
 
@@ -87,4 +87,4 @@ La première revue est une inspection statique du code. Les tests d'exécution, 
 - Les règles Firestore autorisent chaque utilisateur à lire son propre profil, à le créer uniquement comme apprenant et à modifier certains champs sans pouvoir changer son rôle ou son e-mail. Les autres collections restent interdites.
 - Les anciens accès locaux par identifiant/PIN et les rôles du personnel restent en mode démonstration uniquement ; aucune migration automatique des comptes fictifs n'est effectuée.
 - Limite importante : les profils sont centralisés, mais les cours, progrès, devoirs et autres données fonctionnelles restent encore locaux à l'appareil. La synchronisation multi-appareils et la gestion administrative des rôles constituent des étapes distinctes.
-- Les règles de sécurité sont préparées dans le dépôt, mais ne sont pas déployées sur Firebase depuis cette modification.
+- Les règles de sécurité ont été déployées sur Firebase le 18 novembre 2026. Elles autorisent chaque utilisateur authentifié à créer, lire et modifier uniquement son propre profil selon une liste de champs limitée ; la suppression est réservée aux profils apprenants ; toutes les autres collections restent interdites. Le déploiement des règles a réussi via Firebase CLI.
