@@ -79,6 +79,13 @@ La revue du code et la compilation des règles ont été effectuées. Les règle
 - Prochaine étape : concevoir le parcours de connexion par e-mail et mot de passe Firebase, sans réutiliser les codes PIN locaux comme identifiants de production. Les rôles devront ensuite être attribués par un mécanisme administratif de confiance.
 
 
+## Mise à jour — préparation de la synchronisation (18 novembre 2026)
+
+- Création de la branche de travail `audit/nour-al-hidaya-v6-sync-foundation`, à partir de la branche de prévalidation précédente. La branche précédente et la production restent intactes.
+- Correction d'un message trompeur lors du retour de la connexion Internet : l'application n'annonce plus que les données ont été envoyées. Elle indique désormais que la synchronisation pédagogique n'est pas encore disponible.
+- Les cours, progrès, devoirs, réflexions et autres données pédagogiques restent stockés localement dans le navigateur. Aucune synchronisation multi-appareils n'est activée par cette correction.
+- Étape suivante : tester explicitement l'isolation des profils dans les règles Firestore, puis concevoir un modèle de données distant pour la progression avant de coder la synchronisation.
+
 ## Mise à jour — authentification des apprenants (17 novembre 2026)
 
 - Le prototype propose désormais une inscription Firebase par e-mail et mot de passe (8 caractères minimum), suivie d'une vérification de l'adresse e-mail.
@@ -88,3 +95,13 @@ La revue du code et la compilation des règles ont été effectuées. Les règle
 - Les anciens accès locaux par identifiant/PIN et les rôles du personnel restent en mode démonstration uniquement ; aucune migration automatique des comptes fictifs n'est effectuée.
 - Limite importante : les profils sont centralisés, mais les cours, progrès, devoirs et autres données fonctionnelles restent encore locaux à l'appareil. La synchronisation multi-appareils et la gestion administrative des rôles constituent des étapes distinctes.
 - Les règles de sécurité ont été déployées sur Firebase le 18 novembre 2026. Elles autorisent chaque utilisateur authentifié à créer, lire et modifier uniquement son propre profil selon une liste de champs limitée ; la suppression est réservée aux profils apprenants ; toutes les autres collections restent interdites. Le déploiement des règles a réussi via Firebase CLI.
+
+
+## Mise à jour — première synchronisation pédagogique (18 novembre 2026)
+
+- Première donnée pédagogique centralisée : résultats des quiz de l'apprenant dans `users/{uid}/progress/{lessonId}`.
+- Les résultats sont enregistrés localement immédiatement, puis envoyés à Firestore si le réseau est disponible.
+- Les envois qui échouent restent dans une file locale propre à l'utilisateur et sont retentés au retour de la connexion.
+- À la connexion, les résultats distants sont chargés dans le profil local ; les éléments en attente hors connexion sont conservés prioritaires puis synchronisés.
+- Les règles Firestore limitent la lecture et l'écriture au propriétaire du profil, valident les champs et valeurs, et interdisent la suppression depuis le client.
+- Cette première étape ne synchronise pas encore les devoirs, notes/commentaires, présences, réflexions ni inscriptions administratives. Elle ne constitue pas une synchronisation complète hors connexion de toute l'application.

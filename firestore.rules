@@ -37,6 +37,23 @@ service cloud.firestore {
     }
 
     // Tout le reste reste fermé jusqu'à l'ajout de règles métier vérifiées.
+    // Chaque apprenant ne peut lire et synchroniser que ses propres résultats de quiz.
+    match /users/{userId}/progress/{lessonId} {
+      allow read: if signedInAs(userId);
+      allow create, update: if signedInAs(userId)
+        && request.resource.data.keys().hasOnly(["lessonId", "score", "total", "updatedAt"])
+        && request.resource.data.keys().hasAll(["lessonId", "score", "total", "updatedAt"])
+        && request.resource.data.lessonId == lessonId
+        && request.resource.data.score is int
+        && request.resource.data.total is int
+        && request.resource.data.score >= 0
+        && request.resource.data.total > 0
+        && request.resource.data.score <= request.resource.data.total
+        && request.resource.data.total <= 20
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

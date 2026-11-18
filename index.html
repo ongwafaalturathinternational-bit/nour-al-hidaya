@@ -1358,6 +1358,50 @@ function attestView(){
  return `<div class="cert"><small>ONG WAFA AL-TURATH INTERNATIONAL</small><div class="ar">شهادة</div><h2>Attestation de fin de niveau 1</h2><small>Programme Nour Al-Hidaya</small><p style="margin:14px 0 0">décernée à</p><div class="nm">${esc(l.name)}</div><p style="margin:6px 0">pour avoir suivi avec assiduité les leçons du niveau 1 et réussi ses évaluations.</p><small>Délivrée le ${fmt(v.date)} · N° ${v.no}</small><div class="row" style="justify-content:space-around;margin-top:16px"><small>Le Responsable pédagogique</small><small>Le Bureau exécutif</small></div></div>
  <div class="note">Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.</div>`}
 
+/* ---------- synchronisation des résultats de quiz ---------- */
+const progressQueueKey=uid=>"nh_progress_queue_"+uid;
+function readProgressQueue(uid){try{return JSON.parse(localStorage.getItem(progressQueueKey(uid))||"[]")}catch(e){return[]}}
+function writeProgressQueue(uid,items){try{localStorage.setItem(progressQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale de progression indisponible",e)}}
+function enqueueProgress(uid,lessonId,score,total){
+ const items=readProgressQueue(uid).filter(x=>String(x.lessonId)!==String(lessonId));
+ items.push({lessonId:String(lessonId),score:Number(score),total:Number(total)});
+ writeProgressQueue(uid,items);
+}
+async function queueAndSyncProgress(uid,lessonId,score,total){
+ enqueueProgress(uid,lessonId,score,total);
+ if(navigator.onLine)await syncPendingProgress(uid);
+}
+async function syncPendingProgress(uid){
+ if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!WATFirebase.auth.currentUser||WATFirebase.auth.currentUser.uid!==uid)return 0;
+ const items=readProgressQueue(uid);let synced=0;const remaining=[];
+ for(const item of items){
+  try{
+   await WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
+    lessonId:String(item.lessonId),score:Number(item.score),total:Number(item.total),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+   synced++;
+  }catch(error){console.error("Synchronisation progression :",error);remaining.push(item)}
+ }
+ writeProgressQueue(uid,remaining);
+ return synced;
+}
+async function loadFirebaseProgress(uid){
+ const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ S.done[uid]=S.done[uid]||{};
+ snap.forEach(doc=>{
+  const p=doc.data(),lessonId=Number(doc.id);
+  if(AVAIL.includes(lessonId)&&Number.isFinite(p.score)&&Number.isFinite(p.total)){
+   S.done[uid][lessonId]={s:p.score,t:p.total};
+  }
+ });
+ // Les résultats encore en attente hors connexion restent prioritaires sur la copie distante.
+ readProgressQueue(uid).forEach(p=>{
+  const lessonId=Number(p.lessonId);
+  if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
+ });
+ await syncPendingProgress(uid);
+}
 /* ---------- authentification Firebase ---------- */
 async function enterFirebaseUser(user){
   try{await user.reload()}catch(e){}
@@ -1377,10 +1421,10 @@ async function enterFirebaseUser(user){
   let l=learner(id);
   if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
   else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
-  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};R.signup=false;R.tab=null;save();render();return true;
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id)}catch(progressError){console.error("Chargement progression distante :",progressError)}R.signup=false;R.tab=null;save();render();return true;
 }
 /* ---------- actions ---------- */
-function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save()}
+function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncProgress(user.uid,id,q.score,LESSONS[id].quiz.length)}
 const A={
  login(v){if(!DEMO_MODE){toast("Accès de démonstration désactivé. Ajoutez ?demo=1 à l’adresse pour tester.");return false}S.role=v;if(v==="apprenant")S.cur="u1";S.access=null;R.tab=null;save()},
 loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’authentification sécurisée. Pour tester les comptes fictifs, ajoutez ?demo=1 à l’adresse.");return false}const c=$("#lid").value.trim().toUpperCase(),p=$("#lpin").value.trim();
@@ -1732,7 +1776,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t
  render();});
 document.addEventListener("change",e=>{const t=e.target;if((t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type==="text"))&&A[t.dataset.a]){if(A[t.dataset.a](t.dataset.v,t)!==false)render()}});
 document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect[CUR()+":"+R.lesson.id]=e.target.value;save()}});
-window.addEventListener("online",()=>{S.subs.forEach(s=>s.pending=false);save();render();toast("Connexion revenue : tout est envoyé")});
+window.addEventListener("online",()=>{render();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified){syncPendingProgress(user.uid).then(n=>{if(n)toast(n+" résultat(s) de quiz synchronisé(s).")}).catch(e=>console.error(e))}else{toast("Connexion Internet rétablie.")}});
 window.addEventListener("offline",render);
 if(window.WATFirebase&&WATFirebase.ready){
  WATFirebase.auth.onAuthStateChanged(user=>{
