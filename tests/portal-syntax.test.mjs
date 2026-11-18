@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-test("le portail WAT Connect contient des scripts JavaScript valides", () => {
-  const html = readFileSync(new URL("../portail.html", import.meta.url), "utf8");
+test("les scripts JavaScript du portail WAT Connect sont syntaxiquement valides", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     .filter(([, attributes]) => !/\bsrc\s*=/.test(attributes))
     .map(([, , source]) => source)
     .filter(source => source.trim());
-  assert.ok(scripts.length > 0, "un script applicatif doit être présent");
+  assert.ok(scripts.length > 0, "un script du portail doit être présent");
   scripts.forEach((source, index) => {
-    assert.doesNotThrow(() => new vm.Script(source), "script du portail n°" + (index + 1));
+    assert.doesNotThrow(() => new vm.Script(source), "script WAT Connect n°" + (index + 1));
   });
 });
