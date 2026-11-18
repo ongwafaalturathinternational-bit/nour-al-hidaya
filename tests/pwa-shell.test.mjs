@@ -25,3 +25,11 @@ test("le shell précache les modules publics et exclut les données privées", (
   assert.match(worker, /if \(url\.origin !== scope\.origin\) return/);
   assert.doesNotMatch(worker, /collection\(["'](users|staffAccess|volunteers|attendance)["']\)/);
 });
+
+test("les pages Firebase signalent clairement une perte de connexion", () => {
+  const init = fs.readFileSync("firebase-init.js", "utf8");
+  assert.match(init, /wat-network-notice/);
+  assert.match(init, /addEventListener\("offline"/);
+  assert.match(init, /addEventListener\("online"/);
+  assert.match(init, /Certaines fonctions nécessitant Firebase ne sont pas accessibles/);
+});
