@@ -44,15 +44,6 @@ service cloud.firestore {
         && staffAccessData(request.auth.uid).scopes.hasAny([scope]);
     }
 
-    // Contrôle dédié aux feuilles de présence : comparaison directe du périmètre.
-    function staffHasAttendanceScope(scope) {
-      return request.auth != null
-        && staffAccessExists(request.auth.uid)
-        && staffAccessData(request.auth.uid).active == true
-        && staffAccessData(request.auth.uid).scopes is list
-        && scope in staffAccessData(request.auth.uid).scopes;
-    }
-
     // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
 
     // Référentiel des programmes institutionnels WAT.
