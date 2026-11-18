@@ -22,6 +22,8 @@ on:
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
+      - "sw.js"
+      - "tests/pwa-shell.test.mjs"
       - "index.html"
       - "nour-al-hidaya.html"
       - "manifest.json"
