@@ -54,6 +54,28 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Données pédagogiques propres à chaque apprenant : notes privées, pratiques et devoirs écrits.
+    match /users/{userId}/learning/{recordId} {
+      allow read: if signedInAs(userId);
+      allow create, update: if signedInAs(userId)
+        && request.resource.data.keys().hasOnly(["kind", "itemId", "value", "date", "updatedAt"])
+        && request.resource.data.keys().hasAll(["kind", "itemId", "value", "date", "updatedAt"])
+        && request.resource.data.kind in ["reflection", "practice", "submission"]
+        && request.resource.data.itemId is string
+        && request.resource.data.date is string
+        && request.resource.data.updatedAt == request.time
+        && (
+          (request.resource.data.kind in ["reflection", "submission"]
+            && request.resource.data.value is string
+            && request.resource.data.value.size() <= 5000)
+          ||
+          (request.resource.data.kind == "practice"
+            && request.resource.data.value is list
+            && request.resource.data.value.size() <= 20)
+        );
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
