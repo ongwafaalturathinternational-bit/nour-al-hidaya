@@ -96,3 +96,23 @@ test("la fiche projet expose les activités associées uniquement au périmètre
   assert.match(html, /activities\.filter\(a=>a\.projectId===p\.id\)/);
   assert.match(html, /if\(canActivitiesRead\)rows\.push\(\["Activités liées"/);
 });
+
+
+test("la fiche du Club synthétise les participations et les affectations sans contourner les périmètres", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(html, /Vue d’ensemble de l’engagement/);
+  assert.match(html, /Participations enregistrées/);
+  assert.match(html, /Présences confirmées/);
+  assert.match(html, /Projets confirmés/);
+  assert.match(html, /if\(canAttendanceRead\)tasks\.push/);
+  assert.match(html, /if\(canProjectsRead\)tasks\.push/);
+  assert.match(html, /if\(canActivitiesRead\)/);
+  assert.match(html, /where\("participantRef","==",v\.id\)/);
+  assert.match(html, /where\("volunteerId","==",v\.id\)/);
+});
+
+test("la recherche du Club inclut les disponibilités des bénévoles", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(html, /v\.availability\]\s*\.join\(" "\)/);
+  assert.match(html, /disponibilité/);
+});
