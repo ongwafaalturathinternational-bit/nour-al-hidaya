@@ -23,6 +23,7 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - "sw.js"
+      - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
       - "index.html"
       - "nour-al-hidaya.html"
