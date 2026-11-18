@@ -1,5 +1,15 @@
 # Stratégie des applications installables de WAT Connect
 
+## État d'avancement technique — 18 novembre 2026
+
+- Le portail WAT Connect possède un manifeste PWA et un service worker dédié.
+- Le service worker précache les pages statiques du portail et des modules du premier bloc, puis utilise une navigation réseau avec repli sur le cache.
+- Les requêtes d'écriture et les services externes Firebase ne sont pas interceptés ni mis en cache.
+- Cette étape rend l'interface plus résiliente hors connexion ; elle ne signifie pas que les formulaires, les présences ou les modifications de données peuvent déjà être créés hors ligne.
+- La file locale et la synchronisation des données métier restent à développer et à tester avant toute promesse de fonctionnement terrain hors connexion.
+- Aucun APK Android n'a encore été construit. La chaîne Capacitor/GitHub Actions reste une étape ultérieure, après stabilisation du socle PWA.
+- Le déploiement Firebase en production n'est pas autorisé par cette étape.
+
 ## Décision d'architecture
 
 WAT Connect est le portail numérique central de l'ONG Wafa Al-Turath. Les applications métier doivent pouvoir être utilisées depuis le portail et, lorsque cela est pertinent, installées et utilisées de manière autonome.
