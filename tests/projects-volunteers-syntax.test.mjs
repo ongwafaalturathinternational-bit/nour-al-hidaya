@@ -6,8 +6,8 @@ import vm from "node:vm";
 for (const file of ["projets.html", "club-khuddam.html"]) {
   test(file + " contient un JavaScript valide", () => {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
-    const scripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
-      .filter(([, attributes]) => !/\\bsrc\\s*=/.test(attributes))
+    const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+      .filter(([, attributes]) => !/\bsrc\s*=/.test(attributes))
       .map(([, , source]) => source)
       .filter(source => source.trim());
     assert.ok(scripts.length > 0);
