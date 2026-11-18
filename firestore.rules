@@ -121,19 +121,20 @@ service cloud.firestore {
     match /activities/{activityId} {
       allow read: if staffHasScope("activities.read") || staffHasScope("activities.manage");
       allow create: if staffHasScope("activities.manage")
-        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
         && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("activities.manage")
-        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
