@@ -332,6 +332,37 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Candidatures au Club : dépôt par le titulaire d'un compte vérifié.
+    // L'approbation reste une action explicite d'un gestionnaire autorisé.
+    match /volunteerApplications/{applicationId} {
+      allow get: if (request.auth != null && request.auth.uid == applicationId)
+        || staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
+      allow list: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
+      allow create: if request.auth != null
+        && request.auth.uid == applicationId
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "email", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
+        && request.resource.data.status == "en_attente"
+        && (!("phone" in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("volunteers.manage")
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "reviewedAt", "reviewedBy", "updatedAt", "updatedBy"])
+        && request.resource.data.status in ["acceptee", "refusee"]
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /users/{userId} {
       // Chaque nouvel utilisateur ne peut créer que son propre profil apprenant.
       allow create: if signedInAs(userId)
