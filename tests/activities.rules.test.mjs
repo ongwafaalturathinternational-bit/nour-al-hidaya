@@ -33,10 +33,13 @@ function attendance(uid, extra = {}) {
   };
 }
 
-test("activities.manage autorise création et lecture d'activité", async () => {
+test("activities.manage autorise une activité avec ou sans projet valide", async () => {
   await seed("activity-manager", ["activities.read", "activities.manage"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "project-1"), { name: "Projet test" }));
   const db = env.authenticatedContext("activity-manager").firestore();
   await assertSucceeds(setDoc(doc(db, "activities", "ramadan"), activity("activity-manager")));
+  await assertSucceeds(setDoc(doc(db, "activities", "linked"), activity("activity-manager", { projectId: "project-1" })));
+  await assertFails(setDoc(doc(db, "activities", "orphan-project"), activity("activity-manager", { projectId: "missing-project" })));
   await assertSucceeds(getDoc(doc(db, "activities", "ramadan")));
 });
 
