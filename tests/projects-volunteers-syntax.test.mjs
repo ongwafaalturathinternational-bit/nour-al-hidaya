@@ -14,3 +14,14 @@ for (const file of ["projets.html", "club-khuddam.html", "club-khuddam-inscripti
     scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), file + " script n°" + (index + 1)));
   });
 }
+
+
+test("le tableau de bord du Club calcule ses indicateurs à partir des données chargées", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  for (const id of ["statTotal", "statActive", "statEngaged", "statOccasional", "statContributors", "statPending"]) {
+    assert.ok(html.includes('id="' + id + '"'), "indicateur absent : " + id);
+  }
+  assert.match(html, /records\.filter\(v=>v\.status==="actif"\)/);
+  assert.match(html, /applications\.length/);
+  assert.match(html, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+});
