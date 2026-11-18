@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#102746">
+<title>Annuaire de l’ONG — WAT Connect</title>
+<style>
+:root{--navy:#102746;--gold:#c9972b;--paper:#f4f6fa;--ink:#17243a;--muted:#657187;--line:#dce2eb;--green:#176b49;--red:#a83232}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--navy);color:white;border-bottom:4px solid var(--gold)}.head{max-width:1100px;margin:auto;padding:15px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font:700 1.15rem Georgia,serif}.brand small{display:block;font:normal .78rem system-ui;opacity:.8}
+main{max-width:1100px;margin:auto;padding:28px 22px 55px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px}.top h1{font:700 1.8rem Georgia,serif;margin:0}.muted{color:var(--muted)}.layout{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.6fr);gap:18px}.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:20px}.panel h2{font:700 1.2rem Georgia,serif;margin:0 0 8px}
+label{display:block;font-size:.82rem;font-weight:700;margin:12px 0 5px}input,select{width:100%;padding:10px 11px;border:1px solid #cbd3df;border-radius:9px;background:white;color:var(--ink);font:inherit}button{font:inherit;cursor:pointer}.primary{background:var(--navy);color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:700}.secondary{background:white;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:9px 13px;font-weight:650}.danger{color:var(--red)}.form-button{width:100%;margin-top:16px}.message{padding:11px 13px;border-radius:9px;background:#edf2f8;margin:12px 0}.error{background:#fbe9e8;color:var(--red)}.success{background:#e7f4ec;color:var(--green)}[hidden]{display:none!important}
+.tools{display:flex;gap:10px;margin:12px 0}.tools input{flex:1}.count{font-size:.82rem;color:var(--muted);margin:8px 0}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}td{font-size:.9rem}.tag{display:inline-block;padding:3px 8px;border-radius:99px;background:#f8f0dc;color:#76520c;font-size:.72rem;font-weight:700}.status{background:#e7f4ec;color:var(--green)}.status.off{background:#fbe9e8;color:var(--red)}.empty{text-align:center;padding:28px;color:var(--muted)}.note{border-left:4px solid var(--gold);padding:8px 0 8px 13px;color:var(--muted);font-size:.88rem;margin-top:16px}
+@media(max-width:800px){main{padding:20px 14px 42px}.layout{grid-template-columns:1fr}.head{padding:13px 15px}.top{align-items:flex-start;flex-direction:column}}
+</style></head>
+<body>
+<header><div class="head"><div class="brand">WAT Connect <small>Administration de l’ONG Wafa Al-Turath</small></div><a href="index.html" style="color:white">Retour au portail</a></div></header>
+<main>
+<div class="top"><div><h1>Annuaire des membres</h1><div class="muted">Membres, fondateurs et bénévoles de l’ONG</div></div><button class="secondary" id="logout">Se déconnecter</button></div>
+<div id="message" class="message" role="status" aria-live="polite">Vérification de votre accès sécurisé…</div>
+<div id="app" class="layout" hidden>
+<section class="panel" id="formPanel" hidden><h2>Ajouter une fiche</h2><p class="muted">N’enregistrez que les informations nécessaires à la gestion de l’ONG.</p>
+<form id="memberForm">
+<label for="fullName">Nom complet *</label><input id="fullName" maxlength="120" required>
+<label for="memberType">Catégorie *</label><select id="memberType"><option value="membre">Membre</option><option value="fondateur">Fondateur</option><option value="benevole">Bénévole</option></select>
+<label for="position">Fonction au sein de WAT</label><input id="position" maxlength="100">
+<label for="email">E-mail</label><input id="email" type="email" maxlength="160">
+<label for="phone">Téléphone</label><input id="phone" maxlength="30">
+<button class="primary form-button" id="saveButton">Enregistrer la fiche</button>
+</form>
+</section>
+<section class="panel"><h2>Répertoire</h2><div class="tools"><input id="search" placeholder="Rechercher un nom, une fonction…"></div><div class="count" id="count"></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie / fonction</th><th>Contact</th><th>Statut</th><th id="actionHead" hidden>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Aucune fiche ne correspond à la recherche.</div></section>
+</div>
+<div class="note">L’accès à cet annuaire est contrôlé côté serveur par les règles Firestore. Les fiches sont désactivées plutôt que supprimées afin de préserver l’historique.</div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script><script src="firebase-init.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);let currentUser=null,canManage=false,members=[];
+function say(text,type=""){const el=$("message");el.textContent=text;el.className="message "+type;el.hidden=false}
+function esc(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){const q=$("search").value.trim().toLocaleLowerCase();const filtered=members.filter(m=>[m.fullName,m.position,m.email,m.phone,m.memberType,m.status].join(" ").toLocaleLowerCase().includes(q));$("rows").replaceChildren();$("count").textContent=filtered.length+" fiche(s) affichée(s) · "+members.length+" au total";$("empty").hidden=filtered.length!==0;filtered.sort((a,b)=>(a.fullName||"").localeCompare(b.fullName||"","fr")).forEach(m=>{const tr=document.createElement("tr");const contact=[m.email,m.phone].filter(Boolean).join(" · ");const type=({fondateur:"Fondateur",membre:"Membre",benevole:"Bénévole"})[m.memberType]||"—";const status=({actif:"Actif",inactif:"Inactif",suspendu:"Suspendu"})[m.status]||"Inconnu";tr.innerHTML="<td><strong>"+esc(m.fullName)+"</strong></td><td>"+esc(type)+"<br><span class='muted'>"+esc(m.position||"")+"</span></td><td>"+esc(contact||"—")+"</td><td><span class='tag status "+(m.status==="actif"?"":"off")+"'>"+esc(status)+"</span></td>";if(canManage){const td=document.createElement("td");const btn=document.createElement("button");btn.className="secondary";btn.textContent=m.status==="actif"?"Désactiver":"Réactiver";btn.addEventListener("click",()=>changeStatus(m.id,m.status==="actif"?"inactif":"actif"));td.append(btn);tr.append(td)}$("rows").append(tr)})}
+async function loadMembers(){const snap=await WATFirebase.db.collection("members").get();members=snap.docs.map(d=>({id:d.id,...d.data()}));render()}
+async function changeStatus(id,status){try{await WATFirebase.db.collection("members").doc(id).update({status,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid});await loadMembers();say("Statut de la fiche mis à jour.","success")}catch(e){console.error(e);say("Mise à jour refusée ou indisponible. Vérifiez votre droit members.manage.","error")}}
+async function init(user){if(!user){say("Connectez-vous avec votre compte WAT depuis le portail.");return}if(!user.emailVerified){say("Votre adresse e-mail doit être vérifiée.","error");return}const snap=await WATFirebase.db.collection("staffAccess").doc(user.uid).get();const staff=snap.exists?snap.data():null;if(!staff||staff.active!==true){say("Votre compte ne dispose pas d’un accès équipe actif.","error");return}const scopes=Array.isArray(staff.scopes)?staff.scopes:[];const canRead=scopes.includes("members.read")||scopes.includes("members.manage");canManage=scopes.includes("members.manage");if(!canRead){say("Votre compte n’a pas le périmètre members.read. Contactez l’administration.","error");return}currentUser=user;$("app").hidden=false;$("formPanel").hidden=!canManage;$("actionHead").hidden=!canManage;await loadMembers();say(canManage?"Accès gestionnaire : lecture et mise à jour autorisées.":"Accès consultation : lecture seule.","success")}
+$("memberForm").addEventListener("submit",async e=>{e.preventDefault();if(!canManage||!currentUser)return;const fullName=$("fullName").value.trim();if(fullName.length<2){say("Le nom complet doit comporter au moins deux caractères.","error");return}const data={fullName,memberType:$("memberType").value,status:"actif",createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid};for(const key of ["position","email","phone"]){const value=$(key).value.trim();if(value)data[key]=value}const b=$("saveButton");b.disabled=true;try{await WATFirebase.db.collection("members").add(data);$("memberForm").reset();await loadMembers();say("Fiche ajoutée à l’annuaire.","success")}catch(err){console.error(err);say("Enregistrement refusé. Vérifiez les droits members.manage et votre connexion.","error")}finally{b.disabled=false}});
+$("search").addEventListener("input",render);
+$("logout").addEventListener("click",async()=>{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut();location.href="index.html"});
+if(window.WATFirebase&&WATFirebase.ready){WATFirebase.auth.onAuthStateChanged(user=>{init(user).catch(e=>{console.error(e);say("Impossible de charger l’annuaire. Vérifiez vos accès et votre connexion.","error")})})}else say("Le service sécurisé est indisponible. Réessayez plus tard.","error");
+</script></body></html>
