@@ -53,3 +53,11 @@ test("les activités disposent de fiches détaillées accessibles", () => {
   assert.match(html, /Description/);
   assert.match(html, /closeDetails/);
 });
+
+
+test("le calendrier des activités affiche une répartition dynamique et accessible", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /id="activityDistribution"/);
+  assert.match(html, /function renderActivityDistribution\(\)/);
+  assert.match(html, /bar\.value=Math\.round\(count\/total\*100\)/);
+});
