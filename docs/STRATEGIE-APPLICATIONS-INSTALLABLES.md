@@ -5,6 +5,7 @@
 - Le portail WAT Connect possède un manifeste PWA et un service worker dédié.
 - Le service worker précache les pages statiques du portail et des modules du premier bloc, puis utilise une navigation réseau avec repli sur le cache.
 - Les requêtes d'écriture et les services externes Firebase ne sont pas interceptés ni mis en cache.
+- Les pages utilisant Firebase affichent un avertissement explicite lorsque le navigateur signale une perte de connexion; elles ne promettent pas encore la création ou la synchronisation hors ligne des données métier.
 - Cette étape rend l'interface plus résiliente hors connexion ; elle ne signifie pas que les formulaires, les présences ou les modifications de données peuvent déjà être créés hors ligne.
 - La file locale et la synchronisation des données métier restent à développer et à tester avant toute promesse de fonctionnement terrain hors connexion.
 - Aucun APK Android n'a encore été construit. La chaîne Capacitor/GitHub Actions reste une étape ultérieure, après stabilisation du socle PWA.
