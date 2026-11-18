@@ -33,3 +33,15 @@ test("le tableau de bord des projets calcule les indicateurs depuis Firestore", 
   assert.match(html, /projects\.filter\(p=>p\.status==="en_cours"\)/);
   assert.match(html, /projects\.filter\(p=>p\.status==="termine"\)/);
 });
+
+
+test("les registres projets et Club proposent des filtres combinables avec la recherche", () => {
+  const projects = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  const club = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(projects, /id="statusFilter"/);
+  assert.match(projects, /!\$\("statusFilter"\)\.value\|\|p\.status===\$\("statusFilter"\)\.value/);
+  assert.match(club, /id="statusFilter"/);
+  assert.match(club, /id="categoryFilter"/);
+  assert.match(club, /!\$\("categoryFilter"\)\.value\|\|v\.category===\$\("categoryFilter"\)\.value/);
+  assert.match(club, /categoryFilter"\)\.addEventListener\("change",render/);
+});
