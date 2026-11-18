@@ -113,6 +113,6 @@ test("le registre filtre les activités par projet uniquement avec le périmètr
   const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
   assert.match(html, /id="projectFilter"[^>]*hidden/);
   assert.match(html, /\$\("projectFilter"\)\.hidden=!canLinkProject/);
-  assert.match(html, /\$\(!?\$\("projectFilter"\)\.value\|\|a\.projectId===\$\("projectFilter"\)\.value\)/);
+  assert.match(html, /!\$\("projectFilter"\)\.value\|\|a\.projectId===\$\("projectFilter"\)\.value/);
   assert.match(html, /projectFilter"\)\.addEventListener\("change",render\)/);
 });
