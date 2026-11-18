@@ -88,3 +88,11 @@ test("les affectations du Club affichent un registre détaillé et permettent le
   assert.match(html, /collection\("volunteers"\)\.get\(\)/);
   assert.match(html, /Confirmee|Confirmée/);
 });
+
+
+test("la fiche projet expose les activités associées uniquement au périmètre activities.read", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /canActivitiesRead=scopes\.includes\("activities\.read"\)\|\|scopes\.includes\("activities\.manage"\)/);
+  assert.match(html, /activities\.filter\(a=>a\.projectId===p\.id\)/);
+  assert.match(html, /if\(canActivitiesRead\)rows\.push\(\["Activités liées"/);
+});
