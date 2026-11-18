@@ -27,13 +27,15 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - volunteers.read / volunteers.manage protègent le registre privé.
 - Les rôles seuls ne donnent aucun droit.
 - Les fiches ne sont pas supprimables; les statuts servent à conserver l'historique.
-- Aucune inscription publique ne crée automatiquement une fiche validée ni un accès d'équipe. Un futur formulaire public devra utiliser un parcours d'inscription contrôlé, sans possibilité d'auto-attribution de rôle.
+- Une candidature publique ne crée jamais un accès d'équipe. L'approbation par un gestionnaire autorisé est nécessaire avant création d'une fiche bénévole active.
 - Les règles Firestore et les tests négatifs doivent vérifier l'absence d'accès anonyme.
 
 ## Limites actuelles
 
 - Le registre interne et les affectations sont implémentés dans ce lot de travail.
-- Le formulaire public de candidature, la confirmation par le bénévole, les notifications et la synchronisation hors ligne restent à réaliser.
+- Le formulaire public de candidature est ajouté : création/connexion à un compte, vérification obligatoire de l'e-mail et consentement explicite avant dépôt.
+- Les responsables autorisés peuvent examiner les candidatures, accepter ou refuser; une acceptation crée une fiche bénévole dans le registre du Club.
+- Les notifications automatiques et la synchronisation hors ligne restent à réaliser.
 - Les affectations sont enregistrées par projet; la présence effective à une activité reste tracée dans le module Activités.
 - Aucune donnée réelle de bénévole n'est préchargée.
 
