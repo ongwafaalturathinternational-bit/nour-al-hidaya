@@ -1072,10 +1072,10 @@ function loginView(){
   <p class="small muted">Un e-mail de vérification sera envoyé avant l’accès à votre espace.</p>
   <button class="btn gold full" data-a="signup">Commencer gratuitement</button><button class="btn ghost full" data-a="signupx">Annuler</button></div></div>`
  :`<button class="btn gold full" data-a="signupo">Commencer à apprendre</button>`}
- <div class="card"><h3>J’ai déjà un compte</h3><p class="small muted" style="margin:4px 0 10px">Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.</p><div class="list"><div><label class="lbl" for="liemail">Adresse e-mail</label><input id="liemail" type="email" autocomplete="email" placeholder="vous@exemple.com" dir="ltr"></div><div><label class="lbl" for="lipass">Mot de passe</label><input id="lipass" type="password" autocomplete="current-password" dir="ltr"></div><button class="btn full" data-a="loginFirebase">Se connecter</button></div></div>
+ <div class="card"><h3>J’ai déjà un compte</h3><p class="small muted" style="margin:4px 0 10px">Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.</p><div class="list"><div><label class="lbl" for="liemail">Adresse e-mail</label><input id="liemail" type="email" autocomplete="email" placeholder="vous@exemple.com" dir="ltr"></div><div><label class="lbl" for="lipass">Mot de passe</label><input id="lipass" type="password" autocomplete="current-password" dir="ltr"></div><button class="btn full" data-a="loginFirebase">Se connecter</button><button class="btn ghost full" data-a="forgotPassword">Mot de passe oublié ?</button></div></div>
  <div class="note info"><b>Les cours en présentiel continuent.</b> L’application s’y ajoute pour celles et ceux qui préfèrent suivre les cours sur leur téléphone, seuls ou en groupe.</div>
  ${DEMO_MODE?`<div class="lbl" style="margin-top:6px">Mode démonstration activé — comptes fictifs</div>${Object.entries(ROLES).map(([k,r])=>`<button class="role" data-a="login" data-v="${k}"><span class="ic">${r.ic}</span><span><b>${r.label}</b> <span class="small muted" dir="ltr">(${roleId(k)})</span><span class="muted small">${r.desc}</span></span></button>`).join("")}`:`<div class="note info"><b>Mode démonstration désactivé.</b> Les comptes fictifs ne sont pas accessibles. Vous pouvez créer un compte apprenant avec une adresse e-mail et un mot de passe ; son profil de base sera enregistré dans WAT Connect.</div>`}
- <div class="note info"><b>Version en cours de développement.</b> Les comptes et profils apprenants sont centralisés dans Firebase. Les cours, progrès et devoirs ne sont pas encore synchronisés entre appareils.</div>
+ <div class="note info"><b>Version en cours de développement.</b> Les comptes, résultats de quiz, notes personnelles, pratiques et devoirs écrits sont synchronisés avec Firebase pour les apprenants connectés. Les présences, pièces jointes et espaces réels de l’équipe restent à développer.</div>
  </div>`}
 function tabView(){
  const k=S.role+":"+R.tab;
@@ -1526,6 +1526,13 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
   try{const credential=await WATFirebase.auth.signInWithEmailAndPassword(email,password);await enterFirebaseUser(credential.user)}
   catch(error){console.error("Connexion Firebase :",error);const messages={"auth/invalid-credential":"Adresse e-mail ou mot de passe incorrect.","auth/user-disabled":"Ce compte est désactivé.","auth/too-many-requests":"Trop de tentatives. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Connexion impossible. Vérifiez vos identifiants.")}
 },
+ async forgotPassword(){
+  const email=$("#liemail").value.trim().toLowerCase();
+  if(!email||!/^\S+@\S+\.\S+$/.test(email)){toast("Saisissez d’abord votre adresse e-mail dans le champ de connexion.");return false}
+  if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible.");return false}
+  try{await WATFirebase.auth.sendPasswordResetEmail(email);toast("Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.")}
+  catch(error){console.error("Réinitialisation du mot de passe :",error);const messages={"auth/invalid-email":"Adresse e-mail invalide.","auth/too-many-requests":"Trop de demandes. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Impossible d’envoyer le lien. Réessayez plus tard.")}
+ },
  signupo(){R.signup=true},signupx(){R.signup=false},
 async signup(){
   let createdUser=null;

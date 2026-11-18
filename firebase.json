@@ -12,7 +12,11 @@
       "docs/**",
       "SECURITE-ET-ROADMAP.md",
       "firestore.rules",
-      ".firebaserc"
+      ".firebaserc",
+      "tests/**",
+      ".github/**",
+      "**/*.test.*",
+      "*.md"
     ]
   }
 }
