@@ -1402,6 +1402,48 @@ async function loadFirebaseProgress(uid){
  });
  await syncPendingProgress(uid);
 }
+/* ---------- synchronisation des autres données pédagogiques de l'apprenant ---------- */
+const learningQueueKey=uid=>"nh_learning_queue_"+uid;
+function readLearningQueue(uid){try{return JSON.parse(localStorage.getItem(learningQueueKey(uid))||"[]")}catch(e){return[]}}
+function writeLearningQueue(uid,items){try{localStorage.setItem(learningQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale pédagogique indisponible",e)}}
+function applyLearningRecord(uid,data){
+ const key=uid+":"+data.itemId;
+ if(data.kind==="reflection"&&typeof data.value==="string")S.reflect[key]=data.value;
+ if(data.kind==="practice"&&Array.isArray(data.value))S.practice[key]=data.value;
+ if(data.kind==="submission"&&typeof data.value==="string"){
+  S.subs=S.subs.filter(x=>!(x.hw===data.itemId&&x.u===uid));
+  S.subs.push({hw:data.itemId,u:uid,date:data.date||dayISO(),status:"rendu",pending:false,text:data.value});
+ }
+}
+function enqueueLearning(uid,recordId,data){
+ const items=readLearningQueue(uid).filter(x=>x.recordId!==recordId);
+ items.push({recordId,data});writeLearningQueue(uid,items);
+}
+async function queueAndSyncLearning(uid,recordId,data){
+ enqueueLearning(uid,recordId,data);applyLearningRecord(uid,data);
+ if(navigator.onLine)await syncPendingLearning(uid);
+}
+async function syncPendingLearning(uid){
+ const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;
+ if(!uid||!navigator.onLine||!user||user.uid!==uid||!user.emailVerified)return 0;
+ const items=readLearningQueue(uid),remaining=[];let synced=0;
+ for(const item of items){
+  try{
+   await WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
+    ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+   synced++;
+  }catch(error){console.error("Synchronisation pédagogique :",error);remaining.push(item)}
+ }
+ writeLearningQueue(uid,remaining);return synced;
+}
+async function loadFirebaseLearning(uid){
+ const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
+ const pending=readLearningQueue(uid);
+ pending.forEach(item=>applyLearningRecord(uid,item.data));
+ await syncPendingLearning(uid);
+}
 /* ---------- authentification Firebase ---------- */
 async function enterFirebaseUser(user){
   try{await user.reload()}catch(e){}
@@ -1421,7 +1463,7 @@ async function enterFirebaseUser(user){
   let l=learner(id);
   if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
   else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
-  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id)}catch(progressError){console.error("Chargement progression distante :",progressError)}R.signup=false;R.tab=null;save();render();return true;
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id)}catch(progressError){console.error("Chargement progression distante :",progressError)}try{await loadFirebaseLearning(id)}catch(learningError){console.error("Chargement données pédagogiques :",learningError)}R.signup=false;R.tab=null;save();render();return true;
 }
 /* ---------- actions ---------- */
 function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncProgress(user.uid,id,q.score,LESSONS[id].quiz.length)}
@@ -1529,7 +1571,7 @@ async signup(){
  matchok(){const{id,q}=R.lesson,Q=LESSONS[id].quiz[q.i];let ok=true;Q.p.forEach((p,i)=>{const v=$("#m"+i).value;q.sel[i]=v;if(v!==p[1])ok=false});if(Object.keys(q.sel).length&&Q.p.some((p,i)=>!q.sel[i])){toast("Choisissez une réponse pour chaque nom");return false}q.fb={ok};if(ok)q.score++},
  qnext(){const{id,q}=R.lesson;if(q.i+1<LESSONS[id].quiz.length){q.i++;q.fb=null;q.seq=[];q.sel={};q.shuf=null;q.mo=null}else{q.fin=true;finishLessonScore()}},
  finish(){R.lesson=null;toast("Leçon enregistrée ✓")},
- prac(v,e){const k=CUR()+":"+R.lesson.id;const a=S.practice[k]||(S.practice[k]=[]);const i=+v;if(a.includes(i))a.splice(a.indexOf(i),1);else a.push(i);save()},
+ prac(v,e){const k=CUR()+":"+R.lesson.id;const a=S.practice[k]||(S.practice[k]=[]);const i=+v;if(a.includes(i))a.splice(a.indexOf(i),1);else a.push(i);save();const user=window.WATFirebase&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncLearning(user.uid,"practice_"+R.lesson.id,{kind:"practice",itemId:String(R.lesson.id),value:[...a],date:dayISO()})},
  sendtext(){const t=$("#hwt").value.trim();if(!t){toast("Écrivez d’abord votre réponse");return false}submit({text:t})},
  sendfile(){const f=$("#hwf").files[0];if(!f){toast("Choisissez d’abord un fichier");return false}submit({file:f.name})},
  sat(v){S.sat.push(+v);save();toast("Merci pour votre avis")},
@@ -1557,7 +1599,7 @@ async signup(){
  disc(){S.set.discreet=!S.set.discreet;save()},
  reset(){S=seed();R={tab:null};save();toast("Données d’exemple rétablies")}
 };
-function submit(o){const u=CUR(),h=R.hw;const pend=!online();S.subs=S.subs.filter(s=>!(s.hw===h&&s.u===u));S.subs.push({hw:h,u,date:dayISO(),status:"rendu",pending:pend,...o});save();toast(pend?"Gardé : il partira avec le réseau":"Devoir envoyé ✓")}
+function submit(o){const u=CUR(),h=R.hw;const pend=!online();S.subs=S.subs.filter(s=>!(s.hw===h&&s.u===u));S.subs.push({hw:h,u,date:dayISO(),status:"rendu",pending:pend,...o});save();if(typeof o.text==="string"&&window.WATFirebase&&WATFirebase.auth.currentUser&&WATFirebase.auth.currentUser.emailVerified)queueAndSyncLearning(u,"submission_"+h,{kind:"submission",itemId:String(h),value:o.text,date:dayISO()});toast(pend?"Gardé : il partira avec le réseau":"Devoir enregistré ✓") }
 
 /* correction par le formateur */
 const origHw=hwDetail;
@@ -1776,7 +1818,8 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t
  render();});
 document.addEventListener("change",e=>{const t=e.target;if((t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type==="text"))&&A[t.dataset.a]){if(A[t.dataset.a](t.dataset.v,t)!==false)render()}});
 document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect[CUR()+":"+R.lesson.id]=e.target.value;save()}});
-window.addEventListener("online",()=>{render();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified){syncPendingProgress(user.uid).then(n=>{if(n)toast(n+" résultat(s) de quiz synchronisé(s).")}).catch(e=>console.error(e))}else{toast("Connexion Internet rétablie.")}});
+document.addEventListener("change",e=>{if(e.target.id==="refl"&&R.lesson){const user=window.WATFirebase&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncLearning(user.uid,"reflection_"+R.lesson.id,{kind:"reflection",itemId:String(R.lesson.id),value:e.target.value,date:dayISO()}).catch(err=>console.error(err))}});
+window.addEventListener("online",()=>{render();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified){Promise.all([syncPendingProgress(user.uid),syncPendingLearning(user.uid)]).then(([n,m])=>{if(n||m)toast((n+m)+" donnée(s) pédagogique(s) synchronisée(s).")}).catch(e=>console.error(e))}else{toast("Connexion Internet rétablie.")}});
 window.addEventListener("offline",render);
 if(window.WATFirebase&&WATFirebase.ready){
  WATFirebase.auth.onAuthStateChanged(user=>{
