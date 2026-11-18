@@ -45,4 +45,13 @@ $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!window
 $("forgotButton").addEventListener("click",async()=>{const email=$("email").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){message("Saisissez d’abord votre adresse e-mail.","error");return}if(!window.WATFirebase||!WATFirebase.ready){message("Service sécurisé indisponible.","error");return}try{await WATFirebase.auth.sendPasswordResetEmail(email);message("Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.","success")}catch(e){message("Impossible d’envoyer le lien. Réessayez plus tard.","error")}});
 $("logoutButton").addEventListener("click",async()=>{await WATFirebase.auth.signOut();$("workspace").hidden=true;$("public").hidden=false;$("loginForm").reset()});
 if(window.WATFirebase&&WATFirebase.ready)WATFirebase.auth.onAuthStateChanged(async user=>{if(!user)return;try{await access(user)}catch(e){console.error(e);message(e.message||"Accès non autorisé.","error")}});
+</script>
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(error => {
+      console.warn("Installation hors ligne indisponible :", error);
+    });
+  });
+}
 </script></body></html>
