@@ -28,3 +28,11 @@ test("le module conserve un historique nominatif des présences par activité", 
   assert.match(html, /labels\[x\.status\]/);
   assert.match(html, /where\("activityId","==",id\)/);
 });
+
+
+test("le tableau de bord des activités calcule les indicateurs depuis Firestore", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  for (const id of ["statActivities", "statScheduled", "statDone", "statCancelled"]) assert.ok(html.includes('id="' + id + '"'));
+  assert.match(html, /activities\.filter\(a=>a\.status==="planifiee"\)/);
+  assert.match(html, /activities\.filter\(a=>a\.status==="realisee"\)/);
+});
