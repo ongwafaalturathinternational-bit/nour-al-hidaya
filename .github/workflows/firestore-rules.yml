@@ -8,7 +8,9 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - "index.html"
-      - "portail.html"
+      - "nour-al-hidaya.html"
+      - "manifest.json"
+      - "manifest-nour.json"
       - "tests/portal-syntax.test.mjs"
       - "tests/app-syntax.test.mjs"
 
