@@ -44,15 +44,10 @@ service cloud.firestore {
         && staffAccessData(request.auth.uid).scopes.hasAny([scope]);
     }
 
-    function attendanceAccess(userId) {
-      let access = get(/databases/$(database)/documents/staffAccess/$(userId)).data;
-      return access.active == true
-        && access.scopes is list
-        && access.scopes.hasAny(["attendance.manage"]);
-    }
-
+    // Réutilise le contrôle de périmètre central, déjà couvert par les tests
+    // des autres modules, afin d'éviter une seconde logique d'autorisation.
     function attendanceManager() {
-      return request.auth != null && attendanceAccess(request.auth.uid);
+      return staffHasScope("attendance.manage");
     }
 
     // Annuaire institutionnel : informations de contact minimales, sans notes sensibles.
