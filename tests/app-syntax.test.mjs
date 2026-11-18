@@ -12,6 +12,6 @@ test("les scripts JavaScript intégrés à index.html sont syntaxiquement valide
 
   assert.ok(scripts.length > 0, "un script applicatif intégré doit être présent");
   scripts.forEach((source, index) => {
-    assert.doesNotThrow(() => new vm.Script(source), \`script intégré n°\${index + 1}\`);
+    assert.doesNotThrow(() => new vm.Script(source), "script intégré n°" + (index + 1));
   });
 });
