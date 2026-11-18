@@ -68,6 +68,7 @@ test("attendance.manage autorise la présence, lecture dédiée et aucune suppre
   assert.deepEqual(access.data().scopes, ["activities.read", "attendance.read", "attendance.manage"]);
   const ref = doc(db, "attendance", "p1");
   await assertSucceeds(setDoc(ref, attendance("attendance-manager")));
+  console.log("ATTENDANCE_CREATE_VALIDATION_PASSED");
   await assertFails(setDoc(doc(db, "attendance", "orphan"), attendance("attendance-manager", { activityId: "missing-activity" })));
   await assertSucceeds(getDoc(ref));
   await assertFails(deleteDoc(ref));
