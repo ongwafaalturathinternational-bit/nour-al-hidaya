@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-for (const file of ["projets.html", "club-khuddam.html"]) {
+for (const file of ["projets.html", "club-khuddam.html", "club-khuddam-inscription.html"]) {
   test(file + " contient un JavaScript valide", () => {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
     const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
