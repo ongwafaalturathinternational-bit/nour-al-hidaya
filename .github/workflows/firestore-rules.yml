@@ -8,6 +8,8 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - "index.html"
+      - "portail.html"
+      - "tests/portal-syntax.test.mjs"
       - "tests/app-syntax.test.mjs"
 
 permissions:
