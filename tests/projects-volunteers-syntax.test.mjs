@@ -45,3 +45,12 @@ test("les registres projets et Club proposent des filtres combinables avec la re
   assert.match(club, /!\$\("categoryFilter"\)\.value\|\|v\.category===\$\("categoryFilter"\)\.value/);
   assert.match(club, /categoryFilter"\)\.addEventListener\("change",render/);
 });
+
+
+test("les projets disposent de fiches détaillées accessibles", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /<dialog id="detailDialog"/);
+  assert.match(html, /showProjectDetails\(p\)/);
+  assert.match(html, /Description/);
+  assert.match(html, /closeDetails/);
+});
