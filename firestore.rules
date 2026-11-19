@@ -363,6 +363,169 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Registre financier confidentiel : lecture, saisie et validation sont des périmètres séparés.
+    match /financeTransactions/{transactionId} {
+      allow read: if staffHasScope("finance.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate");
+
+      // Une opération est créée comme soumise; elle ne touche jamais le solde avant validation.
+      allow create: if staffHasScope("finance.manage")
+        && request.resource.data.keys().hasOnly([
+          "type", "category", "amount", "date", "counterparty", "paymentMethod",
+          "reference", "description", "status", "projectId", "projectName", "evidenceRef",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "type", "category", "amount", "date", "counterparty", "paymentMethod",
+          "reference", "description", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.type in ["recette", "depense"]
+        && request.resource.data.category is string
+        && request.resource.data.category.size() >= 2
+        && request.resource.data.category.size() <= 40
+        && ((request.resource.data.type == "recette"
+          && request.resource.data.category in ["don", "cotisation", "subvention", "collecte", "vente", "autre"])
+          || (request.resource.data.type == "depense"
+          && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "logistique", "communication", "transport", "equipement", "autre"]))
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.date is string
+        && request.resource.data.date.size() == 10
+        && request.resource.data.counterparty is string
+        && request.resource.data.counterparty.size() <= 140
+        && request.resource.data.paymentMethod in ["especes", "mobile_money", "virement", "cheque", "nature"]
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 3
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.status == "soumise"
+        && (!("projectId" in request.resource.data) || (
+          request.resource.data.projectId is string
+          && request.resource.data.projectId.size() >= 1
+          && request.resource.data.projectId.size() <= 100
+        ))
+        && (!("projectName" in request.resource.data) || (
+          request.resource.data.projectName is string
+          && request.resource.data.projectName.size() <= 140
+        ))
+        && (!("evidenceRef" in request.resource.data) || (
+          request.resource.data.evidenceRef is string
+          && request.resource.data.evidenceRef.size() <= 180
+        ))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      // Les opérations sont immuables après soumission. Seul un validateur distinct peut les traiter.
+      allow update: if staffHasScope("finance.validate")
+        && resource.data.status == "soumise"
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.category == resource.data.category
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.counterparty == resource.data.counterparty
+        && request.resource.data.paymentMethod == resource.data.paymentMethod
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "validatedAt", "validatedBy", "rejectedAt", "rejectedBy",
+          "rejectionReason", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && (
+          (request.resource.data.status == "validee"
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && !("rejectedAt" in request.resource.data)
+            && !("rejectedBy" in request.resource.data)
+            && !("rejectionReason" in request.resource.data))
+          ||
+          (request.resource.data.status == "rejetee"
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && !("validatedAt" in request.resource.data)
+            && !("validatedBy" in request.resource.data))
+        );
+
+      allow delete: if false;
+    }
+
+    // Budgets : autorisations indépendantes du registre des mouvements.
+    match /financeBudgets/{budgetId} {
+      allow read: if staffHasScope("finance.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.budgets.manage");
+
+      allow create: if staffHasScope("finance.budgets.manage")
+        && request.resource.data.keys().hasOnly([
+          "name", "year", "amount", "category", "status", "note",
+          "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "year", "amount", "category", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.year is int
+        && request.resource.data.year >= 2020
+        && request.resource.data.year <= 2100
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
+        && request.resource.data.status == "actif"
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100))
+        && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow update: if staffHasScope("finance.budgets.manage")
+        && request.resource.data.keys().hasOnly([
+          "name", "year", "amount", "category", "status", "note",
+          "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "year", "amount", "category", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.year is int
+        && request.resource.data.year >= 2020
+        && request.resource.data.year <= 2100
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
+        && request.resource.data.status in ["actif", "clos"]
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100))
+        && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow delete: if false;
+    }
+
     match /users/{userId} {
       // Chaque nouvel utilisateur ne peut créer que son propre profil apprenant.
       allow create: if signedInAs(userId)
