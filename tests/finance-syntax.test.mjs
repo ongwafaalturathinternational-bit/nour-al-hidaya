@@ -340,3 +340,16 @@ test("les transferts et rapprochements respectent la date d'ouverture de chaque 
   assert.match(html, /!accountEligibleForDate\(source,date\)\|\|!accountEligibleForDate\(destination,date\)/);
   assert.match(html, /if\(!accountEligibleForDate\(account,date\)\|\|!Number\.isSafeInteger\(statementBalance\)/);
 });
+
+
+test("la clôture d'un compte exige un solde nul et aucun mouvement futur", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const close = html.match(/async function closeAccount\(a\)\{[\s\S]*?\}\nasync function review/)?.[0] || "";
+  assert.ok(close, "closeAccount doit être défini");
+  assert.match(close, /balance=accountComputedBalance\(a\.id,todayLocal\(\)\)/);
+  assert.match(close, /if\(balance!==0\)/);
+  assert.match(close, /futureTransactions=transactions\.filter/);
+  assert.match(close, /futureTransfers=transfers\.filter/);
+  assert.match(close, /futureTransactions\|\|futureTransfers/);
+  assert.match(close, /Transférez ou régularisez intégralement ce solde/);
+});
