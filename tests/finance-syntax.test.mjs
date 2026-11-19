@@ -130,6 +130,13 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("tous les rapports financiers de répartition suivent le même filtre d'exercice", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /function renderExpenseChart\(\).*?selected=\$\("yearFilter"\)\.value/s);
+  assert.match(html, /function renderPaymentSummary\(\).*?selected=\$\("yearFilter"\)\.value/s);
+  assert.match(html, /if\(id==="yearFilter"\)\{renderExpenseChart\(\);renderMonthlyChart\(\);renderPaymentSummary\(\);renderDonorSummary\(\);renderProjectFinance\(\)\}/);
+});
+
 test("les rapports par donateur et par projet suivent le filtre d'exercice", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /const groups=new Map\(\),selected=\$\("yearFilter"\)\.value/);
