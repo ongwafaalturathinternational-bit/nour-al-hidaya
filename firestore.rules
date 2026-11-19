@@ -655,6 +655,7 @@ service cloud.firestore {
         ])
         && request.resource.data.year == year
         && request.resource.data.year.matches("^[0-9]{4}$")
+        && int(request.resource.data.year) < request.time.year()
         && request.resource.data.status == "clos"
         && request.resource.data.snapshot is map
         && request.resource.data.snapshot.keys().hasOnly(["receiptsCash", "receiptsInKind", "expenses", "netCash", "validatedTransactionCount", "transferCount", "reconciliationCount", "accountCount", "budgetCount"])
