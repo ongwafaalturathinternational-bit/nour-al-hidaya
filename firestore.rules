@@ -398,7 +398,7 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 100
         && request.resource.data.type in ["caisse", "banque", "mobile_money"]
         && (!("institution" in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 120))
-        && (!("reference" in request.resource.data) || (request.resource.data.reference is string && request.resource.data.reference.size() <= 60))
+        && (!("reference" in request.resource.data) || (request.resource.data.reference is string && request.resource.data.reference.size() <= 4))
         && request.resource.data.currency == "XOF"
         && request.resource.data.status == "actif"
         && request.resource.data.createdAt == request.time
