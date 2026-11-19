@@ -19,7 +19,8 @@ test("les accès lecture, saisie, validation et budgets sont indépendants", () 
   assert.match(html, /scopes\.includes\("finance\.manage"\)/);
   assert.match(html, /scopes\.includes\("finance\.validate"\)/);
   assert.match(html, /scopes\.includes\("finance\.budgets\.manage"\)/);
-  assert.match(html, /if\(canValidate\)/);\n  assert.match(html, /t\.createdBy!==user\.uid/);
+  assert.match(html, /if\(canValidate\)/);
+  assert.match(html, /t\.createdBy!==user\.uid/);
   assert.match(html, /if\(canManage\)/);
   assert.match(html, /if\(canBudgetManage\)/);
 });
