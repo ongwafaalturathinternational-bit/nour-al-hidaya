@@ -30,6 +30,7 @@ on:
       - "tests/cloudflare-preview.test.mjs"
       - "sw.js"
       - "firebase-init.js"
+      - "tests/firebase-init.test.mjs"
       - "tests/pwa-shell.test.mjs"
       - "index.html"
       - "nour-al-hidaya.html"

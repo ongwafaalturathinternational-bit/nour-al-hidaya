@@ -57,9 +57,13 @@
       }
     };
     const firebaseConfig = configs[environment];
-    const app = window.firebase.apps.length
-      ? window.firebase.app()
-      : window.firebase.initializeApp(firebaseConfig);
+    const existingApp = window.firebase.apps.length ? window.firebase.app() : null;
+    // Si un autre script a déjà initialisé Firebase sur un projet différent,
+    // on bloque plutôt que de connecter silencieusement le mauvais environnement.
+    if (existingApp && existingApp.options.projectId !== firebaseConfig.projectId) {
+      throw new Error("Firebase est déjà initialisé sur un autre projet.");
+    }
+    const app = existingApp || window.firebase.initializeApp(firebaseConfig);
     window.WATFirebase = {
       ready: true,
       app: app,
