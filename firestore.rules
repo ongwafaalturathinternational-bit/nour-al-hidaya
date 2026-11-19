@@ -485,6 +485,7 @@ service cloud.firestore {
       allow update: if staffHasScope("finance.validate")
         && request.auth.uid != resource.data.createdBy
         && resource.data.status == "soumise"
+        && (!( "accountId" in resource.data) || (exists(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)) && get(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)).data.status == "actif"))
         && request.resource.data.type == resource.data.type
         && request.resource.data.category == resource.data.category
         && request.resource.data.amount == resource.data.amount
@@ -571,6 +572,10 @@ service cloud.firestore {
       allow update: if staffHasScope("finance.validate")
         && request.auth.uid != resource.data.createdBy
         && resource.data.status == "soumise"
+        && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId))
+        && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.destinationAccountId))
+        && get(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId)).data.status == "actif"
+        && get(/databases/$(database)/documents/financeAccounts/$(resource.data.destinationAccountId)).data.status == "actif"
         && request.resource.data.sourceAccountId == resource.data.sourceAccountId
         && request.resource.data.sourceName == resource.data.sourceName
         && request.resource.data.destinationAccountId == resource.data.destinationAccountId
