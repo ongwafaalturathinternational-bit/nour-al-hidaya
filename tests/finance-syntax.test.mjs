@@ -353,3 +353,43 @@ test("la clôture d'un compte exige un solde nul et aucun mouvement futur", () =
   assert.match(close, /futureTransactions\|\|futureTransfers/);
   assert.match(close, /Transférez ou régularisez intégralement ce solde/);
 });
+
+
+test("la clôture annuelle ne peut viser que des exercices terminés", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /year>=todayLocal\(\)\.slice\(0,4\)/);
+  assert.match(html, /un exercice ne peut être clôturé qu’après la fin de l’année concernée/);
+  assert.match(html, /y<currentYear&&!periods\.some/);
+});
+
+test("l'instantané annuel ne compte que les comptes ouverts avant la fin de l'exercice", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.match(/function buildPeriodSnapshot\(year\)\{[\s\S]*?\}/)?.[0];
+  assert.ok(source, "buildPeriodSnapshot doit être défini");
+  const build = vm.runInNewContext(source + "; buildPeriodSnapshot", {
+    transactions: [
+      { date: "2025-03-01", status: "validee", type: "recette", paymentMethod: "especes", amount: 100 },
+      { date: "2025-04-01", status: "validee", type: "recette", paymentMethod: "nature", amount: 50 },
+      { date: "2025-05-01", status: "validee", type: "depense", amount: 30 },
+      { date: "2025-06-01", status: "soumise", type: "depense", amount: 500 }
+    ],
+    transfers: [{ date: "2025-07-01", status: "validee" }],
+    reconciliations: [{ date: "2025-08-01", status: "validee" }],
+    accounts: [
+      { openingDate: "2024-12-15" },
+      { openingDate: "2025-12-31" },
+      { openingDate: "2026-01-01" }
+    ],
+    budgets: [{ year: 2025 }, { year: 2026 }]
+  });
+  const snapshot = build("2025");
+  assert.equal(snapshot.receiptsCash, 100);
+  assert.equal(snapshot.receiptsInKind, 50);
+  assert.equal(snapshot.expenses, 30);
+  assert.equal(snapshot.netCash, 70);
+  assert.equal(snapshot.validatedTransactionCount, 3);
+  assert.equal(snapshot.transferCount, 1);
+  assert.equal(snapshot.reconciliationCount, 1);
+  assert.equal(snapshot.accountCount, 2);
+  assert.equal(snapshot.budgetCount, 1);
+});
