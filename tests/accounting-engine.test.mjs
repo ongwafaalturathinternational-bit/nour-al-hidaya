@@ -128,3 +128,14 @@ test("refuse les codes de comptes dupliqués dans le référentiel de balance", 
     [accounts["ACCOUNT-A"], { ...accounts["ACCOUNT-A"] }], [balanced]
   ), /code en double/);
 });
+
+
+test("un compte désactivé reste visible dans la balance des exercices historiques", () => {
+  const historical = structuredClone(balanced);
+  historical.lines[0].accountCode = "DISABLED";
+  const rows = buildTrialBalance(
+    [accounts["DISABLED"], accounts["ACCOUNT-B"]], [historical]
+  );
+  assert.deepEqual(rows.map(x => x.accountCode), ["ACCOUNT-B", "DISABLED"]);
+  assert.equal(rows.find(x => x.accountCode === "DISABLED").movementDebit, 12500);
+});
