@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      // Chaque nouvel utilisateur ne peut créer que son propre profil apprenant.
+      allow create: if signedInAs(userId)
+        && request.resource.data.keys().hasOnly([
+          "email", "displayName", "role", "country", "interest",
+          "mosque", "learningMode", "createdAt"
+        ])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == "apprenant"
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.country is string
+        && request.resource.data.interest in ["C", "B"]
+        && request.resource.data.mosque is string
+        && request.resource.data.learningMode in ["seul", "groupe", "presentiel"]
+        && request.resource.data.createdAt == request.time;
+
+      // Un utilisateur ne lit que son profil.
+      allow read: if signedInAs(userId);
+
+      // Le rôle et l'adresse e-mail ne peuvent jamais être modifiés par le client.
+      allow update: if signedInAs(userId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(["displayName", "country", "interest", "mosque", "learningMode", "updatedAt"])
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email;
+
+      // Autorise la suppression du seul profil apprenant par son propriétaire.
+      allow delete: if signedInAs(userId) && resource.data.role == "apprenant";
+    }
+
+    // Tout le reste reste fermé jusqu'à l'ajout de règles métier vérifiées.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
