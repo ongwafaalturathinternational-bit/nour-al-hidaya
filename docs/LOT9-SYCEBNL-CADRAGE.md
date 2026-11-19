@@ -328,3 +328,46 @@ Les fonctionnalités suivantes font désormais partie du périmètre cible du mo
 
 **Dépendances bloquantes :** aucun de ces écrans ne doit écrire de vraies données financières dans le projet Firebase de production depuis la prévisualisation. Les écritures définitives doivent passer par un service serveur transactionnel, qui contrôle les droits, la période, les comptes, l'équilibre, l'unicité et l'immutabilité. Les fichiers GED doivent être stockés dans un espace privé. Les intégrations fiscales ou bancaires ne seront activées qu'après vérification des interfaces officielles et des autorisations nécessaires.
 
+
+## 11. Registre des donateurs et gestion des bailleurs de fonds
+
+WAT Connect doit distinguer trois notions liées mais différentes :
+
+1. **Donateur** : personne physique ou morale qui apporte un don, ponctuel ou récurrent, en numéraire ou en nature. Chaque don reçu alimente le registre des donateurs conforme aux mentions du SYCEBNL.
+2. **Bailleur / partenaire financier** : organisme ou partenaire qui apporte un financement, souvent dans le cadre d'un appel à projets, d'une convention ou d'un accord assorti de conditions. Une fiche bailleur peut exister même avant le premier décaissement.
+3. **Convention / financement** : engagement financier rattaché à un projet précis, avec montant accordé, devise, période, tranches, dépenses éligibles, obligations de visibilité, indicateurs, livrables, rapports et conditions de décaissement.
+
+### 11.1 Fiche bailleur
+- Dénomination officielle, catégorie (fondation, ONG, institution publique, agence, entreprise, diaspora, particulier, autre), pays, adresse et site web.
+- Contacts institutionnels et opérationnels, responsable de programme, finance, suivi-évaluation et urgences.
+- Domaines d'intervention, zones géographiques, priorités, modalités de candidature, liens d'appels à projets.
+- Historique des échanges, candidatures, décisions, conventions et financements reçus.
+- Statut de relation : identifié, à contacter, contacté, candidature en préparation, soumis, approuvé, actif, clôturé, refusé ou suspendu.
+
+### 11.2 Convention et budget affecté
+- Référence, date de signature, bailleur, projet WAT, montant approuvé, devise, période d'exécution et responsables.
+- Tranches prévues/reçues, dates attendues/réelles, conditions préalables et preuves de réception.
+- Budget par ligne, activité et période ; catégories de dépenses éligibles/non éligibles ; plafonds, cofinancement et règles de réaffectation.
+- Restrictions d'utilisation et distinction stricte entre fonds affectés et ressources libres de WAT.
+- Engagements contractuels : visibilité du bailleur, achats, seuils de mise en concurrence, sauvegarde, protection des bénéficiaires, indicateurs et livrables.
+- Alertes avant échéance, retard de tranche, dépassement budgétaire et fin de période d'éligibilité.
+
+### 11.3 Suivi financier et rapportage
+- Dépenses imputées à une convention uniquement si elles sont validées et éligibles ; rattachement aux écritures comptables et justificatifs GED.
+- Suivi du budget initial, budget révisé autorisé, engagé, payé, restant disponible et dépenses rejetées.
+- Rapports financiers et narratifs selon le calendrier contractuel ; suivi des pièces manquantes, validation interne, transmission et accusé de réception.
+- Rapport par bailleur, convention, projet, activité, période et devise ; rapprochement entre fonds reçus, dépenses, solde bancaire/caisse et solde à reverser.
+- Archivage de la convention, avenants, correspondances, demandes de décaissement, preuves de réception, rapports et validations.
+- Historique des modifications, auteurs, dates, motifs et pièces justificatives ; aucune modification rétroactive silencieuse d'une convention approuvée.
+
+### 11.4 Contrôle et séparation des rôles
+Le gestionnaire de projet prépare le budget et les rapports ; le gestionnaire financier enregistre les opérations ; le validateur autorisé approuve les dépenses et rapports financiers ; le contrôleur financier de l'ONG consulte les conventions, budgets, pièces et pistes d'audit, puis formule des observations sans modifier les opérations. Les droits du bailleur sont limités à un éventuel espace de consultation/rapportage explicitement autorisé : aucun accès direct aux autres projets, aux données personnelles des bénéficiaires ou à la comptabilité globale de WAT.
+
+### 11.5 Règles de conception
+- Un bailleur peut financer plusieurs projets ; un projet peut avoir plusieurs bailleurs et du cofinancement.
+- Chaque dépense financée doit avoir une seule imputation principale par convention, avec contrôle contre le double financement d'une même dépense.
+- Les fonds affectés ne deviennent pas automatiquement des recettes libres : leur traitement comptable suit les dispositions SYCEBNL et la convention.
+- Le registre réglementaire des donateurs et le portefeuille de bailleurs sont reliés, mais ne sont pas fusionnés : une convention institutionnelle ne remplace pas les mentions obligatoires du registre des dons.
+- Les modèles de rapports varient selon les partenaires ; le système doit permettre des gabarits par bailleur sans altérer les données comptables sources.
+
+Le module de validation ajouté dans `donor-funding.mjs` constitue une première couche de règles métier testables (mentions du registre, fiche bailleur, convention, tranches, solde disponible et échéances de rapports). Il ne constitue pas encore une base de données, un workflow sécurisé ni une intégration de décaissement : ces fonctions nécessiteront les contrôles serveur et la GED privée prévus dans l'architecture.
