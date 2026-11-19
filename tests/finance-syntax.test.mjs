@@ -307,3 +307,12 @@ test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés a
   assert.match(rules, /request\.resource\.data\.date >= get\(/);
   assert.match(rules, /request\.resource\.data\.openingBalance == resource\.data\.openingBalance/);
 });
+
+
+test("les soldes de trésorerie et des comptes excluent les mouvements datés dans le futur", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /asOf=todayLocal\(\),cashValid=valid\.filter\(t=>\(t\.date\|\|""\)<=asOf\)/);
+  assert.match(html, /const asOf=todayLocal\(\),valid=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="validee"&&\(t\.date\|\|""\)<=asOf\)/);
+  assert.match(html, /t\.destinationAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
+  assert.match(html, /t\.sourceAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
+});
