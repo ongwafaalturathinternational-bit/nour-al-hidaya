@@ -130,6 +130,28 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("le calcul budgétaire exclut les autres années, statuts, projets et catégories", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.match(/function budgetExpenseTotal\(b\)\{[\s\S]*?\}/)?.[0];
+  assert.ok(source, "budgetExpenseTotal doit être défini");
+  const calculate = vm.runInNewContext(source + "; budgetExpenseTotal", {
+    canRead: true,
+    transactions: [
+      { type: "depense", status: "validee", projectId: "p1", date: "2027-02-01", category: "education", amount: 100 },
+      { type: "depense", status: "validee", projectId: "p1", date: "2027-03-01", category: "logistique", amount: 50 },
+      { type: "depense", status: "validee", date: "2027-03-02", category: "transport", amount: 25 },
+      { type: "depense", status: "validee", projectId: "p1", date: "2026-02-01", category: "education", amount: 20 },
+      { type: "depense", status: "soumise", projectId: "p1", date: "2027-02-03", category: "education", amount: 30 },
+      { type: "recette", status: "validee", projectId: "p1", date: "2027-02-04", category: "education", amount: 1000 }
+    ]
+  });
+  assert.equal(calculate({ year: 2027, category: "education", projectId: "p1" }), 100);
+  assert.equal(calculate({ year: 2027, category: "fonctionnement", projectId: "p1" }), 50);
+  assert.equal(calculate({ year: 2027, category: "projet", projectId: "p1" }), 150);
+  assert.equal(calculate({ year: 2027, category: "education" }), 0);
+  assert.equal(calculate({ year: 2027, category: "fonctionnement" }), 25);
+});
+
 test("le suivi budgétaire rapproche les dépenses par exercice, projet et affectation", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /function budgetExpenseTotal\(b\)/);
