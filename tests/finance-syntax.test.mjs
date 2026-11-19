@@ -154,7 +154,7 @@ test("le rapprochement des comptes conserve un instantané distinct du solde et 
   const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
   assert.match(html, /id="reconciliationArea"/);
   assert.match(html, /id="reconciliationForm"/);
-  assert.match(html, /function accountComputedBalance\(accountId\)/);
+  assert.match(html, /function accountComputedBalance\(accountId,asOfDate\)/);
   assert.match(html, /function renderReconciliations\(\)/);
   assert.match(html, /financeReconciliations/);
   assert.match(rules, /match \/financeReconciliations\//);
