@@ -95,3 +95,36 @@ test("la balance rejette les montants négatifs ou non entiers", () => {
   assert.throws(() => trialBalanceTotals([{ openingDebit: -1 }]), /invalide/);
   assert.throws(() => trialBalanceTotals([{ openingDebit: 1.5 }]), /invalide/);
 });
+
+
+test("refuse les dates calendaires impossibles même au format AAAA-MM-JJ", () => {
+  const entry = structuredClone(balanced);
+  entry.date = "2026-02-30";
+  assert.ok(validateAccountingEntry(entry, accounts, openPeriod).some(x => x.includes("Date comptable invalide")));
+});
+
+test("refuse une pièce comptabilisée corrompue avant le calcul du grand livre", () => {
+  const corrupted = structuredClone(balanced);
+  corrupted.lines[1].credit = 12499;
+  assert.throws(() => buildGeneralLedger([corrupted], "ACCOUNT-A"), /équilibrée/);
+});
+
+test("refuse un compte absent du référentiel lors du calcul de la balance", () => {
+  const corrupted = structuredClone(balanced);
+  corrupted.lines[0].accountCode = "UNKNOWN";
+  assert.throws(() => buildTrialBalance(
+    [accounts["ACCOUNT-A"], accounts["ACCOUNT-B"]], [corrupted]
+  ), /n'existe pas dans la balance/);
+});
+
+test("refuse les soldes d'ouverture négatifs, fractionnaires ou simultanément débiteurs et créditeurs", () => {
+  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: -1, credit: 0 }), /invalide/);
+  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: 1.5, credit: 0 }), /invalide/);
+  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: 10, credit: 10 }), /invalide/);
+});
+
+test("refuse les codes de comptes dupliqués dans le référentiel de balance", () => {
+  assert.throws(() => buildTrialBalance(
+    [accounts["ACCOUNT-A"], { ...accounts["ACCOUNT-A"] }], [balanced]
+  ), /code en double/);
+});
