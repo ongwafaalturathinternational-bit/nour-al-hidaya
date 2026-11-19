@@ -311,9 +311,7 @@ test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés a
 
 test("les soldes de trésorerie et des comptes excluent les mouvements datés dans le futur", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  assert.match(source, /cashValid=valid\.filter/);
-  assert.match(source, /t\.date\|\|""/);
-  assert.match(source, /<=asOf/);
+  assert.match(html, /asOf=todayLocal\(\),cashValid=valid\.filter\(t=>\(t\.date\|\|""\)<=asOf\)/);
   assert.match(html, /const asOf=todayLocal\(\),valid=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="validee"&&\(t\.date\|\|""\)<=asOf\)/);
   assert.match(html, /t\.destinationAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
   assert.match(html, /t\.sourceAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
@@ -421,8 +419,8 @@ test("une opération sans compte est explicitement signalée comme exclue des so
 test("les KPI recettes et dépenses validées couvrent le même périmètre temporel", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   const source = html.match(/function renderKpis\(\)\{[^\n]*/)?.[0] || "";
-  assert.match(source, /income=valid\.filter\(t=>t\.type===\"recette\"\)/);
-  assert.match(source, /expense=valid\.filter\(t=>t\.type===\"depense\"\)/);
-  assert.match(source, /cashValid=valid\.filter\(t=>\(t\.date\|\|\\"\\"\)<=asOf\)/);
-  assert.match(source, /cashBalance=cashIncome-expense\+openingBalances/);
+  assert.ok(source.includes('income=valid.filter(t=>t.type==="recette")'));
+  assert.ok(source.includes('expense=valid.filter(t=>t.type==="depense")'));
+  assert.ok(source.includes('cashValid=valid.filter(t=>(t.date||"")<=asOf)'));
+  assert.ok(source.includes("cashBalance=cashIncome-expense+openingBalances"));
 });
