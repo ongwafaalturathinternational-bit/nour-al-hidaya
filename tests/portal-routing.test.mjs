@@ -22,3 +22,11 @@ test("les manifestes installables ouvrent chacun le bon espace", () => {
   assert.equal(nour.name, "Nour Al-Hidaya");
   assert.equal(nour.start_url, "./nour-al-hidaya.html");
 });
+
+
+test("le portail n’affiche le module Finance qu’aux comptes disposant d’un périmètre financier", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /scopes\.includes\("finance\.read"\)\|\|scopes\.includes\("finance\.manage"\)\|\|scopes\.includes\("finance\.validate"\)\|\|scopes\.includes\("finance\.budgets\.manage"\)/);
+  assert.match(portal, /addModule\("₣","Gestion financière WAT"/);
+  assert.match(portal, /"finance\.html"/);
+});
