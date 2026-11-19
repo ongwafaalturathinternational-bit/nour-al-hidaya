@@ -141,8 +141,10 @@ export function buildGeneralLedger(entries, accountCode, opening = { debit: 0, c
 
 export function buildTrialBalance(accounts, entries, openingBalances = {}) {
   const posted = getPostedEntries(entries);
+  // Les comptes inactifs restent visibles dans les états historiques :
+  // leur désactivation interdit les nouvelles imputations, pas la traçabilité passée.
   const activeAccounts = (Array.isArray(accounts) ? accounts : [])
-    .filter(account => account?.status === "active")
+    .filter(account => account?.status === "active" || account?.status === "inactive")
     .slice()
     .sort((a, b) => String(a.code).localeCompare(String(b.code)));
   const accountCodes = new Set();
