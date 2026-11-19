@@ -465,11 +465,14 @@ test("la situation financière par projet exclut les opérations en attente et c
     ]
   });
   const rows = summarize();
-  assert.equal(rows.length, 1);
-  assert.equal(rows[0].income, 130);
-  assert.equal(rows[0].inKind, 30);
-  assert.equal(rows[0].expense, 40);
-  assert.equal(rows[0].income - rows[0].inKind - rows[0].expense, 60);
+  assert.equal(rows.length, 2, "les deux projets ayant des opérations validées doivent apparaître");
+  const nour = rows.find(row => row.id === "p1");
+  assert.ok(nour);
+  assert.equal(nour.income, 130);
+  assert.equal(nour.inKind, 30);
+  assert.equal(nour.expense, 40);
+  assert.equal(nour.income - nour.inKind - nour.expense, 60);
+  assert.equal(rows.find(row => row.id === "p2").income, 500);
 });
 
 
