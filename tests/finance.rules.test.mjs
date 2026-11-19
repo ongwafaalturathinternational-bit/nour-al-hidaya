@@ -372,6 +372,8 @@ test("la clôture annuelle exige un instantané comptable cohérent et immuable"
   const valid = { year: "2025", status: "clos", snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 }, closedAt: serverTimestamp(), closedBy: "period-snapshot-manager", createdAt: serverTimestamp(), createdBy: "period-snapshot-manager" };
   await assertSucceeds(setDoc(ref, valid));
   await assertFails(setDoc(doc(db, "financePeriods", "2026"), { ...valid, year: "2026", snapshot: { ...valid.snapshot, netCash: 999 } }));
+  await assertFails(setDoc(doc(db, "financePeriods", "2024"), { ...valid, year: "2024", snapshot: { ...valid.snapshot, receiptsCash: 1000000000001, netCash: 1000000000001 - 400 } }));
+  await assertFails(setDoc(doc(db, "financePeriods", "2023"), { ...valid, year: "2023", snapshot: { ...valid.snapshot, transferCount: 1000001 } }));
   await assertFails(updateDoc(ref, { note: "Modification après clôture" }));
 });
 
