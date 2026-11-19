@@ -671,22 +671,30 @@ service cloud.firestore {
         && request.resource.data.snapshot.keys().hasAll(["receiptsCash", "receiptsInKind", "expenses", "netCash", "validatedTransactionCount", "transferCount", "reconciliationCount", "accountCount", "budgetCount"])
         && request.resource.data.snapshot.receiptsCash is int
         && request.resource.data.snapshot.receiptsCash >= 0
+        && request.resource.data.snapshot.receiptsCash <= 1000000000000
         && request.resource.data.snapshot.receiptsInKind is int
         && request.resource.data.snapshot.receiptsInKind >= 0
+        && request.resource.data.snapshot.receiptsInKind <= 1000000000000
         && request.resource.data.snapshot.expenses is int
         && request.resource.data.snapshot.expenses >= 0
+        && request.resource.data.snapshot.expenses <= 1000000000000
         && request.resource.data.snapshot.netCash is int
         && request.resource.data.snapshot.netCash == request.resource.data.snapshot.receiptsCash - request.resource.data.snapshot.expenses
         && request.resource.data.snapshot.validatedTransactionCount is int
         && request.resource.data.snapshot.validatedTransactionCount >= 0
+        && request.resource.data.snapshot.validatedTransactionCount <= 1000000
         && request.resource.data.snapshot.transferCount is int
         && request.resource.data.snapshot.transferCount >= 0
+        && request.resource.data.snapshot.transferCount <= 1000000
         && request.resource.data.snapshot.reconciliationCount is int
         && request.resource.data.snapshot.reconciliationCount >= 0
+        && request.resource.data.snapshot.reconciliationCount <= 1000000
         && request.resource.data.snapshot.accountCount is int
         && request.resource.data.snapshot.accountCount >= 0
+        && request.resource.data.snapshot.accountCount <= 1000000
         && request.resource.data.snapshot.budgetCount is int
         && request.resource.data.snapshot.budgetCount >= 0
+        && request.resource.data.snapshot.budgetCount <= 1000000
         && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
         && request.resource.data.closedAt == request.time
         && request.resource.data.closedBy == request.auth.uid
