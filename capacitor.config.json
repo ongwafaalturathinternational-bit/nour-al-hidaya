@@ -1,0 +1,8 @@
+{
+  "appId": "org.wafaalturath.watconnect",
+  "appName": "WAT Connect",
+  "webDir": "web-dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
