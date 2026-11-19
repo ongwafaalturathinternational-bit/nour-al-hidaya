@@ -393,3 +393,16 @@ test("l'instantané annuel ne compte que les comptes ouverts avant la fin de l'e
   assert.equal(snapshot.accountCount, 2);
   assert.equal(snapshot.budgetCount, 1);
 });
+
+
+test("les exports CSV neutralisent les formules même après des espaces ou caractères invisibles", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.match(/function csvCell\(value\)\{[\s\S]*?\}/)?.[0];
+  assert.ok(source, "csvCell doit être défini");
+  const csvCell = vm.runInNewContext(source + "; csvCell");
+  assert.equal(csvCell("=1+1"), "\"'=1+1\"");
+  assert.equal(csvCell("   =1+1"), "\"'   =1+1\"");
+  assert.equal(csvCell("\\t@SUM(A1)"), "\"'\\t@SUM(A1)\"");
+  assert.equal(csvCell("Nom \"WAT\""), "\"Nom \"\"WAT\"\"\"");
+  assert.equal(csvCell("Don WAT"), "\"Don WAT\"");
+});
