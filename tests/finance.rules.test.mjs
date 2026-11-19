@@ -324,9 +324,9 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
   await seed("period-manager", ["finance.periods.manage", "finance.read"]);
   await seed("period-finance-operator", ["finance.manage"]);
   const managerDb = env.authenticatedContext("period-manager").firestore();
-  const periodRef = doc(managerDb, "financePeriods", "2026");
+  const periodRef = doc(managerDb, "financePeriods", "2025");
   await assertSucceeds(setDoc(periodRef, {
-    year: "2026", status: "clos", note: "Clôture annuelle de test",
+    year: "2025", status: "clos", note: "Clôture annuelle de test",
     snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 },
     closedAt: serverTimestamp(), closedBy: "period-manager",
     createdAt: serverTimestamp(), createdBy: "period-manager"
@@ -338,19 +338,29 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
     await setDoc(doc(c.firestore(), "financeAccounts", "period-bank"), financeAccount("system", { name: "Banque période", type: "banque" }));
   });
   const db = env.authenticatedContext("period-finance-operator").firestore();
-  await assertFails(setDoc(doc(db, "financeTransactions", "blocked-2026"), transaction("period-finance-operator")));
-  await assertFails(setDoc(doc(db, "financeTransactions", "mismatched-year"), transaction("period-finance-operator", { date: "2027-01-02", fiscalYear: "2026" })));
-  await assertFails(setDoc(doc(db, "financeTransfers", "blocked-transfer-2026"), financeTransfer("period-finance-operator", {
+  await assertFails(setDoc(doc(db, "financeTransactions", "blocked-2025"), transaction("period-finance-operator", { date: "2025-06-01", fiscalYear: "2025" })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "mismatched-year"), transaction("period-finance-operator", { date: "2026-01-02", fiscalYear: "2025" })));
+  await assertFails(setDoc(doc(db, "financeTransfers", "blocked-transfer-2025"), financeTransfer("period-finance-operator", { date: "2025-06-01", fiscalYear: "2025",
     sourceAccountId: "period-cash", sourceName: "Caisse principale",
     destinationAccountId: "period-bank", destinationName: "Banque période"
   })));
   await assertFails(setDoc(doc(db, "financeTransfers", "mismatched-transfer-year"), financeTransfer("period-finance-operator", {
-    date: "2027-01-02", fiscalYear: "2026", sourceAccountId: "period-cash", sourceName: "Caisse principale",
+    date: "2026-01-02", fiscalYear: "2025", sourceAccountId: "period-cash", sourceName: "Caisse principale",
     destinationAccountId: "period-bank", destinationName: "Banque période"
   })));
   await assertSucceeds(setDoc(doc(db, "financeTransactions", "open-2027"), transaction("period-finance-operator", {
     date: "2027-01-02", fiscalYear: "2027"
   })));
+});
+
+test("Firestore refuse la clôture d’un exercice en cours ou futur", async () => {
+  await seed("period-current-year", ["finance.periods.manage", "finance.read"]);
+  const db = env.authenticatedContext("period-current-year").firestore();
+  const snapshot = { receiptsCash: 0, receiptsInKind: 0, expenses: 0, netCash: 0, validatedTransactionCount: 0, transferCount: 0, reconciliationCount: 0, accountCount: 0, budgetCount: 0 };
+  const base = { status: "clos", snapshot, closedAt: serverTimestamp(), closedBy: "period-current-year", createdAt: serverTimestamp(), createdBy: "period-current-year" };
+  await assertFails(setDoc(doc(db, "financePeriods", "2026"), { ...base, year: "2026" }));
+  await assertFails(setDoc(doc(db, "financePeriods", "2027"), { ...base, year: "2027" }));
+  await assertSucceeds(setDoc(doc(db, "financePeriods", "2025"), { ...base, year: "2025" }));
 });
 
 test("la clôture annuelle exige un instantané comptable cohérent et immuable", async () => {
