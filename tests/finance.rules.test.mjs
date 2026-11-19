@@ -301,7 +301,7 @@ test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé 
 });
 
 test("la clôture annuelle bloque les nouvelles opérations et transferts de l'exercice", async () => {
-  await seed("period-manager", ["finance.periods.manage"]);
+  await seed("period-manager", ["finance.periods.manage", "finance.read"]);
   await seed("period-finance-operator", ["finance.manage"]);
   const managerDb = env.authenticatedContext("period-manager").firestore();
   const periodRef = doc(managerDb, "financePeriods", "2026");
@@ -338,5 +338,14 @@ test("la clôture d'un exercice exige le périmètre finance.periods.manage", as
   await assertFails(setDoc(doc(db, "financePeriods", "2026"), {
     year: "2026", status: "clos", closedAt: serverTimestamp(), closedBy: "period-outsider",
     createdAt: serverTimestamp(), createdBy: "period-outsider"
+  }));
+});
+
+test("la clôture exige aussi un droit de lecture du registre pour vérifier les écritures en attente", async () => {
+  await seed("period-manager-without-ledger", ["finance.periods.manage"]);
+  const db = env.authenticatedContext("period-manager-without-ledger").firestore();
+  await assertFails(setDoc(doc(db, "financePeriods", "2026"), {
+    year: "2026", status: "clos", closedAt: serverTimestamp(), closedBy: "period-manager-without-ledger",
+    createdAt: serverTimestamp(), createdBy: "period-manager-without-ledger"
   }));
 });
