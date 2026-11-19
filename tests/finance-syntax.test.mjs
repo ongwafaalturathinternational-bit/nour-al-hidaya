@@ -70,6 +70,14 @@ test("les fiches imprimables restent des documents internes et ne se présentent
   assert.match(html, /id="printSheet"/);
 });
 
+test("l'export du registre conserve la traçabilité de création, validation et rejet", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /"Créée par \(UID\)","Validée par \(UID\)","Validée le","Motif du rejet"/);
+  assert.match(html, /t\.createdBy,t\.validatedBy,dateLabel\(t\.validatedAt\),t\.rejectionReason/);
+  assert.match(html, /\["Créée par \(UID\)",t\.createdBy\|\|"—"\]/);
+  assert.match(html, /\["Validée par \(UID\)",t\.validatedBy\|\|"—"\]/);
+});
+
 test("les budgets disposent d'un export CSV distinct avec montants rapprochés selon les droits", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /id="exportBudgets"/);
