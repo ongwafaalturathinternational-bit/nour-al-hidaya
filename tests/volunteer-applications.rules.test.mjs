@@ -4,7 +4,7 @@ import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebas
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
-  projectId: "demo-wat-connect",
+  projectId: "demo-wat-connect-volunteer-applications",
   firestore: { rules: fs.readFileSync("firestore.rules", "utf8") }
 });
 after(async () => env.cleanup());
