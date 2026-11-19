@@ -354,6 +354,7 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
 });
 
 test("Firestore refuse la clôture d’un exercice en cours ou futur", async () => {
+  await env.clearFirestore();
   await seed("period-current-year", ["finance.periods.manage", "finance.read"]);
   const db = env.authenticatedContext("period-current-year").firestore();
   const snapshot = { receiptsCash: 0, receiptsInKind: 0, expenses: 0, netCash: 0, validatedTransactionCount: 0, transferCount: 0, reconciliationCount: 0, accountCount: 0, budgetCount: 0 };
@@ -364,6 +365,7 @@ test("Firestore refuse la clôture d’un exercice en cours ou futur", async () 
 });
 
 test("la clôture annuelle exige un instantané comptable cohérent et immuable", async () => {
+  await env.clearFirestore();
   await seed("period-snapshot-manager", ["finance.periods.manage", "finance.read"]);
   const db = env.authenticatedContext("period-snapshot-manager").firestore();
   const ref = doc(db, "financePeriods", "2025");
