@@ -440,7 +440,9 @@ service cloud.firestore {
         && request.resource.data.date.size() == 10
         && request.resource.data.fiscalYear is string
         && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
-        && request.resource.data.fiscalYear is string\n        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")\n        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
         && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
         && request.resource.data.counterparty is string
         && request.resource.data.counterparty.size() <= 140
@@ -550,6 +552,8 @@ service cloud.firestore {
         && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
         && request.resource.data.date is string
         && request.resource.data.date.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
         && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
         && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
         && request.resource.data.statementBalance is int
@@ -560,7 +564,8 @@ service cloud.firestore {
         && request.resource.data.systemBalanceSnapshot <= 1000000000000
         && request.resource.data.difference is int
         && request.resource.data.difference >= -1000000000000
-        && request.resource.data.difference <= 1000000000000\n        && request.resource.data.difference == request.resource.data.statementBalance - request.resource.data.systemBalanceSnapshot
+        && request.resource.data.difference <= 1000000000000
+        && request.resource.data.difference == request.resource.data.statementBalance - request.resource.data.systemBalanceSnapshot
         && request.resource.data.reference is string
         && request.resource.data.reference.size() <= 120
         && request.resource.data.note is string
