@@ -531,3 +531,21 @@ test("les opérations et budgets exigent une référence de projet cohérente av
     projectId: "project-education"
   })));
 });
+
+test("le contrôleur financier consulte les registres sans pouvoir créer, valider ou modifier", async () => {
+  await seed("finance-controller", ["finance.control.read"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeTransactions", "controller-visible"), transaction("operator"));
+    await setDoc(doc(c.firestore(), "financeBudgets", "controller-budget"), budget("operator"));
+  });
+  const db = env.authenticatedContext("finance-controller").firestore();
+  await assertSucceeds(getDoc(doc(db, "financeTransactions", "controller-visible")));
+  await assertSucceeds(getDoc(doc(db, "financeBudgets", "controller-budget")));
+  await assertFails(setDoc(doc(db, "financeTransactions", "controller-cannot-create"), transaction("finance-controller")));
+  await assertFails(updateDoc(doc(db, "financeTransactions", "controller-visible"), {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "finance-controller",
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller"
+  }));
+  await assertFails(setDoc(doc(db, "financeBudgets", "controller-cannot-create"), budget("finance-controller")));
+  await assertFails(deleteDoc(doc(db, "financeTransactions", "controller-visible")));
+});
