@@ -479,16 +479,17 @@ service cloud.firestore {
         && request.resource.data.description.size() >= 3
         && request.resource.data.description.size() <= 1200
         && request.resource.data.status == "soumise"
-        && (!("projectId" in request.resource.data) || (
-          request.resource.data.projectId is string
-          && request.resource.data.projectId.size() >= 1
-          && request.resource.data.projectId.size() <= 100
-          && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
-        ))
-        && (!("projectName" in request.resource.data) || (
-          request.resource.data.projectName is string
-          && request.resource.data.projectName.size() <= 140
-        ))
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
         && (!("evidenceRef" in request.resource.data) || (
           request.resource.data.evidenceRef is string
           && request.resource.data.evidenceRef.size() <= 180
@@ -831,8 +832,17 @@ service cloud.firestore {
         && request.resource.data.status == "actif"
         && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.year))
         && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
-        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
-        && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid
@@ -862,8 +872,17 @@ service cloud.firestore {
         && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
         && request.resource.data.status in ["actif", "clos"]
         && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
-        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
-        && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.updatedAt == request.time
