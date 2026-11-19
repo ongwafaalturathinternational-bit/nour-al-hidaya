@@ -402,7 +402,7 @@ test("les exports CSV neutralisent les formules même après des espaces ou cara
   const csvCell = vm.runInNewContext(source + "; csvCell");
   assert.equal(csvCell("=1+1"), "\"'=1+1\"");
   assert.equal(csvCell("   =1+1"), "\"'   =1+1\"");
-  assert.equal(csvCell("\\t@SUM(A1)"), "\"'\\t@SUM(A1)\"");
+  assert.equal(csvCell("\t@SUM(A1)"), "\"'\t@SUM(A1)\"");
   assert.equal(csvCell("Nom \"WAT\""), "\"Nom \"\"WAT\"\"\"");
   assert.equal(csvCell("Don WAT"), "\"Don WAT\"");
 });
