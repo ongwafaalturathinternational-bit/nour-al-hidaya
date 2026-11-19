@@ -51,3 +51,12 @@ test("le registre Finance expose les fiches détaillées et les rapports de tré
   assert.match(html, /id="paymentRows"/);
   assert.match(html, /id="monthlyChart"/);
 });
+
+
+test("les apports en nature sont exclus du solde de trésorerie et des flux mensuels", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /cashIncome/);
+  assert.match(html, /paymentMethod!==\\"nature\\"/);
+  assert.match(html, /Solde de trésorerie/);
+  assert.match(html, /Contribution en nature/);
+});
