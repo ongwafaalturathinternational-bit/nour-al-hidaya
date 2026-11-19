@@ -32,6 +32,16 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - Une candidature publique ne crée jamais un accès d'équipe. L'approbation par un gestionnaire autorisé est nécessaire avant création d'une fiche bénévole active.
 - Les règles Firestore et les tests négatifs doivent vérifier l'absence d'accès anonyme.
 
+## Mode hors connexion et synchronisation
+
+- Le shell PWA conserve les pages publiques et les ressources statiques des modules Projets, Activités et Club. Le service worker ne met jamais en cache les réponses Firestore, les comptes, les présences, les candidatures ou les données privées.
+- Sur les écrans opérationnels authentifiés, Firestore active le cache IndexedDB multi-onglets. Les documents déjà consultés restent lisibles hors connexion et les écritures Firestore acceptées localement sont mises en attente puis synchronisées automatiquement au retour du réseau.
+- La première authentification, le premier chargement des données et les actions nécessitant une réponse serveur exigent une connexion. Le formulaire public de candidature reste soumis à la vérification du compte et à la disponibilité du service.
+- Le bandeau réseau distingue l'absence de connexion du cas où le navigateur ne prend pas en charge le cache persistant. Les écrans attendent la fin de l'initialisation du cache avant de lire les données.
+- Pour protéger les données personnelles stockées sur l'appareil, la déconnexion attend le traitement des écritures en attente, termine Firestore, efface le cache local puis ferme la session. Hors connexion, la déconnexion est bloquée afin de ne pas perdre silencieusement les écritures en attente; l'utilisateur doit retrouver le réseau pour synchroniser et effacer les données.
+- Le cache persistant contient des données privées déjà consultées sur l'appareil : l'accès hors connexion doit être réservé aux appareils de confiance, protégés par verrouillage et non partagés. Les règles Firestore restent appliquées par le serveur lors de la synchronisation; un affichage local en attente ne vaut pas validation serveur.
+- Le mode PWA installable ne nécessite pas d'abonnement de plateforme. Le paquet APK Android reste une étape de conditionnement/signature distincte; il ne doit pas être présenté comme généré ni publié tant que l'artefact signé n'a pas été construit et testé.
+
 ## Limites actuelles
 
 - Le registre interne et les affectations sont implémentés dans ce lot de travail.
