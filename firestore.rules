@@ -811,6 +811,7 @@ service cloud.firestore {
         && request.resource.data.amount <= 1000000000000
         && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
         && request.resource.data.status == "actif"
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.year))
         && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
         && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
