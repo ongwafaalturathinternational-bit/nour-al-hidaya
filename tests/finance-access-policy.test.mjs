@@ -45,3 +45,14 @@ test("un rôle inconnu ne reçoit aucun droit par défaut", () => {
   assert.deepEqual(getFinancePermissions("unknown_role"), []);
   assert.equal(canFinanceAction("unknown_role", "finance.dashboard.read"), false);
 });
+
+test("le contrôleur consulte les donateurs et bailleurs sans modifier les conventions", () => {
+  for (const action of ["donors.register.read", "funders.read", "grants.read", "grants.history.read", "grants.reports.read"]) {
+    assert.equal(canFinanceAction("financial_controller", action), true, action);
+  }
+  for (const action of ["donors.register.create", "funders.create", "funders.update", "grants.create", "grants.update", "grants.approve", "grants.close"]) {
+    assert.equal(canFinanceAction("financial_controller", action), false, action);
+  }
+  assert.equal(canFinanceAction("financial_manager", "grants.create"), true);
+  assert.equal(canFinanceAction("financial_validator", "grants.approve"), true);
+});
