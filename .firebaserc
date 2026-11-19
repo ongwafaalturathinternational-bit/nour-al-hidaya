@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "wat-connect"
+    "default": "wat-connect",
+    "staging": "wat-connect-staging"
   }
 }
