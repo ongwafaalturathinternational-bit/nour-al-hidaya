@@ -23,6 +23,10 @@ test("le shell précache les modules publics et exclut les données privées", (
   }
   assert.match(worker, /if \(request\.method !== "GET"\) return/);
   assert.match(worker, /if \(url\.origin !== scope\.origin\) return/);
+  assert.match(worker, /EXTERNAL_ASSETS\.includes\(url\.href\)/);
+  assert.match(worker, /firebase-app-compat\.js/);
+  assert.match(worker, /firebase-auth-compat\.js/);
+  assert.match(worker, /firebase-firestore-compat\.js/);
   assert.doesNotMatch(worker, /collection\(["'](users|staffAccess|volunteers|attendance)["']\)/);
 });
 
