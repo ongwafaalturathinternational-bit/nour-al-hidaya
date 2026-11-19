@@ -346,10 +346,10 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
 test("la clôture annuelle exige un instantané comptable cohérent et immuable", async () => {
   await seed("period-snapshot-manager", ["finance.periods.manage", "finance.read"]);
   const db = env.authenticatedContext("period-snapshot-manager").firestore();
-  const ref = doc(db, "financePeriods", "2028");
-  const valid = { year: "2028", status: "clos", snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 }, closedAt: serverTimestamp(), closedBy: "period-snapshot-manager", createdAt: serverTimestamp(), createdBy: "period-snapshot-manager" };
+  const ref = doc(db, "financePeriods", "2029");
+  const valid = { year: "2029", status: "clos", snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 }, closedAt: serverTimestamp(), closedBy: "period-snapshot-manager", createdAt: serverTimestamp(), createdBy: "period-snapshot-manager" };
   await assertSucceeds(setDoc(ref, valid));
-  await assertFails(setDoc(doc(db, "financePeriods", "2029"), { ...valid, year: "2029", snapshot: { ...valid.snapshot, netCash: 999 } }));
+  await assertFails(setDoc(doc(db, "financePeriods", "2030"), { ...valid, year: "2030", snapshot: { ...valid.snapshot, netCash: 999 } }));
   await assertFails(updateDoc(ref, { note: "Modification après clôture" }));
 });
 
