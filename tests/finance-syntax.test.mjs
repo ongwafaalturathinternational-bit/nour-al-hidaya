@@ -93,3 +93,16 @@ test("le registre des caisses est isolé et les opérations peuvent référencer
   assert.match(rules, /get\(\/databases\/\$\(database\)\/documents\/financeAccounts/);
   assert.match(rules, /allow delete: if false;/);
 });
+
+test("les transferts internes sont distincts des recettes et dépenses et soumis à validation", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /id="transferForm"/);
+  assert.match(html, /id="transferRows"/);
+  assert.match(html, /function renderTransfers\(\)/);
+  assert.match(html, /function reviewTransfer\(t,status\)/);
+  assert.match(html, /financeTransfers/);
+  assert.match(rules, /match \/financeTransfers\//);
+  assert.match(rules, /request\.resource\.data\.sourceAccountId != request\.resource\.data\.destinationAccountId/);
+  assert.match(rules, /request\.auth\.uid != resource\.data\.createdBy/);
+});
