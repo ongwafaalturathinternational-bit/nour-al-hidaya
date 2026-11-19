@@ -170,3 +170,15 @@ test("les rapprochements utilisent un instantané daté et disposent d'un export
   assert.match(html, /WAT-rapprochements-financiers\.csv/);
   assert.match(html, /aucun solde d’ouverture ni mouvement non associé n’est inclus/i);
 });
+
+test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés aux rapprochements", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /id="accountOpeningBalance"/);
+  assert.match(html, /id="accountOpeningDate"/);
+  assert.match(html, /openingBalances=accounts\.reduce/);
+  assert.match(html, /return opening\+income-expense\+incoming-outgoing/);
+  assert.match(rules, /request\.resource\.data\.openingBalance is int/);
+  assert.match(rules, /request\.resource\.data\.openingDate >=/);
+  assert.match(rules, /request\.resource\.data\.openingBalance == resource\.data\.openingBalance/);
+});
