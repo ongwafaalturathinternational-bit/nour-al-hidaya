@@ -10,6 +10,8 @@ on:
       - "projets.html"
       - "club-khuddam.html"
       - "finance.html"
+      - "accounting-engine.mjs"
+      - "tests/accounting-engine.test.mjs"
       - "tests/finance.rules.test.mjs"
       - "tests/finance-syntax.test.mjs"
       - "tests/projects-volunteers.rules.test.mjs"
