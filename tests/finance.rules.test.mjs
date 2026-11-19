@@ -171,16 +171,16 @@ test("une opération liée à un compte doit utiliser un compte actif du bon typ
   });
   const db = env.authenticatedContext("account-linked-operator").firestore();
   await assertSucceeds(setDoc(doc(db, "financeTransactions", "cash-linked"), transaction("account-linked-operator", {
-    accountId: "cash-active", accountName: "Caisse principale"
+    paymentMethod: "especes", accountId: "cash-active", accountName: "Caisse principale"
   })));
   await assertFails(setDoc(doc(db, "financeTransactions", "wrong-account-type"), transaction("account-linked-operator", {
-    accountId: "bank-active", accountName: "Banque WAT"
+    paymentMethod: "especes", accountId: "bank-active", accountName: "Banque WAT"
   })));
   await assertFails(setDoc(doc(db, "financeTransactions", "closed-account"), transaction("account-linked-operator", {
-    accountId: "cash-closed", accountName: "Caisse principale"
+    paymentMethod: "especes", accountId: "cash-closed", accountName: "Caisse principale"
   })));
   await assertFails(setDoc(doc(db, "financeTransactions", "wrong-account-name"), transaction("account-linked-operator", {
-    accountId: "cash-active", accountName: "Autre caisse"
+    paymentMethod: "especes", accountId: "cash-active", accountName: "Autre caisse"
   })));
   await assertFails(setDoc(doc(db, "financeTransactions", "nature-with-account"), transaction("account-linked-operator", {
     paymentMethod: "nature", accountId: "cash-active", accountName: "Caisse principale"
