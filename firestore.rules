@@ -522,6 +522,92 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Transferts internes : mouvements entre deux comptes, jamais comptabilisés comme recettes ou dépenses.
+    match /financeTransfers/{transferId} {
+      allow read: if staffHasScope("finance.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate");
+
+      allow create: if staffHasScope("finance.manage")
+        && request.resource.data.keys().hasOnly([
+          "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
+          "amount", "date", "reference", "description", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
+          "amount", "date", "reference", "description", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.sourceAccountId is string
+        && request.resource.data.sourceAccountId.size() >= 1
+        && request.resource.data.sourceAccountId.size() <= 100
+        && request.resource.data.destinationAccountId is string
+        && request.resource.data.destinationAccountId.size() >= 1
+        && request.resource.data.destinationAccountId.size() <= 100
+        && request.resource.data.sourceAccountId != request.resource.data.destinationAccountId
+        && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId))
+        && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId))
+        && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId)).data.status == "actif"
+        && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId)).data.status == "actif"
+        && request.resource.data.sourceName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId)).data.name
+        && request.resource.data.destinationName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId)).data.name
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.date is string
+        && request.resource.data.date.size() == 10
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 3
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.status == "soumise"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow update: if staffHasScope("finance.validate")
+        && request.auth.uid != resource.data.createdBy
+        && resource.data.status == "soumise"
+        && request.resource.data.sourceAccountId == resource.data.sourceAccountId
+        && request.resource.data.sourceName == resource.data.sourceName
+        && request.resource.data.destinationAccountId == resource.data.destinationAccountId
+        && request.resource.data.destinationName == resource.data.destinationName
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "validatedAt", "validatedBy", "rejectedAt", "rejectedBy",
+          "rejectionReason", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && (
+          (request.resource.data.status == "validee"
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && !("rejectedAt" in request.resource.data)
+            && !("rejectedBy" in request.resource.data)
+            && !("rejectionReason" in request.resource.data))
+          ||
+          (request.resource.data.status == "rejetee"
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && !("validatedAt" in request.resource.data)
+            && !("validatedBy" in request.resource.data))
+        );
+
+      allow delete: if false;
+    }
+
     // Budgets : autorisations indépendantes du registre des mouvements.
     match /financeBudgets/{budgetId} {
       allow read: if staffHasScope("finance.read")
