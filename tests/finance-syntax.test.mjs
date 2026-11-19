@@ -130,6 +130,14 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("les exports de transferts et rapprochements conservent la piste d'audit", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /function exportReconciliationsCsv\(\)[\s\S]*Créé par \(UID\)[\s\S]*Validé par \(UID\)[\s\S]*Motif du rejet/);
+  assert.match(html, /function exportTransfersCsv\(\)[\s\S]*Créé par \(UID\)[\s\S]*Validé par \(UID\)[\s\S]*Motif du rejet/);
+  assert.match(html, /dateLabel\(r\.validatedAt\)/);
+  assert.match(html, /dateLabel\(t\.validatedAt\)/);
+});
+
 test("la synthèse des donateurs regroupe les variantes de casse, accents et espaces", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /name\.normalize\("NFD"\)\.replace\(\/[\\u0300-\\u036f]\/g,""\)\.toLocaleLowerCase\("fr"\)/);
