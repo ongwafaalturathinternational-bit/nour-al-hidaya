@@ -495,7 +495,8 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.updatedBy == request.auth.uid;
 
-      allow update: if staffHasScope("finance.budgets.manage")\n        && resource.data.status == "actif"
+      allow update: if staffHasScope("finance.budgets.manage")
+        && resource.data.status == "actif"
         && request.resource.data.keys().hasOnly([
           "name", "year", "amount", "category", "status", "note",
           "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
@@ -516,7 +517,7 @@ service cloud.firestore {
         && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
         && request.resource.data.status in ["actif", "clos"]
         && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
-        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100))
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && (!("projectName" in request.resource.data) || (request.resource.data.projectName is string && request.resource.data.projectName.size() <= 140))
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.createdBy == resource.data.createdBy
