@@ -4,7 +4,7 @@
 
 - Projet de test : `wat-connect-staging` (région Johannesburg, `africa-south1`).
 - Projet de production : `wat-connect`.
-- Les règles Firestore actuellement publiées sur staging sont volontairement en refus total.
+- **État rapporté le 19 novembre 2026 :** l'opérateur a confirmé avoir publié dans Firebase Staging le contenu du fichier `firestore.rules` de la branche `security/verified-staff-firestore-access` (PR #17). Cette information est une confirmation opérateur, pas une vérification automatisée de la console Firebase. Avant tout test métier, comparer le contenu réellement publié avec le commit de référence et confirmer que le projet sélectionné est `wat-connect-staging`.
 - Le fichier de référence du dépôt est `firestore.rules`.
 - Les règles du dépôt sont compilées et testées par GitHub Actions avant toute proposition de déploiement.
 - **Ce document ne déclenche aucun déploiement.** La production ne doit jamais être modifiée dans le cadre des essais staging.
