@@ -130,6 +130,13 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("la synthèse des donateurs regroupe les variantes de casse, accents et espaces", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /name\.normalize\("NFD"\)\.replace\(\/[\\u0300-\\u036f]\/g,""\)\.toLocaleLowerCase\("fr"\)/);
+  assert.match(html, /replace\(\/\\s\+\/g," "\)/);
+  assert.match(html, /const row=groups\.get\(key\)\|\|\{name,count:0,cash:0,inKind:0,total:0\}/);
+});
+
 test("les explications des comptes et rapprochements décrivent correctement le solde d'ouverture", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /Le solde d’ouverture est une déclaration initiale enregistrée à la création du compte/);
