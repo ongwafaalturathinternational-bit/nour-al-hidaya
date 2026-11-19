@@ -268,6 +268,10 @@ test("une opération liée à un compte clôturé après sa soumission ne peut p
     status: "validee", validatedAt: serverTimestamp(), validatedBy: "account-tx-reviewer",
     updatedAt: serverTimestamp(), updatedBy: "account-tx-reviewer"
   }));
+  await assertSucceeds(updateDoc(doc(reviewerDb, "financeTransactions", "pending-on-closing-account"), {
+    status: "rejetee", rejectedAt: serverTimestamp(), rejectedBy: "account-tx-reviewer",
+    rejectionReason: "Compte clôturé avant validation", updatedAt: serverTimestamp(), updatedBy: "account-tx-reviewer"
+  }));
 });
 
 test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé après sa soumission", async () => {
@@ -289,5 +293,9 @@ test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé 
   await assertFails(updateDoc(doc(reviewerDb, "financeTransfers", "pending-on-closing-account"), {
     status: "validee", validatedAt: serverTimestamp(), validatedBy: "transfer-close-reviewer",
     updatedAt: serverTimestamp(), updatedBy: "transfer-close-reviewer"
+  }));
+  await assertSucceeds(updateDoc(doc(reviewerDb, "financeTransfers", "pending-on-closing-account"), {
+    status: "rejetee", rejectedAt: serverTimestamp(), rejectedBy: "transfer-close-reviewer",
+    rejectionReason: "Compte clôturé avant validation", updatedAt: serverTimestamp(), updatedBy: "transfer-close-reviewer"
   }));
 });
