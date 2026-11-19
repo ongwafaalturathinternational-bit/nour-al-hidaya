@@ -537,6 +537,7 @@ service cloud.firestore {
         || staffHasScope("finance.periods.manage");
 
       allow create: if staffHasScope("finance.periods.manage")
+        && (staffHasScope("finance.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate"))
         && request.resource.data.keys().hasOnly([
           "year", "status", "note", "closedAt", "closedBy", "createdAt", "createdBy"
         ])
