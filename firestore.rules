@@ -500,6 +500,8 @@ service cloud.firestore {
 
       allow update: if staffHasScope("finance.budgets.manage")
         && resource.data.status == "actif"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt", "updatedBy"])
+        && request.resource.data.status == "clos"
         && request.resource.data.keys().hasOnly([
           "name", "year", "amount", "category", "status", "note",
           "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
