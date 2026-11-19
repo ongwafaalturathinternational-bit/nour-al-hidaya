@@ -422,5 +422,6 @@ test("les KPI recettes et dépenses validées couvrent le même périmètre temp
   assert.ok(source.includes('income=valid.filter(t=>t.type==="recette")'));
   assert.ok(source.includes('expense=valid.filter(t=>t.type==="depense")'));
   assert.ok(source.includes('cashValid=valid.filter(t=>(t.date||"")<=asOf)'));
-  assert.ok(source.includes("cashBalance=cashIncome-expense+openingBalances"));
+  assert.ok(source.includes('cashExpense=cashValid.filter(t=>t.type==="depense")'));
+  assert.ok(source.includes("cashBalance=cashIncome-cashExpense+openingBalances"));
 });
