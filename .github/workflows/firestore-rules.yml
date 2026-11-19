@@ -30,6 +30,8 @@ on:
       - "tests/cloudflare-preview.test.mjs"
       - "sw.js"
       - "firebase-init.js"
+      - ".firebaserc"
+      - "tests/firebase-project-aliases.test.mjs"
       - "tests/firebase-init.test.mjs"
       - "tests/pwa-shell.test.mjs"
       - "index.html"
