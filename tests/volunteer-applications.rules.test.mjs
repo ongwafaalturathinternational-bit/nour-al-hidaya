@@ -40,7 +40,7 @@ test("la candidature ne peut pas être auto-approuvée ou modifiée par le candi
 test("seul volunteers.manage peut consulter et traiter une candidature", async () => {
   await seed("reviewer", ["volunteers.read", "volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate"), application("candidate", "candidate@example.org")));
-  const db = env.authenticatedContext("reviewer").firestore();
+  const db = env.authenticatedContext("reviewer", { email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate");
   await assertSucceeds(getDoc(ref));
   await assertSucceeds(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer", updatedAt: serverTimestamp(), updatedBy: "reviewer" }));
@@ -48,7 +48,7 @@ test("seul volunteers.manage peut consulter et traiter une candidature", async (
 test("volunteers.read peut consulter mais pas traiter une candidature", async () => {
   await seed("reader", ["volunteers.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate2"), application("candidate2", "candidate2@example.org")));
-  const db = env.authenticatedContext("reader").firestore();
+  const db = env.authenticatedContext("reader", { email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate2");
   await assertSucceeds(getDoc(ref));
   await assertFails(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reader", updatedAt: serverTimestamp(), updatedBy: "reader" }));
@@ -67,7 +67,7 @@ test("le candidat ne peut ni lister les candidatures ni modifier son dossier apr
 test("un responsable ne peut pas modifier les données personnelles d'une candidature", async () => {
   await seed("reviewer-pii", ["volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate-pii"), application("candidate-pii", "candidate-pii@example.org")));
-  const db = env.authenticatedContext("reviewer-pii").firestore();
+  const db = env.authenticatedContext("reviewer-pii", { email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate-pii");
   await assertFails(updateDoc(ref, { fullName: "Nom remplacé", status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
   await assertSucceeds(updateDoc(ref, { status: "refusee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
@@ -76,7 +76,7 @@ test("un responsable ne peut pas modifier les données personnelles d'une candid
 test("un membre de l'équipe sans périmètre Club ne peut pas lire les candidatures", async () => {
   await seed("staff-without-club", ["activities.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "private-candidate"), application("private-candidate", "private@example.org")));
-  const db = env.authenticatedContext("staff-without-club").firestore();
+  const db = env.authenticatedContext("staff-without-club", { email_verified: true }).firestore();
   await assertFails(getDoc(doc(db, "volunteerApplications", "private-candidate")));
   await assertFails(getDocs(collection(db, "volunteerApplications")));
 });

@@ -56,8 +56,8 @@ test("un accès members.read autorise la lecture mais pas l'écriture", async ()
 test("un compte sans périmètre ou désactivé n'accède pas à l'annuaire", async () => {
   await seedStaff("no-scope", []);
   await seedStaff("inactive", ["members.read", "members.manage"], false);
-  const noScope = env.authenticatedContext("no-scope").firestore();
-  const inactive = env.authenticatedContext("inactive").firestore();
+  const noScope = env.authenticatedContext("no-scope", { email_verified: true }).firestore();
+  const inactive = env.authenticatedContext("inactive", { email_verified: true }).firestore();
   await assertFails(getDoc(doc(noScope, "members", "missing")));
   await assertFails(setDoc(doc(noScope, "members", "m-003"), record("no-scope")));
   await assertFails(getDoc(doc(inactive, "members", "missing")));
@@ -65,7 +65,7 @@ test("un compte sans périmètre ou désactivé n'accède pas à l'annuaire", as
 
 test("les fiches ne peuvent pas être supprimées et les champs sont validés", async () => {
   await seedStaff("manager-delete", ["members.manage", "members.read"]);
-  const db = env.authenticatedContext("manager-delete").firestore();
+  const db = env.authenticatedContext("manager-delete", { email_verified: true }).firestore();
   await env.withSecurityRulesDisabled(async context => {
     await setDoc(doc(context.firestore(), "members", "protected"), record("manager-delete"));
   });
