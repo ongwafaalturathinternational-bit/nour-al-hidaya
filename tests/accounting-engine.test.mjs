@@ -139,3 +139,17 @@ test("un compte désactivé reste visible dans la balance des exercices historiq
   assert.deepEqual(rows.map(x => x.accountCode), ["ACCOUNT-B", "DISABLED"]);
   assert.equal(rows.find(x => x.accountCode === "DISABLED").movementDebit, 12500);
 });
+
+
+test("accepte les années bissextiles et rejette les dates calendaires impossibles", () => {
+  const leap = structuredClone(balanced);
+  leap.date = "2024-02-29";
+  assert.deepEqual(validateAccountingEntry(leap, accounts, {
+    status: "open", startDate: "2024-01-01", endDate: "2024-12-31"
+  }), []);
+  for (const date of ["2026-02-29", "2026-04-31", "2026-13-01", "2026-00-10"]) {
+    const invalid = structuredClone(balanced);
+    invalid.date = date;
+    assert.ok(validateAccountingEntry(invalid, accounts, openPeriod).some(x => x.includes("Date comptable invalide")));
+  }
+});
