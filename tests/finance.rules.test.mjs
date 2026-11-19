@@ -186,3 +186,68 @@ test("une opération liée à un compte doit utiliser un compte actif du bon typ
     paymentMethod: "nature", accountId: "cash-active", accountName: "Caisse principale"
   })));
 });
+
+function financeTransfer(uid, extra = {}) {
+  return {
+    sourceAccountId: "cash-source", sourceName: "Caisse principale",
+    destinationAccountId: "bank-destination", destinationName: "Banque WAT",
+    amount: 50000, date: "2026-11-19", reference: "TRF-001",
+    description: "Transfert vers le compte bancaire", status: "soumise",
+    createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+    ...extra
+  };
+}
+
+test("un transfert interne exige deux comptes actifs distincts et des références exactes", async () => {
+  await seed("transfer-operator", ["finance.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "cash-source"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financeAccounts", "bank-destination"), financeAccount("system", { name: "Banque WAT", type: "banque" }));
+    await setDoc(doc(c.firestore(), "financeAccounts", "closed-destination"), financeAccount("system", { name: "Ancien compte", type: "banque", status: "clos" }));
+  });
+  const db = env.authenticatedContext("transfer-operator").firestore();
+  await assertSucceeds(setDoc(doc(db, "financeTransfers", "valid-transfer"), financeTransfer("transfer-operator")));
+  await assertFails(setDoc(doc(db, "financeTransfers", "same-account"), financeTransfer("transfer-operator", {
+    destinationAccountId: "cash-source", destinationName: "Caisse principale"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransfers", "closed-destination"), financeTransfer("transfer-operator", {
+    destinationAccountId: "closed-destination", destinationName: "Ancien compte"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransfers", "wrong-name"), financeTransfer("transfer-operator", {
+    sourceName: "Fausse caisse"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransfers", "negative-amount"), financeTransfer("transfer-operator", {
+    amount: -1
+  })));
+});
+
+test("un transfert est validé par une autre personne, reste immuable et n'est jamais supprimé", async () => {
+  await seed("transfer-author", ["finance.read", "finance.manage", "finance.validate"]);
+  await seed("transfer-reviewer", ["finance.validate"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "cash-source"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financeAccounts", "bank-destination"), financeAccount("system", { name: "Banque WAT", type: "banque" }));
+  });
+  const authorDb = env.authenticatedContext("transfer-author").firestore();
+  const ref = doc(authorDb, "financeTransfers", "transfer-review");
+  await assertSucceeds(setDoc(ref, financeTransfer("transfer-author")));
+  await assertFails(updateDoc(ref, {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "transfer-author",
+    updatedAt: serverTimestamp(), updatedBy: "transfer-author"
+  }));
+  const reviewerDb = env.authenticatedContext("transfer-reviewer").firestore();
+  const reviewRef = doc(reviewerDb, "financeTransfers", "transfer-review");
+  await assertSucceeds(updateDoc(reviewRef, {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "transfer-reviewer",
+    updatedAt: serverTimestamp(), updatedBy: "transfer-reviewer"
+  }));
+  await assertFails(updateDoc(reviewRef, { amount: 1, updatedAt: serverTimestamp(), updatedBy: "transfer-reviewer" }));
+  await assertFails(deleteDoc(reviewRef));
+});
+
+test("les transferts ne sont pas accessibles sans un périmètre du registre financier", async () => {
+  await seed("transfer-outsider", ["projects.read"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeTransfers", "private-transfer"), financeTransfer("system")));
+  const db = env.authenticatedContext("transfer-outsider").firestore();
+  await assertFails(getDoc(doc(db, "financeTransfers", "private-transfer")));
+});
