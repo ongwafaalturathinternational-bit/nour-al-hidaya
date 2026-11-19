@@ -40,7 +40,7 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - Le bandeau réseau distingue l'absence de connexion du cas où le navigateur ne prend pas en charge le cache persistant. Les écrans attendent la fin de l'initialisation du cache avant de lire les données.
 - Pour protéger les données personnelles stockées sur l'appareil, la déconnexion attend le traitement des écritures en attente, termine Firestore, efface le cache local puis ferme la session. Hors connexion, la déconnexion est bloquée afin de ne pas perdre silencieusement les écritures en attente; l'utilisateur doit retrouver le réseau pour synchroniser et effacer les données.
 - Le cache persistant contient des données privées déjà consultées sur l'appareil : l'accès hors connexion doit être réservé aux appareils de confiance, protégés par verrouillage et non partagés. Les règles Firestore restent appliquées par le serveur lors de la synchronisation; un affichage local en attente ne vaut pas validation serveur.
-- Le mode PWA installable ne nécessite pas d'abonnement de plateforme. Le paquet APK Android reste une étape de conditionnement/signature distincte; il ne doit pas être présenté comme généré ni publié tant que l'artefact signé n'a pas été construit et testé.
+- Le mode PWA installable ne nécessite pas d'abonnement de plateforme. Un pipeline Capacitor 8 / GitHub Actions construit maintenant un APK debug de test, sans clé release ni publication automatique. L'artefact doit encore être installé et vérifié sur plusieurs appareils Android avant distribution.
 
 ## Limites actuelles
 
