@@ -537,3 +537,10 @@ test("la validation d'une opération est bloquée dès l'interface pour son prop
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /async function review\(t,status\)\{if\(!canValidate\|\|!user\|\|t\.status!==\"soumise\"\|\|t\.createdBy===user\.uid\)return;/);
 });
+
+test("le contrôleur financier dispose d'un périmètre de consultation distinct dans l'interface", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /scopes\\.includes\\("finance\\.control\\.read"\\)/);
+  assert.match(rules, /staffHasScope\\("finance\\.control\\.read"\\)/);
+});
