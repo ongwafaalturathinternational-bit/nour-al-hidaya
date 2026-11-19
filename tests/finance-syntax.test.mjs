@@ -169,6 +169,15 @@ test("la clôture d’un compte exige aussi un droit de lecture du registre fina
   assert.match(html, /if\(canAccountsManage&&canRead\)/);
 });
 
+test("la clôture annuelle fige une synthèse comptable consultable", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /function buildPeriodSnapshot\(year\)/);
+  assert.match(html, /snapshot,closedAt:firebase\.firestore\.FieldValue\.serverTimestamp\(\)/);
+  assert.match(html, /p\.snapshot\|\|\{\}/);
+  assert.match(rules, /request\.resource\.data\.snapshot\.netCash == request\.resource\.data\.snapshot\.receiptsCash - request\.resource\.data\.snapshot\.expenses/);
+});
+
 test("la clôture d’un compte est bloquée côté interface tant que des écritures, transferts ou rapprochements sont en attente", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /pendingTransactions=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="soumise"\)/);
