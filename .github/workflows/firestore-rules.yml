@@ -64,5 +64,19 @@ jobs:
       - name: Vérifier la syntaxe de l’extracteur SYCEBNL
         run: node --check scripts/extract-sycebnl-chart.mjs
 
+      - name: Extraire le plan SYCEBNL pour revue
+        id: sycebnl_extract
+        continue-on-error: true
+        run: node scripts/extract-sycebnl-chart.mjs
+
+      - name: Publier le brouillon SYCEBNL
+        if: steps.sycebnl_extract.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sycebnl-chart-review
+          path: data/sycebnl-chart.review.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Compiler et tester les règles Firestore
         run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/*.test.mjs"
