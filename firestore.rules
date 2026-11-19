@@ -418,12 +418,12 @@ service cloud.firestore {
       allow create: if staffHasScope("finance.manage")
         && request.resource.data.keys().hasOnly([
           "type", "category", "amount", "date", "counterparty", "paymentMethod",
-          "reference", "description", "status", "projectId", "projectName", "evidenceRef", "accountId", "accountName",
+          "reference", "description", "status", "projectId", "projectName", "evidenceRef", "accountId", "accountName", "fiscalYear",
           "createdAt", "createdBy", "updatedAt", "updatedBy"
         ])
         && request.resource.data.keys().hasAll([
           "type", "category", "amount", "date", "counterparty", "paymentMethod",
-          "reference", "description", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"
+          "reference", "description", "status", "fiscalYear", "createdAt", "createdBy", "updatedAt", "updatedBy"
         ])
         && request.resource.data.type in ["recette", "depense"]
         && request.resource.data.category is string
@@ -438,6 +438,10 @@ service cloud.firestore {
         && request.resource.data.amount <= 1000000000000
         && request.resource.data.date is string
         && request.resource.data.date.size() == 10
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
         && request.resource.data.counterparty is string
         && request.resource.data.counterparty.size() <= 140
         && request.resource.data.paymentMethod in ["especes", "mobile_money", "virement", "cheque", "nature"]
@@ -489,6 +493,7 @@ service cloud.firestore {
         && request.resource.data.category == resource.data.category
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.date == resource.data.date
+        && request.resource.data.fiscalYear == resource.data.fiscalYear
         && request.resource.data.counterparty == resource.data.counterparty
         && request.resource.data.paymentMethod == resource.data.paymentMethod
         && request.resource.data.reference == resource.data.reference
@@ -504,6 +509,7 @@ service cloud.firestore {
         && (
           (request.resource.data.status == "validee"
             && (!( "accountId" in resource.data) || (exists(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)) && get(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)).data.status == "actif"))
+            && !exists(/databases/$(database)/documents/financePeriods/$(resource.data.fiscalYear))
             && request.resource.data.validatedAt == request.time
             && request.resource.data.validatedBy == request.auth.uid
             && !("rejectedAt" in request.resource.data)
@@ -523,6 +529,32 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Clôture annuelle irréversible : une année clôturée ne reçoit plus d'écritures.
+    match /financePeriods/{year} {
+      allow read: if staffHasScope("finance.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.periods.manage");
+
+      allow create: if staffHasScope("finance.periods.manage")
+        && request.resource.data.keys().hasOnly([
+          "year", "status", "note", "closedAt", "closedBy", "createdAt", "createdBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "year", "status", "closedAt", "closedBy", "createdAt", "createdBy"
+        ])
+        && request.resource.data.year == year
+        && request.resource.data.year.matches("^[0-9]{4}$")
+        && request.resource.data.status == "clos"
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && request.resource.data.closedAt == request.time
+        && request.resource.data.closedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+
     // Transferts internes : mouvements entre deux comptes, jamais comptabilisés comme recettes ou dépenses.
     match /financeTransfers/{transferId} {
       allow read: if staffHasScope("finance.read")
@@ -532,12 +564,12 @@ service cloud.firestore {
       allow create: if staffHasScope("finance.manage")
         && request.resource.data.keys().hasOnly([
           "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
-          "amount", "date", "reference", "description", "status",
+          "amount", "date", "reference", "description", "status", "fiscalYear",
           "createdAt", "createdBy", "updatedAt", "updatedBy"
         ])
         && request.resource.data.keys().hasAll([
           "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
-          "amount", "date", "reference", "description", "status",
+"amount", "date", "reference", "description", "status", "fiscalYear",
           "createdAt", "createdBy", "updatedAt", "updatedBy"
         ])
         && request.resource.data.sourceAccountId is string
@@ -558,6 +590,10 @@ service cloud.firestore {
         && request.resource.data.amount <= 1000000000000
         && request.resource.data.date is string
         && request.resource.data.date.size() == 10
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
         && request.resource.data.reference is string
         && request.resource.data.reference.size() <= 100
         && request.resource.data.description is string
@@ -578,6 +614,7 @@ service cloud.firestore {
         && request.resource.data.destinationName == resource.data.destinationName
         && request.resource.data.amount == resource.data.amount
         && request.resource.data.date == resource.data.date
+        && request.resource.data.fiscalYear == resource.data.fiscalYear
         && request.resource.data.reference == resource.data.reference
         && request.resource.data.description == resource.data.description
         && request.resource.data.createdAt == resource.data.createdAt
@@ -590,6 +627,7 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.uid
         && (
           (request.resource.data.status == "validee"
+            && !exists(/databases/$(database)/documents/financePeriods/$(resource.data.fiscalYear))
             && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId))
             && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.destinationAccountId))
             && get(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId)).data.status == "actif"
