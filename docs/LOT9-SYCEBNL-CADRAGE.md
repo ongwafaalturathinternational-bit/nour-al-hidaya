@@ -211,3 +211,85 @@ Plan de transition :
 - Le régime légal effectivement applicable à WAT et les états précis à produire restent à confirmer avec un professionnel comptable au Bénin.
 - L'environnement Preview Cloudflare utilise actuellement le projet Firebase `wat-connect` : aucune donnée réelle ni écriture financière réelle ne doit être saisie depuis la prévisualisation tant que l'isolation backend n'est pas établie.
 - Ce document est un cadrage de développement. Il ne constitue ni une certification de conformité, ni un avis comptable ou juridique.
+
+## 10. Périmètre fonctionnel complémentaire demandé pour WAT Connect
+
+Les fonctionnalités suivantes font désormais partie du périmètre cible du module Finance. Elles seront réalisées par couches, en conservant une source comptable unique et des liens de traçabilité entre les opérations métiers et leurs écritures.
+
+### 10.1 Plan comptable SYCEBNL
+- Consultation arborescente par classe, compte parent et sous-compte, recherche par code ou libellé.
+- Fiche de compte : code, libellé normatif, classe, niveau, compte imputable, statut, dates d'effet et historique.
+- Import uniquement d'une version de plan rapprochée du Journal officiel OHADA et validée ; aucune transcription secondaire ne devient automatiquement officielle.
+- Gestion des subdivisions internes sans altérer les comptes normatifs, avec contrôle de leur conformité à l'arborescence.
+- Toute modification du référentiel est versionnée et auditée.
+
+### 10.2 Saisie d'opérations et journal comptable
+- Saisie manuelle guidée et génération assistée depuis les modules métiers (factures, stocks, banque, caisse, dons).
+- Brouillon, soumission, validation indépendante, comptabilisation, contrepassation et régularisation.
+- Pièces multi-lignes, tiers, échéances, axes analytiques, référence et justificatifs.
+- Journaux filtrables par exercice, période, journal, compte, tiers, projet, statut et numéro de pièce.
+- Une opération métier ne produit pas de doublon si elle est retraitée ; chaque pièce générée conserve son identifiant de source.
+
+### 10.3 Grand livre, balance et interrogation des comptes
+- Balance générale avec soldes d'ouverture, mouvements débit/crédit et soldes de clôture.
+- Grand livre détaillé par compte avec solde progressif, regroupement par période et accès à la pièce d'origine.
+- Interrogation d'un compte : solde à une date, mouvements, contreparties, tiers, projet, pièces et justificatifs.
+- Navigation descendante depuis les états vers le compte, le journal, l'écriture puis la pièce GED.
+- Contrôle de concordance automatique entre journaux, grand livre et balance.
+
+### 10.4 Lettrage des comptes
+- Lettrage manuel et proposition automatique pour les comptes et tiers concernés.
+- Règles de rapprochement : montant, devise, tiers, référence, échéance et tolérance autorisée.
+- Lettrage partiel et délettrage réservé aux rôles autorisés, avec motif et journal d'audit.
+- Les différences, avances, acomptes et règlements partiels restent visibles ; le lettrage ne modifie jamais les montants des écritures.
+- Ne pas appliquer indistinctement le lettrage à tous les comptes : les comptes éligibles seront paramétrés selon leur nature.
+
+### 10.5 Rapprochement bancaire et trésorerie
+- Import contrôlé des relevés bancaires (CSV/format bancaire disponible) et saisie manuelle en secours.
+- Correspondance entre lignes de relevé et mouvements comptabilisés, rapprochement partiel, frais bancaires et opérations en suspens.
+- État de rapprochement daté, préparé puis validé par une autre personne.
+- Écarts expliqués, non effacés ; historique des rapprochements conservé.
+- Les soldes de banque ne sont jamais ajustés par une simple modification de formulaire : toute correction doit produire une écriture autorisée et traçable.
+
+### 10.6 GED et archivage des pièces
+- Référentiel documentaire sécurisé : facture, reçu, convention, relevé bancaire, preuve de paiement, bon d'entrée/sortie, inventaire, procès-verbal et pièce comptable.
+- Métadonnées : type, numéro, date, tiers, montant, exercice, projet, compte lié, auteur, niveau de confidentialité et durée de conservation.
+- Fichiers conservés dans un stockage objet privé, avec règles d'accès, liens temporaires, contrôle de type/taille, empreinte d'intégrité et journal des consultations/téléchargements.
+- Une pièce comptabilisée ne peut pas perdre son justificatif par suppression silencieuse ; remplacement et versionnement doivent être auditables.
+- Les références de fichiers seules dans Firestore ne constituent pas un archivage sécurisé : l'intégration GED exige un stockage privé et des règles serveur.
+
+### 10.7 Module Stock
+- Articles, catégories, unités, dépôts/magasins, fournisseurs et seuils d'alerte.
+- Mouvements : réception, sortie, transfert, retour, ajustement d'inventaire et pertes documentées.
+- Bons de réception/sortie, inventaires physiques, historique par article et par dépôt.
+- Valorisation, méthode de coût, traitement des dons en nature et correspondance comptable à valider avec le SYCEBNL et le professionnel comptable avant activation.
+- Chaque mouvement validé doit être traçable vers son document et, lorsqu'il a un impact comptable, vers l'écriture correspondante.
+- Les quantités et valeurs historiques ne sont pas modifiables directement ; les corrections passent par des mouvements d'ajustement autorisés.
+
+### 10.8 Facturation normalisée
+- Référentiel clients/tiers, articles ou services, devis si nécessaire, factures, avoirs, acomptes, échéances et règlements.
+- Numérotation contrôlée, conservation des versions, calculs vérifiés et interdiction de supprimer une facture émise.
+- Champs fiscaux et mentions obligatoires configurables selon la réglementation béninoise en vigueur et la catégorie d'opération.
+- Prévoir une couche d'intégration avec la plateforme officielle de facturation normalisée/e-MECeF si l'accès technique et les conditions réglementaires le permettent ; ne pas simuler une certification ni générer de faux identifiants fiscaux.
+- Une facture validée ou un règlement peut alimenter la comptabilité après contrôles, avec lien réciproque entre facture, règlement, pièce comptable et justificatifs.
+- Le périmètre exact (vente de biens, prestations, exonérations, reçus de dons et autres documents) devra être configuré selon les activités réelles de WAT et validé par le comptable/fiscaliste.
+
+### 10.9 Système minimal de trésorerie (SMT) et système normal (SN)
+- Paramètre de régime comptable par entité et par exercice : SMT ou SN, avec date d'effet, justification, validation et historique.
+- Le SMT et le SN ne sont pas deux thèmes d'affichage : ils impliquent des obligations, livres, traitements et états distincts définis par le SYCEBNL.
+- Le moteur SN comprend la comptabilité générale en partie double, les livres et les états financiers du système normal.
+- Le parcours SMT doit être conçu à partir des dispositions et modèles spécifiques du SYCEBNL ; il ne doit pas être présenté comme une simple balance de caisse ni réutiliser automatiquement les états du SN.
+- Toute migration SMT vers SN exige une procédure d'ouverture/reprise documentée, des soldes et pièces de transition, une date de bascule et une validation professionnelle.
+- WAT Connect est conçu pour supporter le SN complet demandé. Le choix effectif du régime applicable à WAT reste à formaliser avec le professionnel comptable au regard des seuils, options et obligations au Bénin.
+
+### 10.10 Ordre de réalisation proposé
+1. Stabiliser le plan de comptes officiel, les exercices, journaux, droits et environnement de test isolé.
+2. Finaliser le moteur de saisie/validation/comptabilisation côté serveur.
+3. Produire journaux, grand livre, balance et interrogation des comptes à partir des seules écritures comptabilisées.
+4. Ajouter lettrage et rapprochement bancaire, puis GED sécurisée.
+5. Ajouter le module Stock avec inventaire et valorisation comptable validée.
+6. Ajouter facturation normalisée et intégration officielle éventuelle, après validation fiscale.
+7. Produire les états financiers applicables au régime retenu, avec clôture et contrôles de conformité.
+
+**Dépendances bloquantes :** aucun de ces écrans ne doit écrire de vraies données financières dans le projet Firebase de production depuis la prévisualisation. Les écritures définitives doivent passer par un service serveur transactionnel, qui contrôle les droits, la période, les comptes, l'équilibre, l'unicité et l'immutabilité. Les fichiers GED doivent être stockés dans un espace privé. Les intégrations fiscales ou bancaires ne seront activées qu'après vérification des interfaces officielles et des autorisations nécessaires.
+
