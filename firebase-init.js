@@ -15,13 +15,19 @@
     const refresh = () => {
       const offline = !navigator.onLine;
       notice.style.display = offline ? "block" : "none";
+      const persistenceEnabled = window.WATFirebase?.persistenceEnabled === true;
       notice.textContent = offline
-        ? "Connexion Internet indisponible. Certaines fonctions nécessitant Firebase ne sont pas accessibles. Ne fermez pas la page pendant une opération en cours."
-        : "";
+        ? (persistenceEnabled
+          ? "Mode hors connexion : les données déjà consultées restent disponibles. Les modifications sont mises en attente et seront synchronisées au retour du réseau. La première connexion nécessite Internet."
+          : "Connexion Internet indisponible. Le cache hors connexion n'est pas disponible sur ce navigateur. Aucune modification ne sera synchronisée sans réseau.")
+        : (window.WATFirebase?.persistenceStatus === "unavailable"
+          ? "Mode hors connexion indisponible sur cet appareil. Les fonctions en ligne restent accessibles."
+          : "");
     };
     window.addEventListener("online", refresh);
     window.addEventListener("offline", refresh);
     refresh();
+    window.WATRefreshNetworkNotice = refresh;
   }
 
   if (document.readyState === "loading") {
@@ -45,13 +51,41 @@
     const app = window.firebase.apps.length
       ? window.firebase.app()
       : window.firebase.initializeApp(firebaseConfig);
+    const db = window.firebase.firestore();
+    const offlinePages = new Set(["", "index.html", "activites.html", "projets.html", "club-khuddam.html", "club-khuddam-inscription.html"]);
+    const pageName = window.location.pathname.split("/").pop();
+    let persistenceEnabled = false;
+    let persistenceStatus = offlinePages.has(pageName) ? "initializing" : "disabled";
+    const persistenceReady = offlinePages.has(pageName)
+      ? db.enablePersistence({ synchronizeTabs: true })
+          .then(() => { persistenceEnabled = true; persistenceStatus = "enabled"; return true; })
+          .catch(error => {
+            persistenceStatus = "unavailable";
+            console.warn("Cache hors connexion indisponible :", error.code || error.message);
+            return false;
+          })
+      : Promise.resolve(false);
     window.WATFirebase = {
       ready: true,
       app: app,
       auth: window.firebase.auth(),
-      db: window.firebase.firestore(),
-      projectId: firebaseConfig.projectId
+      db: db,
+      projectId: firebaseConfig.projectId,
+      persistenceReady: persistenceReady,
+      get persistenceEnabled() { return persistenceEnabled; },
+      get persistenceStatus() { return persistenceStatus; },
+      async signOutSafely() {
+        if (persistenceEnabled) {
+          if (!navigator.onLine) throw new Error("Reconnectez-vous pour synchroniser les modifications en attente et effacer les données locales avant la déconnexion.");
+          await db.waitForPendingWrites();
+          await db.terminate();
+          await db.clearPersistence();
+        }
+        await window.firebase.auth().signOut();
+        window.location.assign("index.html");
+      }
     };
+    persistenceReady.then(() => window.WATRefreshNetworkNotice?.());
   } catch (error) {
     console.error("Initialisation Firebase impossible :", error);
     window.WATFirebase = { ready: false, reason: "initialization-error" };
