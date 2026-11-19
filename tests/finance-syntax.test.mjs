@@ -140,6 +140,8 @@ test("le calcul budgétaire exclut les autres années, statuts, projets et caté
       { type: "depense", status: "validee", projectId: "p1", date: "2027-02-01", category: "education", amount: 100 },
       { type: "depense", status: "validee", projectId: "p1", date: "2027-03-01", category: "logistique", amount: 50 },
       { type: "depense", status: "validee", date: "2027-03-02", category: "transport", amount: 25 },
+      { type: "depense", status: "validee", projectId: "p2", date: "2027-04-01", category: "social", amount: 40 },
+      { type: "depense", status: "validee", date: "2027-04-02", category: "education", amount: 15 },
       { type: "depense", status: "validee", projectId: "p1", date: "2026-02-01", category: "education", amount: 20 },
       { type: "depense", status: "soumise", projectId: "p1", date: "2027-02-03", category: "education", amount: 30 },
       { type: "recette", status: "validee", projectId: "p1", date: "2027-02-04", category: "education", amount: 1000 }
@@ -148,7 +150,8 @@ test("le calcul budgétaire exclut les autres années, statuts, projets et caté
   assert.equal(calculate({ year: 2027, category: "education", projectId: "p1" }), 100);
   assert.equal(calculate({ year: 2027, category: "fonctionnement", projectId: "p1" }), 50);
   assert.equal(calculate({ year: 2027, category: "projet", projectId: "p1" }), 150);
-  assert.equal(calculate({ year: 2027, category: "education" }), 0);
+  assert.equal(calculate({ year: 2027, category: "projet" }), 190);
+  assert.equal(calculate({ year: 2027, category: "education" }), 15);
   assert.equal(calculate({ year: 2027, category: "fonctionnement" }), 25);
 });
 
