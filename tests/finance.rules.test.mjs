@@ -145,6 +145,9 @@ test("finance.accounts.manage crée et clôture les comptes sans pouvoir les sup
   await assertSucceeds(setDoc(ref, financeAccount("account-manager")));
   await assertSucceeds(getDoc(ref));
   await assertFails(updateDoc(ref, { name: "Compte modifié", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
+  await assertFails(updateDoc(ref, { openingBalance: 900000, updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
+  await assertFails(setDoc(doc(db, "financeAccounts", "negative-opening"), financeAccount("account-manager", { openingBalance: -1 })));
+  await assertFails(setDoc(doc(db, "financeAccounts", "wrong-opening-year"), financeAccount("account-manager", { openingDate: "2027-01-01", openingFiscalYear: "2026" })));
   await assertSucceeds(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
   await assertFails(updateDoc(ref, { status: "actif", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
   await assertFails(deleteDoc(ref));
@@ -172,6 +175,9 @@ test("une opération liée à un compte doit utiliser un compte actif du bon typ
   const db = env.authenticatedContext("account-linked-operator").firestore();
   await assertSucceeds(setDoc(doc(db, "financeTransactions", "cash-linked"), transaction("account-linked-operator", {
     paymentMethod: "especes", accountId: "cash-active", accountName: "Caisse principale"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "before-opening-date"), transaction("account-linked-operator", {
+    date: "2025-12-31", fiscalYear: "2025", paymentMethod: "especes", accountId: "cash-active", accountName: "Caisse principale"
   })));
   await assertFails(setDoc(doc(db, "financeTransactions", "wrong-account-type"), transaction("account-linked-operator", {
     paymentMethod: "especes", accountId: "bank-active", accountName: "Banque WAT"
@@ -207,6 +213,9 @@ test("un transfert interne exige deux comptes actifs distincts et des référenc
   });
   const db = env.authenticatedContext("transfer-operator").firestore();
   await assertSucceeds(setDoc(doc(db, "financeTransfers", "valid-transfer"), financeTransfer("transfer-operator")));
+  await assertFails(setDoc(doc(db, "financeTransfers", "before-opening-date"), financeTransfer("transfer-operator", {
+    date: "2025-12-31", fiscalYear: "2025"
+  })));
   await assertFails(setDoc(doc(db, "financeTransfers", "same-account"), financeTransfer("transfer-operator", {
     destinationAccountId: "cash-source", destinationName: "Caisse principale"
   })));
