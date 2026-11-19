@@ -115,3 +115,15 @@ test("un auteur ne peut pas valider sa propre opération même s’il possède l
     updatedAt: serverTimestamp(), updatedBy: "finance-dual"
   }));
 });
+
+
+test("les contributions en nature sont admises en recette mais jamais comme sortie de trésorerie", async () => {
+  await seed("in-kind-manager", ["finance.manage"]);
+  const db = env.authenticatedContext("in-kind-manager").firestore();
+  await assertSucceeds(setDoc(doc(db, "financeTransactions", "in-kind-income"), transaction("in-kind-manager", {
+    paymentMethod: "nature", category: "don"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "in-kind-expense"), transaction("in-kind-manager", {
+    type: "depense", category: "logistique", paymentMethod: "nature"
+  })));
+});
