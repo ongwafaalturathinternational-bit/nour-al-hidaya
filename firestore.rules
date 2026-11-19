@@ -962,6 +962,82 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+
+    // Contrôle financier indépendant : consultation seule des registres financiers.
+    match /financeControlObservations/{observationId} {
+      allow read: if staffHasScope("finance.control.read");
+      allow create: if staffHasScope("finance.control.observe")
+        && request.resource.data.keys().hasOnly([
+          "title", "description", "severity", "status", "referenceType", "referenceId",
+          "projectId", "funderId", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "title", "description", "severity", "status", "referenceType", "referenceId",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 4
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 4000
+        && request.resource.data.severity in ["faible", "moderee", "elevee", "critique"]
+        && request.resource.data.status == "ouverte"
+        && request.resource.data.referenceType in ["operation", "ecriture", "budget", "banque", "bailleur", "convention", "piece", "cloture", "autre"]
+        && request.resource.data.referenceId is string
+        && request.resource.data.referenceId.size() >= 1
+        && request.resource.data.referenceId.size() <= 160
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() <= 120))
+        && (!("funderId" in request.resource.data) || (request.resource.data.funderId is string && request.resource.data.funderId.size() <= 120))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("finance.control.observe")
+        && resource.data.createdBy == request.auth.uid
+        && resource.data.status == "ouverte"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["description", "updatedAt", "updatedBy"])
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.severity == resource.data.severity
+        && request.resource.data.referenceType == resource.data.referenceType
+        && request.resource.data.referenceId == resource.data.referenceId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /financeControlReports/{reportId} {
+      allow read: if staffHasScope("finance.control.read");
+      allow create: if staffHasScope("finance.control.observe")
+        && request.resource.data.keys().hasOnly([
+          "title", "periodStart", "periodEnd", "summary", "findingCount",
+          "projectId", "funderId", "createdAt", "createdBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "title", "periodStart", "periodEnd", "summary", "findingCount",
+          "createdAt", "createdBy"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 4
+        && request.resource.data.title.size() <= 160
+        && validFinanceDate(request.resource.data.periodStart)
+        && validFinanceDate(request.resource.data.periodEnd)
+        && request.resource.data.periodEnd >= request.resource.data.periodStart
+        && request.resource.data.summary is string
+        && request.resource.data.summary.size() >= 20
+        && request.resource.data.summary.size() <= 8000
+        && request.resource.data.findingCount is int
+        && request.resource.data.findingCount >= 0
+        && request.resource.data.findingCount <= 10000
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() <= 120))
+        && (!("funderId" in request.resource.data) || (request.resource.data.funderId is string && request.resource.data.funderId.size() <= 120))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
