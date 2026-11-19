@@ -45,7 +45,7 @@ export function validateFunderProfile(funder = {}) {
   if (!isText(funder.category)) errors.push("La catégorie du partenaire doit être précisée.");
   if (!isText(funder.country)) errors.push("Le pays du partenaire doit être renseigné.");
   if (!isText(funder.primaryContact)) errors.push("Le contact principal du partenaire est obligatoire.");
-  if (funder.email && !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(funder.email)) {
+  if (funder.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(funder.email)) {
     errors.push("L'adresse électronique du partenaire n'est pas valide.");
   }
   return errors;
