@@ -406,3 +406,11 @@ test("les exports CSV neutralisent les formules même après des espaces ou cara
   assert.equal(csvCell("Nom \"WAT\""), "\"Nom \"\"WAT\"\"\"");
   assert.equal(csvCell("Don WAT"), "\"Don WAT\"");
 });
+
+
+test("une opération sans compte est explicitement signalée comme exclue des soldes par compte", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /Sans compte associé — suivi global uniquement/);
+  assert.match(html, /reste dans le registre global, mais ne sera pas intégrée au solde/);
+  assert.match(html, /if\(method!==\"nature\"&&matchingAccounts\.length>0&&!accountId\)/);
+});
