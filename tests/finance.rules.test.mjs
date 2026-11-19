@@ -318,8 +318,13 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
   });
   const db = env.authenticatedContext("period-finance-operator").firestore();
   await assertFails(setDoc(doc(db, "financeTransactions", "blocked-2026"), transaction("period-finance-operator")));
+  await assertFails(setDoc(doc(db, "financeTransactions", "mismatched-year"), transaction("period-finance-operator", { date: "2027-01-02", fiscalYear: "2026" })));
   await assertFails(setDoc(doc(db, "financeTransfers", "blocked-transfer-2026"), financeTransfer("period-finance-operator", {
     sourceAccountId: "period-cash", sourceName: "Caisse principale",
+    destinationAccountId: "period-bank", destinationName: "Banque période"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransfers", "mismatched-transfer-year"), financeTransfer("period-finance-operator", {
+    date: "2027-01-02", fiscalYear: "2026", sourceAccountId: "period-cash", sourceName: "Caisse principale",
     destinationAccountId: "period-bank", destinationName: "Banque période"
   })));
   await assertSucceeds(setDoc(doc(db, "financeTransactions", "open-2027"), transaction("period-finance-operator", {
