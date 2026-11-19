@@ -30,7 +30,8 @@
 "use strict";
 const $=id=>document.getElementById(id);let user=null,canRead=false,canManage=false,canValidate=false,canBudgetRead=false,canBudgetManage=false,canProjectsRead=false,transactions=[],budgets=[],projects=[];
 const categories={recette:[["don","Don / contribution"],["cotisation","Cotisation"],["subvention","Subvention"],["collecte","Collecte / campagne"],["vente","Vente / prestation"],["autre","Autre recette"]],depense:[["fonctionnement","Fonctionnement"],["education","Éducation / formation"],["humanitaire","Humanitaire"],["social","Action sociale"],["logistique","Logistique"],["communication","Communication"],["transport","Transport"],["equipement","Équipement"],["autre","Autre dépense"]]};
-const categoryLabels=Object.fromEntries([...categories.recette,...categories.depense]);\nfunction categoryLabel(t){return categories[t.type]?.find(([value])=>value===t.category)?.[1]||t.category}
+const categoryLabels=Object.fromEntries([...categories.recette,...categories.depense]);
+function categoryLabel(t){return categories[t.type]?.find(([value])=>value===t.category)?.[1]||t.category}
 const statusLabels={soumise:"En attente",validee:"Validée",rejetee:"Rejetée"};
 const money=n=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Number(n)||0)+" FCFA";
 function say(t,type=""){const e=$("message");e.textContent=t;e.className="message "+type;e.hidden=false}
