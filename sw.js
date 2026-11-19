@@ -22,10 +22,26 @@ const APP_FILES = [
   "./icon-512.png"
 ];
 
+// Seuls les SDK Firebase statiques et versionnés sont autorisés au cache externe.
+// Aucune API, donnée Firestore, authentification ou réponse métier n'est mise en cache.
+const EXTERNAL_ASSETS = [
+  "https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js",
+  "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js",
+  "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"
+];
+
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_FILES))
+      .then(async cache => {
+        await cache.addAll(APP_FILES);
+        await Promise.allSettled(EXTERNAL_ASSETS.map(async asset => {
+          const response = await fetch(asset, { mode: "no-cors" });
+          if (response && (response.ok || response.type === "opaque")) {
+            await cache.put(asset, response);
+          }
+        }));
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -48,6 +64,18 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(request.url);
   const scope = new URL(self.registration.scope);
+  if (EXTERNAL_ASSETS.includes(url.href)) {
+    event.respondWith(
+      caches.match(request).then(cached => cached || fetch(request).then(response => {
+        if (response && (response.ok || response.type === "opaque")) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        }
+        return response;
+      }))
+    );
+    return;
+  }
   if (url.origin !== scope.origin) return;
 
   const appUrls = new Set(APP_FILES.map(file => new URL(file, scope).href));
