@@ -53,7 +53,7 @@
       ? window.firebase.app()
       : window.firebase.initializeApp(firebaseConfig);
     const db = window.firebase.firestore();
-    const offlinePages = new Set(["", "index.html", "activites.html", "projets.html", "club-khuddam.html", "club-khuddam-inscription.html"]);
+    const offlinePages = new Set(["", "index.html", "activites.html", "projets.html", "club-khuddam.html", ]);
     const pageName = window.location.pathname.split("/").pop();
     let persistenceEnabled = false;
     let persistenceStatus = offlinePages.has(pageName) ? "initializing" : "disabled";
