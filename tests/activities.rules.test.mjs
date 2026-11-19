@@ -25,7 +25,7 @@ function activity(uid, extra = {}) {
 }
 function attendance(uid, extra = {}) {
   return {
-    participantRef: "MEM-001", participantLabel: "Participant test",
+    activityId: "a", participantRef: "MEM-001", participantLabel: "Participant test",
     participantType: "benevole", status: "present",
     recordedAt: serverTimestamp(), recordedBy: uid,
     updatedAt: serverTimestamp(), updatedBy: uid, ...extra
