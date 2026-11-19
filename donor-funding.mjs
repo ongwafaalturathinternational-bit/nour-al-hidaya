@@ -6,7 +6,7 @@
 
 const isText = value => typeof value === "string" && value.trim().length > 0;
 const isDate = value => {
-  if (typeof value !== "string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const d = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(d.valueOf()) && d.toISOString().slice(0, 10) === value;
 };
@@ -45,7 +45,7 @@ export function validateFunderProfile(funder = {}) {
   if (!isText(funder.category)) errors.push("La catégorie du partenaire doit être précisée.");
   if (!isText(funder.country)) errors.push("Le pays du partenaire doit être renseigné.");
   if (!isText(funder.primaryContact)) errors.push("Le contact principal du partenaire est obligatoire.");
-  if (funder.email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(funder.email)) {
+  if (funder.email && !/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(funder.email)) {
     errors.push("L'adresse électronique du partenaire n'est pas valide.");
   }
   return errors;
