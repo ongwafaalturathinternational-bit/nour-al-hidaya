@@ -132,7 +132,7 @@ test("les contributions en nature sont admises en recette mais jamais comme sort
 function financeAccount(uid, extra = {}) {
   return {
     name: "Caisse principale", type: "caisse", currency: "XOF", status: "actif",
-    institution: "Siège WAT", reference: "4321",
+    institution: "Siège WAT", reference: "4321", openingBalance: 0, openingDate: "2026-01-01", openingFiscalYear: "2026", openingReference: "Solde initial test",
     createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
     ...extra
   };
