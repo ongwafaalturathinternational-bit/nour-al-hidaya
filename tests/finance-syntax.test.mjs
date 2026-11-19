@@ -501,3 +501,30 @@ test("la liste des clôtures inclut les années de rapprochement et d'ouverture 
   assert.deepEqual(select.options.map(option => option.value), ["2024", "2023"]);
   assert.equal(select.value, "2024");
 });
+
+
+test("la clôture accepte un exercice passé au format YYYY", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\\n").find(line => line.includes("async function closePeriod("));
+  assert.ok(source, "closePeriod doit être défini");
+  let confirmed = false;
+  const errors = [];
+  const close = vm.runInNewContext(source + "; closePeriod", {
+    canPeriodsManage: true,
+    canRead: true,
+    periods: [],
+    todayLocal: () => "2026-11-19",
+    transactions: [],
+    transfers: [],
+    reconciliations: [],
+    accounts: [],
+    budgets: [],
+    buildPeriodSnapshot: () => ({ receiptsCash: 0, receiptsInKind: 0, expenses: 0, netCash: 0 }),
+    money: value => String(value),
+    confirm: () => { confirmed = true; return false; },
+    say: message => errors.push(message)
+  });
+  await close("2025", "Test");
+  assert.equal(confirmed, true, "un exercice passé valide doit atteindre la confirmation");
+  assert.deepEqual(errors, []);
+});
