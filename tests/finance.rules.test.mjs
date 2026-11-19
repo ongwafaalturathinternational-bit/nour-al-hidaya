@@ -17,7 +17,7 @@ async function seed(uid, scopes, active = true) {
 }
 function transaction(uid, extra = {}) {
   return {
-    type: "recette", category: "don", amount: 25000, date: "2026-11-19",
+    type: "recette", category: "don", amount: 25000, date: "2026-11-19", fiscalYear: "2026",
     counterparty: "Donateur test", paymentMethod: "mobile_money", reference: "REC-001",
     description: "Contribution au programme éducatif WAT", status: "soumise",
     createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
@@ -191,7 +191,7 @@ function financeTransfer(uid, extra = {}) {
   return {
     sourceAccountId: "cash-source", sourceName: "Caisse principale",
     destinationAccountId: "bank-destination", destinationName: "Banque WAT",
-    amount: 50000, date: "2026-11-19", reference: "TRF-001",
+    amount: 50000, date: "2026-11-19", fiscalYear: "2026", reference: "TRF-001",
     description: "Transfert vers le compte bancaire", status: "soumise",
     createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
     ...extra
@@ -297,5 +297,41 @@ test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé 
   await assertSucceeds(updateDoc(doc(reviewerDb, "financeTransfers", "pending-on-closing-account"), {
     status: "rejetee", rejectedAt: serverTimestamp(), rejectedBy: "transfer-close-reviewer",
     rejectionReason: "Compte clôturé avant validation", updatedAt: serverTimestamp(), updatedBy: "transfer-close-reviewer"
+  }));
+});
+
+test("la clôture annuelle bloque les nouvelles opérations et transferts de l'exercice", async () => {
+  await seed("period-manager", ["finance.periods.manage"]);
+  await seed("period-finance-operator", ["finance.manage"]);
+  const managerDb = env.authenticatedContext("period-manager").firestore();
+  const periodRef = doc(managerDb, "financePeriods", "2026");
+  await assertSucceeds(setDoc(periodRef, {
+    year: "2026", status: "clos", note: "Clôture annuelle de test",
+    closedAt: serverTimestamp(), closedBy: "period-manager",
+    createdAt: serverTimestamp(), createdBy: "period-manager"
+  }));
+  await assertFails(updateDoc(periodRef, { status: "ouvert" }));
+  await assertFails(deleteDoc(periodRef));
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "period-cash"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financeAccounts", "period-bank"), financeAccount("system", { name: "Banque période", type: "banque" }));
+  });
+  const db = env.authenticatedContext("period-finance-operator").firestore();
+  await assertFails(setDoc(doc(db, "financeTransactions", "blocked-2026"), transaction("period-finance-operator")));
+  await assertFails(setDoc(doc(db, "financeTransfers", "blocked-transfer-2026"), financeTransfer("period-finance-operator", {
+    sourceAccountId: "period-cash", sourceName: "Caisse principale",
+    destinationAccountId: "period-bank", destinationName: "Banque période"
+  })));
+  await assertSucceeds(setDoc(doc(db, "financeTransactions", "open-2027"), transaction("period-finance-operator", {
+    date: "2027-01-02", fiscalYear: "2027"
+  })));
+});
+
+test("la clôture d'un exercice exige le périmètre finance.periods.manage", async () => {
+  await seed("period-outsider", ["finance.read"]);
+  const db = env.authenticatedContext("period-outsider").firestore();
+  await assertFails(setDoc(doc(db, "financePeriods", "2026"), {
+    year: "2026", status: "clos", closedAt: serverTimestamp(), closedBy: "period-outsider",
+    createdAt: serverTimestamp(), createdBy: "period-outsider"
   }));
 });
