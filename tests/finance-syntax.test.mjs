@@ -148,3 +148,16 @@ test("la clôture annuelle est visible, irréversible et intégrée aux formulai
   assert.match(rules, /!exists\(\/databases\/\$\(database\)\/documents\/financePeriods/);
   assert.match(rules, /request\.resource\.data\.date\.matches/);
 });
+
+test("le rapprochement des comptes conserve un instantané distinct du solde et exige un second valideur", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /id="reconciliationArea"/);
+  assert.match(html, /id="reconciliationForm"/);
+  assert.match(html, /function accountComputedBalance\(accountId\)/);
+  assert.match(html, /function renderReconciliations\(\)/);
+  assert.match(html, /financeReconciliations/);
+  assert.match(rules, /match \/financeReconciliations\//);
+  assert.match(rules, /request\.auth\.uid != resource\.data\.createdBy/);
+  assert.match(rules, /allow delete: if false;/);
+});
