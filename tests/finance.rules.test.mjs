@@ -348,7 +348,7 @@ test("les rapprochements sont soumis par finance.manage et validés par un autre
   const author = env.authenticatedContext("reconcile-author").firestore();
   const data = {
     accountId: "reconcile-cash", accountName: "Caisse principale",
-    date: "2026-11-19", fiscalYear: "2026", statementBalance: 125000,
+    date: "2028-11-19", fiscalYear: "2028", statementBalance: 125000,
     systemBalanceSnapshot: 120000, difference: 5000, reference: "RELEVE-11",
     note: "Comptage de caisse du 19 novembre", status: "soumise",
     createdAt: serverTimestamp(), createdBy: "reconcile-author",
