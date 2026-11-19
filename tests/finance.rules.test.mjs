@@ -97,12 +97,12 @@ test("finance.budgets.manage gère les budgets sans ouvrir l'accès aux opérati
 
 test("un exercice clôturé interdit la création de nouveaux budgets", async () => {
   await seed("budget-closed-year", ["finance.budgets.manage"]);
-  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financePeriods", "2027"), {
-    year: "2027", status: "clos", closedAt: serverTimestamp(), closedBy: "system",
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financePeriods", "2099"), {
+    year: "2099", status: "clos", closedAt: serverTimestamp(), closedBy: "system",
     createdAt: serverTimestamp(), createdBy: "system"
   }));
   const db = env.authenticatedContext("budget-closed-year").firestore();
-  await assertFails(setDoc(doc(db, "financeBudgets", "late-budget"), budget("budget-closed-year")));
+  await assertFails(setDoc(doc(db, "financeBudgets", "late-budget"), budget("budget-closed-year", { year: 2099 })));
 });
 
 test("les montants invalides, catégories incohérentes et budgets sans autorisation sont refusés", async () => {
