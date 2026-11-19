@@ -25,6 +25,7 @@ Ce document sert à valider le lot Projets, Activités, Présences et Club Khudd
 - Créer un projet, renseigner son code, sa description, ses dates et son statut.
 - Lier le projet à un programme lorsque le compte possède le droit de lecture correspondant.
 - Affecter un bénévole actif avec une mission.
+- Vérifier qu’une seconde affectation du même bénévole dans le même projet met à jour la fiche existante au lieu de créer un doublon.
 - Faire évoluer l'affectation de « Proposée » à « Confirmée », puis « Retirée ».
 - Vérifier qu'un bénévole inactif ne peut pas être sélectionné pour une nouvelle affectation.
 - Vérifier qu'un compte sans `projects.manage` ne peut ni créer un projet ni modifier une affectation.
