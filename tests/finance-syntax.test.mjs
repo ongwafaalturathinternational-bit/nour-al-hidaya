@@ -128,3 +128,10 @@ test("les rapports par donateur et par projet suivent le filtre d'exercice", () 
   assert.match(html, /renderDonorSummary\(\);renderProjectFinance\(\)/);
   assert.match(html, /\["don","cotisation","subvention","collecte"\]/);
 });
+
+test("le registre des transferts internes est exportable séparément", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="exportTransfers"/);
+  assert.match(html, /function exportTransfersCsv\(\)/);
+  assert.match(html, /WAT-transferts-internes\.csv/);
+});
