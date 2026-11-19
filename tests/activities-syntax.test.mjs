@@ -12,3 +12,10 @@ test("le module des activités contient un JavaScript valide", () => {
   assert.ok(scripts.length > 0);
   scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), "script activités n°" + (index + 1)));
 });
+
+test("la feuille de présence utilise le registre central lié à l'activité", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /collection\("attendance"\)\.where\("activityId","==",id\)/);
+  assert.match(html, /collection\("attendance"\)\.add\(data\)/);
+  assert.doesNotMatch(html, /collection\("activities"\)\.doc\(id\)\.collection\("attendance"\)/);
+});
