@@ -423,6 +423,7 @@ service cloud.firestore {
 
       // Les opérations sont immuables après soumission. Seul un validateur distinct peut les traiter.
       allow update: if staffHasScope("finance.validate")
+        && request.auth.uid != resource.data.createdBy
         && resource.data.status == "soumise"
         && request.resource.data.type == resource.data.type
         && request.resource.data.category == resource.data.category
