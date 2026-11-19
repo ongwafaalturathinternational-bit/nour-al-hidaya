@@ -14,7 +14,8 @@
     document.body.prepend(notice);
     const refresh = () => {
       const offline = !navigator.onLine;
-      notice.style.display = offline ? "block" : "none";
+      const persistenceUnavailable = window.WATFirebase?.persistenceStatus === "unavailable";
+      notice.style.display = offline || persistenceUnavailable ? "block" : "none";
       const persistenceEnabled = window.WATFirebase?.persistenceEnabled === true;
       notice.textContent = offline
         ? (persistenceEnabled
