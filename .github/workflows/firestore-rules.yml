@@ -26,6 +26,7 @@ on:
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
       - "tests/offline-sync.test.mjs"
+      - "tests/android-build.test.mjs"
       - "index.html"
       - "nour-al-hidaya.html"
       - "manifest.json"
