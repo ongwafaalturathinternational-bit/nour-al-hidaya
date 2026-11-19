@@ -69,7 +69,7 @@ async function fetchClass(classNumber) {
 
 const pages = [];
 for (const classNumber of CLASSES) {
-  process.stdout.write(`Extraction classe ${classNumber}…\\n`);
+  process.stdout.write(`Extraction classe ${classNumber}…\n`);
   pages.push(await fetchClass(classNumber));
 }
 
@@ -129,8 +129,8 @@ const output = {
 
 const target = resolve("data/sycebnl-chart.review.json");
 await mkdir(dirname(target), { recursive: true });
-await writeFile(target, JSON.stringify(output, null, 2) + "\\n", "utf8");
-console.log(`\\nFichier créé : ${target}`);
+await writeFile(target, JSON.stringify(output, null, 2) + "\n", "utf8");
+console.log(`\nFichier créé : ${target}`);
 console.log(`Comptes extraits : ${accounts.length} (référence de la source : ${EXPECTED_TRANSCRIPTION_COUNT})`);
 console.log("Répartition :", countsByClass);
 console.log("Statut : brouillon de vérification uniquement; aucun compte activé pour la saisie.");
