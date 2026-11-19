@@ -130,6 +130,15 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("le suivi budgétaire rapproche les dépenses par exercice, projet et affectation", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /function budgetExpenseTotal\(b\)/);
+  assert.match(html, /b\.category==="projet"\|\|\(b\.category==="fonctionnement"\?operating\.includes\(t\.category\):t\.category===b\.category\)/);
+  assert.match(html, /const spent=budgetExpenseTotal\(b\)/);
+  assert.match(html, /const spent=budgetExpenseTotal\(b\);return \[b\.year/);
+  assert.match(html, /même exercice, projet et affectation/);
+});
+
 test("les exports de transferts et rapprochements conservent la piste d'audit", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /function exportReconciliationsCsv\(\)[\s\S]*Créé par \(UID\)[\s\S]*Validé par \(UID\)[\s\S]*Motif du rejet/);
