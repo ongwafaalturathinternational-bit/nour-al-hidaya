@@ -128,3 +128,59 @@ test("les contributions en nature sont admises en recette mais jamais comme sort
     type: "depense", category: "logistique", paymentMethod: "nature"
   })));
 });
+
+function financeAccount(uid, extra = {}) {
+  return {
+    name: "Caisse principale", type: "caisse", currency: "XOF", status: "actif",
+    institution: "Siège WAT", reference: "4321",
+    createdAt: serverTimestamp(), createdBy: uid, updatedAt: serverTimestamp(), updatedBy: uid,
+    ...extra
+  };
+}
+
+test("finance.accounts.manage crée et clôture les comptes sans pouvoir les supprimer ni les réactiver", async () => {
+  await seed("account-manager", ["finance.accounts.manage"]);
+  const db = env.authenticatedContext("account-manager").firestore();
+  const ref = doc(db, "financeAccounts", "cash-main");
+  await assertSucceeds(setDoc(ref, financeAccount("account-manager")));
+  await assertSucceeds(getDoc(ref));
+  await assertFails(updateDoc(ref, { name: "Compte modifié", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
+  await assertSucceeds(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
+  await assertFails(updateDoc(ref, { status: "actif", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
+  await assertFails(deleteDoc(ref));
+});
+
+test("l'accès aux comptes reste distinct du registre des transactions", async () => {
+  await seed("account-only", ["finance.accounts.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeTransactions", "private-ledger"), transaction("operator"));
+  });
+  const db = env.authenticatedContext("account-only").firestore();
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "cash-main"), financeAccount("system")));\n  await assertSucceeds(getDoc(doc(db, "financeAccounts", "cash-main")));
+  await assertFails(getDoc(doc(db, "financeTransactions", "private-ledger")));
+});
+
+test("une opération liée à un compte doit utiliser un compte actif du bon type et son nom exact", async () => {
+  await seed("account-linked-operator", ["finance.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "cash-active"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financeAccounts", "bank-active"), financeAccount("system", { name: "Banque WAT", type: "banque" }));
+    await setDoc(doc(c.firestore(), "financeAccounts", "cash-closed"), financeAccount("system", { status: "clos" }));
+  });
+  const db = env.authenticatedContext("account-linked-operator").firestore();
+  await assertSucceeds(setDoc(doc(db, "financeTransactions", "cash-linked"), transaction("account-linked-operator", {
+    accountId: "cash-active", accountName: "Caisse principale"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "wrong-account-type"), transaction("account-linked-operator", {
+    accountId: "bank-active", accountName: "Banque WAT"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "closed-account"), transaction("account-linked-operator", {
+    accountId: "cash-closed", accountName: "Caisse principale"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "wrong-account-name"), transaction("account-linked-operator", {
+    accountId: "cash-active", accountName: "Autre caisse"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "nature-with-account"), transaction("account-linked-operator", {
+    paymentMethod: "nature", accountId: "cash-active", accountName: "Caisse principale"
+  })));
+});
