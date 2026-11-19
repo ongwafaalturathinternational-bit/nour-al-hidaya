@@ -414,3 +414,11 @@ test("l'écart du rapprochement doit correspondre exactement aux deux soldes dé
   await assertSucceeds(setDoc(doc(db, "financeReconciliations", "math-valid"), base));
   await assertFails(setDoc(doc(db, "financeReconciliations", "math-invalid"), { ...base, difference: 100 }));
 });
+
+test("le périmètre de gestion des comptes seul ne permet pas de clôturer sans lecture du registre", async () => {
+  await seed("account-manager-only", ["finance.accounts.manage"]);
+  const db = env.authenticatedContext("account-manager-only").firestore();
+  const ref = doc(db, "financeAccounts", "account-managed-only");
+  await assertSucceeds(setDoc(ref, financeAccount("account-manager-only")));
+  await assertFails(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "account-manager-only" }));
+});
