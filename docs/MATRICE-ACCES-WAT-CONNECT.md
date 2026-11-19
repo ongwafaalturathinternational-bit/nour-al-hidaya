@@ -23,6 +23,8 @@ Le rôle décrit la fonction institutionnelle de la personne. Le tableau `scopes
 |---|---|---|
 | Annuaire | `members.read` | `members.manage` |
 | Programmes | `programs.read` | `programs.manage` |
+| Activités | `activities.read` | `activities.manage` |
+| Présences | `attendance.read` | `attendance.manage` |
 
 ## Périmètres futurs à implémenter
 
@@ -30,7 +32,7 @@ Le rôle décrit la fonction institutionnelle de la personne. Le tableau `scopes
 |---|---|---|
 | Finances | `finance.read` | `finance.manage` |
 | Bénéficiaires / action sociale | `beneficiaries.read` | `beneficiaries.manage` |
-| Activités / présences | `activities.read` | `activities.manage` |
+| Activités / présences | Livré ci-dessus | Livré ci-dessus |
 | Pédagogie | `learning.read` | `learning.manage` |
 | Documents | `documents.read` | `documents.manage` |
 | Audit | `audit.read` | réservé à un mécanisme de journalisation en lecture |
