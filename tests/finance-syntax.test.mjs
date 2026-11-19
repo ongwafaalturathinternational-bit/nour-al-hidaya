@@ -60,3 +60,21 @@ test("les apports en nature sont exclus du solde de trésorerie et des flux mens
   assert.match(html, /Solde de trésorerie/);
   assert.match(html, /Contribution en nature/);
 });
+
+test("les fiches imprimables restent des documents internes et ne se présentent pas comme des reçus fiscaux", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="printTransaction"/);
+  assert.match(html, /function printTransaction\(\)/);
+  assert.match(html, /window\.print\(\)/);
+  assert.match(html, /ni un reçu fiscal ni une attestation de don officielle/);
+  assert.match(html, /id="printSheet"/);
+});
+
+test("les budgets disposent d'un export CSV distinct avec montants rapprochés selon les droits", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="exportBudgets"/);
+  assert.match(html, /function exportBudgetsCsv\(\)/);
+  assert.match(html, /spent===null\?"Non autorisé":spent/);
+  assert.match(html, /WAT-budgets-previsionnels\.csv/);
+  assert.match(html, /String\.fromCharCode\(0xFEFF\)/);
+});
