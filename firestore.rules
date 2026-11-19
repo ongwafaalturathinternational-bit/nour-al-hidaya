@@ -396,6 +396,7 @@ service cloud.firestore {
         && request.resource.data.counterparty is string
         && request.resource.data.counterparty.size() <= 140
         && request.resource.data.paymentMethod in ["especes", "mobile_money", "virement", "cheque", "nature"]
+        && (request.resource.data.type == "recette" || request.resource.data.paymentMethod != "nature")
         && request.resource.data.reference is string
         && request.resource.data.reference.size() <= 100
         && request.resource.data.description is string
