@@ -166,7 +166,7 @@ Limites et indépendance :
 - ne valide pas ses propres travaux et ne remplace pas le commissaire aux comptes ou l'auditeur externe lorsqu'ils sont requis ;
 - ses accès peuvent être limités à une période, un projet, un bailleur, une caisse ou un compte, sans élargissement automatique à l'ensemble des données.
 
-La désignation et le nombre des contrôleurs financiers relèvent des organes compétents de l'ONG. Le logiciel doit permettre plusieurs comptes utilisateurs portant ce rôle, sans imposer un nombre fixe. Les attributions nominatives et le périmètre exact sont configurés par une autorité habilitée et historisés.
+Le périmètre de consultation est attribué par le scope technique `finance.control.read`, distinct de `finance.read` (gestion opérationnelle). Le droit `finance.control.observe` autorise uniquement la création et la mise à jour limitée des observations propres au contrôleur ; il ne donne aucun droit de gestion ou de validation. Les observations et rapports sont conservés dans des collections séparées, non supprimables.\n\nLa désignation et le nombre des contrôleurs financiers relèvent des organes compétents de l'ONG. Le logiciel doit permettre plusieurs comptes utilisateurs portant ce rôle, sans imposer un nombre fixe. Les attributions nominatives et le périmètre exact sont configurés par une autorité habilitée et historisés.
 
 ### 6.2 Matrice de séparation des responsabilités
 
