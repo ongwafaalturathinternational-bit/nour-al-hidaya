@@ -258,7 +258,8 @@ test("les rapprochements utilisent un instantané daté et disposent d'un export
   assert.match(html, /function exportReconciliationsCsv\(\)/);
   assert.match(html, /id="exportReconciliations"/);
   assert.match(html, /WAT-rapprochements-financiers\.csv/);
-  assert.match(html, /aucun solde d’ouverture ni mouvement non associé n’est inclus/i);
+  assert.match(html, /Le calcul reprend le solde d’ouverture du compte s’il est applicable à la date du relevé/i);
+  assert.match(html, /Les opérations sans compte associé sont exclues/i);
 });
 
 test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés aux rapprochements", () => {
