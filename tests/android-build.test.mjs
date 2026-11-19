@@ -27,7 +27,7 @@ test("la préparation APK ne copie que les pages et ressources web nécessaires"
 });
 
 test("le build APK est un artefact de test sans clé de signature de production", () => {
-  assert.match(workflow, /node-version: 22/);
+  assert.match(workflow, /node-version: 22/);\n  assert.match(workflow, /cmdline-tools/);\n  assert.doesNotMatch(workflow, /android-actions\/setup-android/);
   assert.match(workflow, /java-version: "21"/);
   assert.match(workflow, /npx cap add android/);
   assert.match(workflow, /assembleDebug/);
