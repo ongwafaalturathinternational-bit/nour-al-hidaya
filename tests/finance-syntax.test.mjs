@@ -179,6 +179,6 @@ test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés a
   assert.match(html, /openingBalances=accounts\.reduce/);
   assert.match(html, /return opening\+income-expense\+incoming-outgoing/);
   assert.match(rules, /request\.resource\.data\.openingBalance is int/);
-  assert.match(rules, /request\.resource\.data\.openingDate >=/);
+  assert.match(rules, /request\.resource\.data\.date >= get\(/);
   assert.match(rules, /request\.resource\.data\.openingBalance == resource\.data\.openingBalance/);
 });
