@@ -11,7 +11,9 @@ service cloud.firestore {
     }
 
     function signedInAs(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.uid == userId;
     }
 
     // Registre central des accès d'équipe. Les rôles sont attribués hors client

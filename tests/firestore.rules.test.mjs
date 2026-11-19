@@ -112,3 +112,21 @@ test("un membre d'équipe non vérifié ne peut pas accéder aux données métie
 
   await assertFails(getDoc(doc(db, "programs", "private-program")));
 });
+
+test("un apprenant non vérifié ne peut pas créer son profil", async () => {
+  const db = testEnv.authenticatedContext("unverified-learner", {
+    email: "learner@example.org",
+    email_verified: false
+  }).firestore();
+
+  await assertFails(setDoc(doc(db, "users", "unverified-learner"), {
+    email: "learner@example.org",
+    displayName: "Apprenant test",
+    role: "apprenant",
+    country: "Bénin",
+    interest: "C",
+    mosque: "Mosquée test",
+    learningMode: "seul",
+    createdAt: serverTimestamp()
+  }));
+});
