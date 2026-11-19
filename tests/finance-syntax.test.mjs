@@ -541,6 +541,6 @@ test("la validation d'une opération est bloquée dès l'interface pour son prop
 test("le contrôleur financier dispose d'un périmètre de consultation distinct dans l'interface", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
-  assert.match(html, /scopes\\.includes\\("finance\\.control\\.read"\\)/);
-  assert.match(rules, /staffHasScope\\("finance\\.control\\.read"\\)/);
+  assert.match(html, /scopes\.includes\("finance\.control\.read"\)/);
+  assert.match(rules, /staffHasScope\("finance\.control\.read"\)/);
 });
