@@ -425,3 +425,49 @@ test("les KPI recettes et dépenses validées couvrent le même périmètre temp
   assert.ok(source.includes('cashExpense=cashValid.filter(t=>t.type==="depense")'));
   assert.ok(source.includes("cashBalance=cashIncome-cashExpense+openingBalances"));
 });
+
+
+test("la synthèse des donateurs sépare espèces et nature et ignore les opérations non éligibles", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\\n").find(line => line.startsWith("function donorSummaryRows()"));
+  assert.ok(source, "donorSummaryRows doit être défini sur une ligne");
+  const summarize = vm.runInNewContext(source + "; donorSummaryRows", {
+    $: id => ({ value: id === "yearFilter" ? "2027" : "" }),
+    transactions: [
+      { status: "validee", type: "recette", category: "don", date: "2027-01-02", counterparty: "École WAT", paymentMethod: "especes", amount: 100 },
+      { status: "validee", type: "recette", category: "subvention", date: "2027-02-02", counterparty: "ecole   wat", paymentMethod: "nature", amount: 40 },
+      { status: "soumise", type: "recette", category: "don", date: "2027-03-02", counterparty: "École WAT", paymentMethod: "especes", amount: 900 },
+      { status: "validee", type: "recette", category: "vente", date: "2027-03-03", counterparty: "École WAT", paymentMethod: "especes", amount: 500 },
+      { status: "validee", type: "recette", category: "don", date: "2026-12-31", counterparty: "École WAT", paymentMethod: "especes", amount: 700 }
+    ]
+  });
+  const rows = summarize();
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].count, 2);
+  assert.equal(rows[0].cash, 100);
+  assert.equal(rows[0].inKind, 40);
+  assert.equal(rows[0].total, 140);
+});
+
+test("la situation financière par projet exclut les opérations en attente et calcule le net hors nature", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\\n").find(line => line.startsWith("function projectFinanceRows()"));
+  assert.ok(source, "projectFinanceRows doit être défini sur une ligne");
+  const summarize = vm.runInNewContext(source + "; projectFinanceRows", {
+    $: id => ({ value: id === "yearFilter" ? "2027" : "" }),
+    transactions: [
+      { status: "validee", type: "recette", date: "2027-01-02", projectId: "p1", projectName: "Nour", paymentMethod: "especes", amount: 100 },
+      { status: "validee", type: "recette", date: "2027-01-03", projectId: "p1", projectName: "Nour", paymentMethod: "nature", amount: 30 },
+      { status: "validee", type: "depense", date: "2027-01-04", projectId: "p1", projectName: "Nour", amount: 40 },
+      { status: "soumise", type: "depense", date: "2027-01-05", projectId: "p1", projectName: "Nour", amount: 900 },
+      { status: "validee", type: "recette", date: "2027-01-06", projectId: "p2", projectName: "Autre", paymentMethod: "especes", amount: 500 },
+      { status: "validee", type: "depense", date: "2026-12-31", projectId: "p1", projectName: "Nour", amount: 700 }
+    ]
+  });
+  const rows = summarize();
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].income, 130);
+  assert.equal(rows[0].inKind, 30);
+  assert.equal(rows[0].expense, 40);
+  assert.equal(rows[0].income - rows[0].inKind - rows[0].expense, 60);
+});
