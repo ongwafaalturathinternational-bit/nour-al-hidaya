@@ -34,14 +34,29 @@
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
       return;
     }
-    const firebaseConfig = {
-      apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
-      authDomain: "wat-connect.firebaseapp.com",
-      projectId: "wat-connect",
-      storageBucket: "wat-connect.firebasestorage.app",
-      messagingSenderId: "595497756883",
-      appId: "1:595497756883:web:c95c93a3365a98aa44cc26"
+    // Production reste l'environnement par défaut. Le staging doit être demandé
+    // explicitement avec ?wat-env=staging afin d'éviter toute bascule accidentelle.
+    const requestedEnvironment = new URLSearchParams(window.location.search).get("wat-env");
+    const environment = requestedEnvironment === "staging" ? "staging" : "production";
+    const configs = {
+      production: {
+        apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
+        authDomain: "wat-connect.firebaseapp.com",
+        projectId: "wat-connect",
+        storageBucket: "wat-connect.firebasestorage.app",
+        messagingSenderId: "595497756883",
+        appId: "1:595497756883:web:c95c93a3365a98aa44cc26"
+      },
+      staging: {
+        apiKey: "AIzaSyB1rJ45mhUjjlgVNYo_yy6M1zCm-gc5Rgs",
+        authDomain: "wat-connect-staging.firebaseapp.com",
+        projectId: "wat-connect-staging",
+        storageBucket: "wat-connect-staging.firebasestorage.app",
+        messagingSenderId: "180737630773",
+        appId: "1:180737630773:web:e5c94e044c3a6a7ce9477c"
+      }
     };
+    const firebaseConfig = configs[environment];
     const app = window.firebase.apps.length
       ? window.firebase.app()
       : window.firebase.initializeApp(firebaseConfig);
@@ -50,7 +65,8 @@
       app: app,
       auth: window.firebase.auth(),
       db: window.firebase.firestore(),
-      projectId: firebaseConfig.projectId
+      projectId: firebaseConfig.projectId,
+      environment: environment
     };
   } catch (error) {
     console.error("Initialisation Firebase impossible :", error);
