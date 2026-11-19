@@ -496,7 +496,7 @@ test("les règles financières refusent les dates calendaires impossibles et acc
 
 
 test("les opérations et budgets exigent une référence de projet cohérente avec le référentiel", async () => {
-  await seed("project-reference-manager", ["finance.manage", "finance.budgets.manage"]);
+  await seed("project-reference-manager", ["finance.manage", "finance.budgets.manage", "projects.read"]);
   await env.withSecurityRulesDisabled(async c => {
     await setDoc(doc(c.firestore(), "projects", "project-education"), {
       name: "Nour Al-Hidaya", code: "NAH", description: "Projet de formation", status: "en_cours"
