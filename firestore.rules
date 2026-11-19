@@ -405,6 +405,7 @@ service cloud.firestore {
 
       // Un compte ne peut être que clôturé; son identité et ses références restent immuables.
       allow update: if staffHasScope("finance.accounts.manage")
+        && (staffHasScope("finance.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate"))
         && resource.data.status == "actif"
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt", "updatedBy"])
         && request.resource.data.status == "clos"
