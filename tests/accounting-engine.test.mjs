@@ -153,3 +153,12 @@ test("accepte les années bissextiles et rejette les dates calendaires impossibl
     assert.ok(validateAccountingEntry(invalid, accounts, openPeriod).some(x => x.includes("Date comptable invalide")));
   }
 });
+
+
+test("le moteur accepte les comptes SYCEBNL à 2 à 5 chiffres et rejette les codes non conformes", () => {
+  for (const accountCode of ["1", "ABC", "123456"]) {
+    const invalid = structuredClone(balanced);
+    invalid.lines[0].accountCode = accountCode;
+    assert.ok(validateAccountingEntry(invalid, accounts, openPeriod).some(x => x.includes("compte absent")));
+  }
+});
