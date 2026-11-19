@@ -429,7 +429,7 @@ test("les KPI recettes et dépenses validées couvrent le même périmètre temp
 
 test("la synthèse des donateurs sépare espèces et nature et ignore les opérations non éligibles", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.split("\\n").find(line => line.startsWith("function donorSummaryRows()"));
+  const source = html.split("\n").find(line => line.startsWith("function donorSummaryRows()"));
   assert.ok(source, "donorSummaryRows doit être défini sur une ligne");
   const summarize = vm.runInNewContext(source + "; donorSummaryRows", {
     $: id => ({ value: id === "yearFilter" ? "2027" : "" }),
@@ -451,7 +451,7 @@ test("la synthèse des donateurs sépare espèces et nature et ignore les opéra
 
 test("la situation financière par projet exclut les opérations en attente et calcule le net hors nature", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.split("\\n").find(line => line.startsWith("function projectFinanceRows()"));
+  const source = html.split("\n").find(line => line.startsWith("function projectFinanceRows()"));
   assert.ok(source, "projectFinanceRows doit être défini sur une ligne");
   const summarize = vm.runInNewContext(source + "; projectFinanceRows", {
     $: id => ({ value: id === "yearFilter" ? "2027" : "" }),
@@ -475,7 +475,7 @@ test("la situation financière par projet exclut les opérations en attente et c
 
 test("la liste des clôtures inclut les années de rapprochement et d'ouverture des comptes", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.split("\\n").find(line => line.startsWith("function fillPeriodSelect()"));
+  const source = html.split("\n").find(line => line.startsWith("function fillPeriodSelect()"));
   assert.ok(source, "fillPeriodSelect doit être défini sur une ligne");
   const select = {
     value: "2024",
