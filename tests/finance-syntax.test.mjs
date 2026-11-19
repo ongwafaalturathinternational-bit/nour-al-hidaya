@@ -169,6 +169,14 @@ test("la clôture d’un compte exige aussi un droit de lecture du registre fina
   assert.match(html, /if\(canAccountsManage&&canRead\)/);
 });
 
+test("les clôtures annuelles disposent d’un export CSV de leurs instantanés", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="exportClosedPeriods"/);
+  assert.match(html, /function exportClosedPeriodsCsv\(\)/);
+  assert.match(html, /WAT-clotures-annuelles\.csv/);
+  assert.match(html, /exportClosedPeriodsCsv\);/);
+});
+
 test("la clôture annuelle fige une synthèse comptable consultable", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
