@@ -71,7 +71,7 @@ Le logiciel doit produire à partir des seules écritures comptabilisées :
 Les totaux des journaux, du grand livre et de la balance doivent se réconcilier automatiquement. Les écritures en brouillon ou en attente de validation sont exclues des états officiels et clairement séparées.
 
 ### 3.4 États financiers et clôture
-Prévoir la génération des états financiers annuels et annexes selon les modèles, nomenclatures, règles de classement et exigences du SYCEBNL applicables au régime confirmé pour WAT. Les libellés et rubriques seront transcrits depuis le référentiel officiel, sans construire un bilan ou un compte de résultat générique d'entreprise.
+Pour WAT, dont le cadre institutionnel est celui d'une ONG constituée en association, le jeu d'états à concevoir en priorité est celui prévu par le SYCEBNL pour les associations : **bilan, compte de résultat, tableau des flux de trésorerie et notes annexes**. Les états propres aux projets de développement (tableau emplois-ressources, tableau d'exécution budgétaire, tableau de réconciliation de trésorerie, etc.) ne seront ajoutés que pour un périmètre de projet qui doit effectivement produire ces états selon le référentiel et les conventions du bailleur. Les modèles, seuils, rubriques et règles de présentation doivent être vérifiés dans le texte intégral officiel et validés par le professionnel comptable de WAT. Les libellés et rubriques seront transcrits depuis le référentiel officiel, sans construire un bilan ou un compte de résultat générique d'entreprise.
 
 La clôture comprend :
 - contrôles de complétude et de cohérence ;
@@ -95,7 +95,7 @@ Le modèle doit pouvoir traiter les opérations spécifiques prévues par le SYC
 
 Ces opérations ne doivent pas être enregistrées par une règle simpliste « recette = entrée d'argent / dépense = sortie d'argent ». Leur traitement doit être paramétré d'après les comptes, conditions et exemples du SYCEBNL, puis vérifié par le comptable.
 
-Le registre des donateurs prévu par le référentiel doit être intégré au module, avec les champs, contrôles, conservation et modalités de signature à confirmer à partir de l'article applicable et des règles locales.
+Le registre des donateurs prévu par le référentiel doit être intégré au module. Le texte de l'Acte uniforme prévoit des exigences formelles de tenue ; les champs réglementaires, la cotation/paraphe, la numérotation continue, les signatures, la conservation et la procédure applicable au Bénin seront confirmés à partir de l'article exact et des règles locales avant de figer le modèle.
 
 ## 4. Comptabilité analytique et gestion WAT
 
