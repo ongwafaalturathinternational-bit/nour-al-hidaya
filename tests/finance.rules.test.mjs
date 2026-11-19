@@ -317,6 +317,7 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
   const periodRef = doc(managerDb, "financePeriods", "2026");
   await assertSucceeds(setDoc(periodRef, {
     year: "2026", status: "clos", note: "Clôture annuelle de test",
+    snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 },
     closedAt: serverTimestamp(), closedBy: "period-manager",
     createdAt: serverTimestamp(), createdBy: "period-manager"
   }));
@@ -340,6 +341,16 @@ test("la clôture annuelle bloque les nouvelles opérations et transferts de l'e
   await assertSucceeds(setDoc(doc(db, "financeTransactions", "open-2027"), transaction("period-finance-operator", {
     date: "2027-01-02", fiscalYear: "2027"
   })));
+});
+
+test("la clôture annuelle exige un instantané comptable cohérent et immuable", async () => {
+  await seed("period-snapshot-manager", ["finance.periods.manage", "finance.read"]);
+  const db = env.authenticatedContext("period-snapshot-manager").firestore();
+  const ref = doc(db, "financePeriods", "2028");
+  const valid = { year: "2028", status: "clos", snapshot: { receiptsCash: 1000, receiptsInKind: 200, expenses: 400, netCash: 600, validatedTransactionCount: 3, transferCount: 1, reconciliationCount: 1, accountCount: 2, budgetCount: 1 }, closedAt: serverTimestamp(), closedBy: "period-snapshot-manager", createdAt: serverTimestamp(), createdBy: "period-snapshot-manager" };
+  await assertSucceeds(setDoc(ref, valid));
+  await assertFails(setDoc(doc(db, "financePeriods", "2029"), { ...valid, year: "2029", snapshot: { ...valid.snapshot, netCash: 999 } }));
+  await assertFails(updateDoc(ref, { note: "Modification après clôture" }));
 });
 
 test("la clôture d'un exercice exige le périmètre finance.periods.manage", async () => {
