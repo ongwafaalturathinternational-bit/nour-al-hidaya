@@ -130,6 +130,14 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("les explications des comptes et rapprochements décrivent correctement le solde d'ouverture", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /Le solde d’ouverture est une déclaration initiale enregistrée à la création du compte/);
+  assert.match(html, /Le calcul reprend le solde d’ouverture du compte s’il est applicable à la date du relevé/);
+  assert.match(html, /function accountComputedBalance\(accountId,asOfDate\)/);
+  assert.match(html, /account&&\(!asOfDate\|\|\(account\.openingDate\|\|""\)<=asOfDate\)/);
+});
+
 test("le registre et son export acceptent une plage de dates inclusive", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /\.filter-date\{display:flex;align-items:center;gap:6px/);
