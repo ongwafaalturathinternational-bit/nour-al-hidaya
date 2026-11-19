@@ -301,7 +301,7 @@ test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé 
 });
 
 test("la clôture annuelle bloque les nouvelles opérations et transferts de l'exercice", async () => {
-  await seed("period-manager", ["finance.periods.manage"]);
+  await seed("period-manager", ["finance.periods.manage", "finance.read"]);
   await seed("period-finance-operator", ["finance.manage"]);
   const managerDb = env.authenticatedContext("period-manager").firestore();
   const periodRef = doc(managerDb, "financePeriods", "2026");
