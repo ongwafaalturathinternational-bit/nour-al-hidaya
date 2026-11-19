@@ -15,7 +15,7 @@ Le système doit distinguer :
 - la **gestion de trésorerie**, qui suit les caisses, banques et comptes Mobile Money ;
 - le **workflow de contrôle**, qui sépare saisie, validation, consultation et contrôle.
 
-Les catégories actuelles « humanitaire », « éducation », « fonctionnement », « logistique », etc. sont des axes de gestion ou d'analyse. Elles ne doivent jamais être utilisées comme substituts aux numéros de comptes SYCEBNL.
+Les catégories actuelles « humanitaire », « éducation », « fonctionnement », « logistique », etc. sont des axes de gestion ou d'analyse. Elles ne doivent jamais être utilisées comme substituts aux numéros de comptes SYCEBNL. Attention : la classe 9 du plan SYCEBNL contient elle-même les comptes de contributions volontaires en nature et des comptes de comptabilité analytique ; elle doit donc être traitée selon ses règles propres, sans être confondue avec les axes analytiques complémentaires de WAT.
 
 ## 2. Référentiel normatif et points à confirmer
 
@@ -100,7 +100,7 @@ Le registre des donateurs est obligatoire pour les dons, donations et legs reçu
 
 ## 4. Comptabilité analytique et gestion WAT
 
-Les dimensions analytiques sont distinctes du plan comptable :
+Les dimensions analytiques de gestion WAT sont distinctes des axes et comptes analytiques prévus par le référentiel. Le plan SYCEBNL comprend neuf classes : classes 1 à 5 (bilan), classes 6 à 8 (gestion) et classe 9 (contributions volontaires en nature et comptabilité analytique). Les contributions volontaires significatives en nature suivies en classe 9 n'affectent pas le bilan ni le compte de résultat financier. Les dimensions analytiques complémentaires de gestion WAT sont :
 - programme (ex. Nour Al-Hidaya) ;
 - projet ;
 - activité ;
