@@ -139,7 +139,7 @@ function financeAccount(uid, extra = {}) {
 }
 
 test("finance.accounts.manage crée et clôture les comptes sans pouvoir les supprimer ni les réactiver", async () => {
-  await seed("account-manager", ["finance.accounts.manage"]);
+  await seed("account-manager", ["finance.accounts.manage", "finance.read"]);
   const db = env.authenticatedContext("account-manager").firestore();
   const ref = doc(db, "financeAccounts", "cash-main");
   await assertSucceeds(setDoc(ref, financeAccount("account-manager")));
