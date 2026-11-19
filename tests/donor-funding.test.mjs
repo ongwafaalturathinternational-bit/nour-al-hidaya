@@ -56,6 +56,22 @@ test("valide la fiche d'un bailleur et contrôle le courriel lorsqu'il est fourn
   }).some(x => x.includes("électronique")));
 });
 
+test("rejette les dates calendaires impossibles du registre et des conventions", () => {
+  assert.ok(validateDonorRegisterEntry({ ...validDonor, receivedAt: "2026-02-30" }).some(x => x.includes("date de réception")));
+  assert.ok(validateDonorRegisterEntry({ ...validDonor, receivedAt: "19/11/2026" }).some(x => x.includes("date de réception")));
+  assert.deepEqual(validateDonorRegisterEntry({ ...validDonor, receivedAt: "2024-02-29" }), []);
+});
+
+test("accepte les courriels valides et refuse les domaines mal formés", () => {
+  const base = { name: "Bailleur", category: "fondation", country: "Bénin", primaryContact: "Contact" };
+  for (const email of ["contact@example.org", "programme.finance@example.co.uk"]) {
+    assert.deepEqual(validateFunderProfile({ ...base, email }), []);
+  }
+  for (const email of ["adresse-invalide", "contact@example", "contact@.org", "contact@exemple."]) {
+    assert.ok(validateFunderProfile({ ...base, email }).some(x => x.includes("électronique")), email);
+  }
+});
+
 test("valide une convention de financement avec tranches et dépenses éligibles", () => {
   assert.deepEqual(validateGrantAgreement(validGrant), []);
 });
