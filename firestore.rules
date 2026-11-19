@@ -550,7 +550,7 @@ service cloud.firestore {
         && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
         && request.resource.data.date is string
         && request.resource.data.date.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
-        && request.resource.data.fiscalYear == request.resource.data.date.substring(0, 4)
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
         && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
         && request.resource.data.statementBalance is int
         && request.resource.data.statementBalance >= 0
