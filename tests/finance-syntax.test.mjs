@@ -162,6 +162,14 @@ test("le rapprochement des comptes conserve un instantané distinct du solde et 
   assert.match(rules, /allow delete: if false;/);
 });
 
+test("la clôture d’un compte est bloquée côté interface tant que des écritures, transferts ou rapprochements sont en attente", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /pendingTransactions=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="soumise"\)/);
+  assert.match(html, /pendingTransfers=transfers\.filter\(t=>\(t\.sourceAccountId===a\.id\|\|t\.destinationAccountId===a\.id\)&&t\.status==="soumise"\)/);
+  assert.match(html, /pendingReconciliations=reconciliations\.filter\(r=>r\.accountId===a\.id&&r\.status==="soumise"\)/);
+  assert.match(html, /Clôture impossible/);
+});
+
 test("les rapprochements utilisent un instantané daté et disposent d'un export CSV", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /accountComputedBalance\(accountId,date\)/);
