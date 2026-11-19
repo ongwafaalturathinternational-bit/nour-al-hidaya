@@ -130,6 +130,15 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
 
+test("le registre et son export acceptent une plage de dates inclusive", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="dateFrom" type="date"/);
+  assert.match(html, /id="dateTo" type="date"/);
+  assert.match(html, /\(!from\|\|\(t\.date\|\|""\)>=from\)&&\(!to\|\|\(t\.date\|\|""\)<=to\)/);
+  assert.match(html, /"accountFilter","dateFrom","dateTo"/);
+  assert.match(html, /filteredTransactions\(\)\.map\(t=>\[t\.date/);
+});
+
 test("le registre peut être filtré par compte et les exports suivent ce filtre", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /id="accountFilter"/);
