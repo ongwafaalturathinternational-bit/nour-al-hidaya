@@ -505,7 +505,7 @@ test("la liste des clôtures inclut les années de rapprochement et d'ouverture 
 
 test("la clôture accepte un exercice passé au format YYYY", async () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.split("\\n").find(line => line.includes("async function closePeriod("));
+  const source = html.split("\n").find(line => line.includes("async function closePeriod("));
   assert.ok(source, "closePeriod doit être défini");
   let confirmed = false;
   const errors = [];
