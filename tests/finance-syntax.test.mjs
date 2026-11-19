@@ -471,3 +471,30 @@ test("la situation financière par projet exclut les opérations en attente et c
   assert.equal(rows[0].expense, 40);
   assert.equal(rows[0].income - rows[0].inKind - rows[0].expense, 60);
 });
+
+
+test("la liste des clôtures inclut les années de rapprochement et d'ouverture des comptes", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\\n").find(line => line.startsWith("function fillPeriodSelect()"));
+  assert.ok(source, "fillPeriodSelect doit être défini sur une ligne");
+  const select = {
+    value: "2024",
+    options: [],
+    replaceChildren() { this.options = []; },
+    add(option) { this.options.push(option); }
+  };
+  const fill = vm.runInNewContext(source + "; fillPeriodSelect", {
+    $: () => select,
+    todayLocal: () => "2026-11-19",
+    transactions: [],
+    transfers: [],
+    reconciliations: [{ date: "2023-08-01" }],
+    accounts: [{ openingDate: "2024-05-01" }, { openingDate: "2026-01-01" }],
+    budgets: [],
+    periods: [],
+    Option: function (label, value) { return { label, value }; }
+  });
+  fill();
+  assert.deepEqual(select.options.map(option => option.value), ["2024", "2023"]);
+  assert.equal(select.value, "2024");
+});
