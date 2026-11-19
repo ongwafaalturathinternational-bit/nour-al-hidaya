@@ -549,3 +549,49 @@ test("le contrôleur financier consulte les registres sans pouvoir créer, valid
   await assertFails(setDoc(doc(db, "financeBudgets", "controller-cannot-create"), budget("finance-controller")));
   await assertFails(deleteDoc(doc(db, "financeTransactions", "controller-visible")));
 });
+
+test("le contrôleur financier lit les données, crée des observations séparées et ne touche pas aux opérations", async () => {
+  await seed("finance-controller-role", ["finance.control.read", "finance.control.observe"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeTransactions", "controller-audit-target"), transaction("operator"));
+  });
+  const db = env.authenticatedContext("finance-controller-role").firestore();
+  await assertSucceeds(getDoc(doc(db, "financeTransactions", "controller-audit-target")));
+  const observation = doc(db, "financeControlObservations", "control-note-001");
+  await assertSucceeds(setDoc(observation, {
+    title: "Justificatif manquant",
+    description: "La pièce justificative associée à cette opération n'est pas présente dans le dossier.",
+    severity: "elevee", status: "ouverte", referenceType: "operation",
+    referenceId: "controller-audit-target",
+    createdAt: serverTimestamp(), createdBy: "finance-controller-role",
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertSucceeds(getDoc(observation));
+  await assertSucceeds(updateDoc(observation, {
+    description: "La pièce justificative est toujours absente après vérification complémentaire.",
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(updateDoc(observation, {
+    status: "cloturee", updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(deleteDoc(observation));
+  await assertFails(updateDoc(doc(db, "financeTransactions", "controller-audit-target"), {
+    amount: 1, updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(setDoc(doc(db, "financeTransactions", "controller-forbidden"), transaction("finance-controller-role")));
+});
+
+test("les rapports de contrôle sont consultables mais immuables après création", async () => {
+  await seed("finance-controller-report", ["finance.control.read", "finance.control.observe"]);
+  const db = env.authenticatedContext("finance-controller-report").firestore();
+  const report = doc(db, "financeControlReports", "report-2026-q4");
+  await assertSucceeds(setDoc(report, {
+    title: "Rapport de contrôle trimestriel",
+    periodStart: "2026-10-01", periodEnd: "2026-12-31",
+    summary: "Contrôle des pièces, dépenses, engagements et rapprochements du trimestre.",
+    findingCount: 3, createdAt: serverTimestamp(), createdBy: "finance-controller-report"
+  }));
+  await assertSucceeds(getDoc(report));
+  await assertFails(updateDoc(report, { summary: "Rapport modifié", }));
+  await assertFails(deleteDoc(report));
+});
