@@ -24,7 +24,7 @@ function assertPostedEntry(entry) {
   for (const line of entry.lines) {
     const d = line?.debit ?? 0;
     const c = line?.credit ?? 0;
-    if (typeof line?.accountCode !== "string" || !line.accountCode.trim()
+    if (typeof line?.accountCode !== "string" || !/^\\d{2,5}$/.test(line.accountCode)
         || !validAmount(d) || !validAmount(c) || ((d > 0) === (c > 0))) {
       throw new TypeError("Ligne comptable invalide dans une pièce comptabilisée.");
     }
@@ -75,7 +75,7 @@ export function validateAccountingEntry(entry, accountsByCode, period) {
   for (const [index, line] of entry.lines.entries()) {
     const label = `Ligne ${index + 1}`;
     const account = accountsByCode?.[line?.accountCode];
-    if (typeof line?.accountCode !== "string" || !line.accountCode.trim()
+    if (typeof line?.accountCode !== "string" || !/^\\d{2,5}$/.test(line.accountCode)
         || !account || account.status !== "active" || account.postable !== true) {
       errors.push(`${label} : compte absent, inactif ou non imputable.`);
     }
@@ -149,7 +149,7 @@ export function buildTrialBalance(accounts, entries, openingBalances = {}) {
     .sort((a, b) => String(a.code).localeCompare(String(b.code)));
   const accountCodes = new Set();
   for (const account of activeAccounts) {
-    if (typeof account.code !== "string" || !account.code.trim() || accountCodes.has(account.code)) {
+    if (typeof account.code !== "string" || !/^\\d{2,5}$/.test(account.code) || accountCodes.has(account.code)) {
       throw new TypeError("Référentiel de comptes invalide ou code en double.");
     }
     accountCodes.add(account.code);
