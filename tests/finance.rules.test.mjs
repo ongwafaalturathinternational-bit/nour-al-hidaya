@@ -388,3 +388,19 @@ test("les rapprochements refusent un compte clôturé, un exercice clos et des m
   await assertFails(setDoc(doc(db, "financeReconciliations", "closed-year"), { ...base, date: "2026-11-19", fiscalYear: "2026" }));
   await assertFails(setDoc(doc(db, "financeReconciliations", "bad-amount"), { ...base, statementBalance: -1 }));
 });
+
+test("l'écart du rapprochement doit correspondre exactement aux deux soldes déclarés", async () => {
+  await seed("reconcile-math-manager", ["finance.manage"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "reconcile-math"), financeAccount("system")));
+  const db = env.authenticatedContext("reconcile-math-manager").firestore();
+  const base = {
+    accountId: "reconcile-math", accountName: "Caisse principale",
+    date: "2027-02-01", fiscalYear: "2027", statementBalance: 15000,
+    systemBalanceSnapshot: 10000, difference: 5000, reference: "",
+    note: "Contrôle du rapprochement comptable", status: "soumise",
+    createdAt: serverTimestamp(), createdBy: "reconcile-math-manager",
+    updatedAt: serverTimestamp(), updatedBy: "reconcile-math-manager"
+  };
+  await assertSucceeds(setDoc(doc(db, "financeReconciliations", "math-valid"), base));
+  await assertFails(setDoc(doc(db, "financeReconciliations", "math-invalid"), { ...base, difference: 100 }));
+});
