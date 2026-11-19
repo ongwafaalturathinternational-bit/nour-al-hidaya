@@ -146,6 +146,41 @@ Règles :
 - exports et justificatifs soumis aux mêmes périmètres d'accès ;
 - les contrôles critiques doivent être imposés côté serveur/règles sécurisées, pas seulement dans l'interface.
 
+### 6.1 Rôle dédié : contrôleur financier de l'ONG
+
+Le rôle de **Contrôleur financier** est un profil central de gouvernance du module Finance. Il ne doit pas être oublié ni confondu avec le gestionnaire financier, le trésorier, le validateur opérationnel ou le responsable des budgets.
+
+Missions dans WAT Connect :
+- contrôler les recettes, dépenses, transferts, rapprochements, pièces justificatives et clôtures ;
+- consulter les journaux, le grand livre, la balance, les comptes, les états financiers, les budgets et les rapports par projet, bailleur, période et affectation ;
+- vérifier la cohérence entre pièces justificatives, opérations métiers et écritures comptables ;
+- consulter l'historique des actions : auteur, dates, validation, rejet, contrepassation, modification autorisée et motif ;
+- relever une anomalie, rédiger une observation, demander une explication ou signaler un dossier à corriger ;
+- suivre la résolution des observations et produire un rapport de contrôle périodique exportable ;
+- consulter les justificatifs GED dans la limite de son périmètre d'habilitation.
+
+Limites et indépendance :
+- accès de contrôle en lecture seule aux données comptables et financières ; possibilité d'ajouter des observations de contrôle dans un espace séparé et audité ;
+- ne peut pas saisir ni modifier une opération financière, préparer une écriture, valider ou comptabiliser une pièce, effectuer un paiement ou un transfert, modifier un budget, lettrer/délettrer, rapprocher/valider un relevé bancaire ou clôturer un exercice ;
+- ne peut pas effacer une observation ou une trace d'audit ; une observation peut être complétée ou clôturée avec une réponse documentée ;
+- ne valide pas ses propres travaux et ne remplace pas le commissaire aux comptes ou l'auditeur externe lorsqu'ils sont requis ;
+- ses accès peuvent être limités à une période, un projet, un bailleur, une caisse ou un compte, sans élargissement automatique à l'ensemble des données.
+
+La désignation et le nombre des contrôleurs financiers relèvent des organes compétents de l'ONG. Le logiciel doit permettre plusieurs comptes utilisateurs portant ce rôle, sans imposer un nombre fixe. Les attributions nominatives et le périmètre exact sont configurés par une autorité habilitée et historisés.
+
+### 6.2 Matrice de séparation des responsabilités
+
+| Profil | Préparer/saisir | Valider/comptabiliser | Consulter les rapports | Contrôler/annoter | Administrer |
+|---|---|---|---|---|---|
+| Lecteur financier | Non | Non | Oui, selon périmètre | Non | Non |
+| Gestionnaire financier | Oui | Non | Oui, selon périmètre | Non | Non |
+| Validateur financier | Non sur ses propres pièces | Oui, si indépendant de l'auteur | Oui | Non | Non |
+| Responsable des budgets | Préparer les budgets et propositions de révision | Validation budgétaire selon délégation, jamais sa propre demande | Oui | Suivi des écarts budgétaires | Non |
+| Contrôleur financier de l'ONG | Non | Non | Oui, y compris historique et justificatifs autorisés | Oui, observations séparées et traçables | Non |
+| Administrateur comptable | Paramétrage référentiel et exercices | Pas d'auto-validation des pièces | Oui | Suivi technique | Oui, dans les limites de délégation |
+
+Les droits sont attribués par action et par périmètre, et non par simple accès à une page. Les contrôles serveur doivent refuser toute écriture non autorisée même si un utilisateur tente d'appeler directement Firebase ou une API. Le cumul de rôles ne doit pas permettre à une même personne de préparer et valider la même pièce, ni de contrôler une opération dont elle est l'auteur ou le validateur. Les droits d'un contrôleur financier sont distincts de ceux du commissaire aux comptes externe et ne lui confèrent pas automatiquement une qualité légale d'auditeur.
+
 ## 7. Migration du registre Finance actuel
 
 Le module existant contient déjà recettes/dépenses, budgets, comptes de trésorerie, transferts, rapprochements, rapports donateurs/projets et clôtures. Ces fonctions restent utiles mais ne forment pas encore un grand livre en partie double.
