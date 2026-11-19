@@ -121,3 +121,10 @@ test("les rapports financiers distinguent les apports en nature, les donateurs e
   assert.match(html, /WAT-synthese-contributions\.csv/);
   assert.match(html, /WAT-situation-financiere-projets\.csv/);
 });
+
+test("les rapports par donateur et par projet suivent le filtre d'exercice", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /const groups=new Map\(\),selected=\$\("yearFilter"\)\.value/);
+  assert.match(html, /renderDonorSummary\(\);renderProjectFinance\(\)/);
+  assert.match(html, /\["don","cotisation","subvention","collecte"\]/);
+});
