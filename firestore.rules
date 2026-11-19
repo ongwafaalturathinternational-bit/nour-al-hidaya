@@ -129,20 +129,6 @@ service cloud.firestore {
         && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
-        && (!( "accountId" in request.resource.data) || (
-          request.resource.data.accountId is string
-          && request.resource.data.accountId.size() >= 1
-          && request.resource.data.accountId.size() <= 100
-          && request.resource.data.paymentMethod != "nature"
-          && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId))
-          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.status == "actif"
-          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.type ==
-            (request.resource.data.paymentMethod == "especes" ? "caisse" :
-              request.resource.data.paymentMethod == "mobile_money" ? "mobile_money" : "banque")
-          && request.resource.data.accountName is string
-          && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
-        ))
-        && (!("accountName" in request.resource.data) || ("accountId" in request.resource.data))
         && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
@@ -476,6 +462,20 @@ service cloud.firestore {
           request.resource.data.evidenceRef is string
           && request.resource.data.evidenceRef.size() <= 180
         ))
+        && (!( "accountId" in request.resource.data) || (
+          request.resource.data.accountId is string
+          && request.resource.data.accountId.size() >= 1
+          && request.resource.data.accountId.size() <= 100
+          && request.resource.data.paymentMethod != "nature"
+          && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId))
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.status == "actif"
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.type ==
+            (request.resource.data.paymentMethod == "especes" ? "caisse" :
+              request.resource.data.paymentMethod == "mobile_money" ? "mobile_money" : "banque")
+          && request.resource.data.accountName is string
+          && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
+        ))
+        && (!("accountName" in request.resource.data) || ("accountId" in request.resource.data))
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid
