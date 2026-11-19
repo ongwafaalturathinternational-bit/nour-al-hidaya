@@ -364,7 +364,7 @@ test("la clôture annuelle ne peut viser que des exercices terminés", () => {
 
 test("l'instantané annuel ne compte que les comptes ouverts avant la fin de l'exercice", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.match(/function buildPeriodSnapshot\(year\)\{[\s\S]*?\}/)?.[0];
+  const source = html.match(/function buildPeriodSnapshot\(year\)\{[^\n]*/)?.[0];
   assert.ok(source, "buildPeriodSnapshot doit être défini");
   const build = vm.runInNewContext(source + "; buildPeriodSnapshot", {
     transactions: [
