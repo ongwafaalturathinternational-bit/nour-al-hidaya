@@ -251,3 +251,43 @@ test("les transferts ne sont pas accessibles sans un périmètre du registre fin
   const db = env.authenticatedContext("transfer-outsider").firestore();
   await assertFails(getDoc(doc(db, "financeTransfers", "private-transfer")));
 });
+
+test("une opération liée à un compte clôturé après sa soumission ne peut plus être validée", async () => {
+  await seed("account-tx-author", ["finance.manage"]);
+  await seed("account-tx-reviewer", ["finance.validate"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "cash-to-close"), financeAccount("system")));
+  const authorDb = env.authenticatedContext("account-tx-author").firestore();
+  await assertSucceeds(setDoc(doc(authorDb, "financeTransactions", "pending-on-closing-account"), transaction("account-tx-author", {
+    paymentMethod: "especes", accountId: "cash-to-close", accountName: "Caisse principale"
+  })));
+  await env.withSecurityRulesDisabled(async c => {
+    await updateDoc(doc(c.firestore(), "financeAccounts", "cash-to-close"), { status: "clos" });
+  });
+  const reviewerDb = env.authenticatedContext("account-tx-reviewer").firestore();
+  await assertFails(updateDoc(doc(reviewerDb, "financeTransactions", "pending-on-closing-account"), {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "account-tx-reviewer",
+    updatedAt: serverTimestamp(), updatedBy: "account-tx-reviewer"
+  }));
+});
+
+test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé après sa soumission", async () => {
+  await seed("transfer-close-author", ["finance.manage"]);
+  await seed("transfer-close-reviewer", ["finance.validate"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "cash-source-close"), financeAccount("system", { name: "Caisse source" }));
+    await setDoc(doc(c.firestore(), "financeAccounts", "bank-destination-close"), financeAccount("system", { name: "Banque destination", type: "banque" }));
+  });
+  const authorDb = env.authenticatedContext("transfer-close-author").firestore();
+  await assertSucceeds(setDoc(doc(authorDb, "financeTransfers", "pending-on-closing-account"), financeTransfer("transfer-close-author", {
+    sourceAccountId: "cash-source-close", sourceName: "Caisse source",
+    destinationAccountId: "bank-destination-close", destinationName: "Banque destination"
+  })));
+  await env.withSecurityRulesDisabled(async c => {
+    await updateDoc(doc(c.firestore(), "financeAccounts", "bank-destination-close"), { status: "clos" });
+  });
+  const reviewerDb = env.authenticatedContext("transfer-close-reviewer").firestore();
+  await assertFails(updateDoc(doc(reviewerDb, "financeTransfers", "pending-on-closing-account"), {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "transfer-close-reviewer",
+    updatedAt: serverTimestamp(), updatedBy: "transfer-close-reviewer"
+  }));
+});
