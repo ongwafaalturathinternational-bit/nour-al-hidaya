@@ -148,6 +148,7 @@ test("finance.accounts.manage crée et clôture les comptes sans pouvoir les sup
   await assertSucceeds(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
   await assertFails(updateDoc(ref, { status: "actif", updatedAt: serverTimestamp(), updatedBy: "account-manager" }));
   await assertFails(deleteDoc(ref));
+  await assertFails(setDoc(doc(db, "financeAccounts", "full-account-number"), financeAccount("account-manager", { reference: "1234567890123456" })));
 });
 
 test("l'accès aux comptes reste distinct du registre des transactions", async () => {
