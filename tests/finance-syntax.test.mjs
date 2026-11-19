@@ -328,7 +328,7 @@ test("la date proposée après une nouvelle opération utilise le calendrier loc
 
 test("les transferts et rapprochements respectent la date d'ouverture de chaque compte", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.match(/function accountEligibleForDate\(account,date\)\{[^}]*\}/)?.[0];
+  const source = html.match(/function accountEligibleForDate\(account,date\)\{[\s\S]*?\}\nfunction accountComputedBalance/)?.[0]?.replace(/\nfunction accountComputedBalance[\s\S]*$/, "");
   assert.ok(source, "accountEligibleForDate doit être défini");
   const eligible = vm.runInNewContext(source + "; accountEligibleForDate", {});
   const account = { status: "actif", openingDate: "2026-04-15" };
