@@ -414,3 +414,13 @@ test("une opération sans compte est explicitement signalée comme exclue des so
   assert.match(html, /reste dans le registre global, mais ne sera pas intégrée au solde/);
   assert.match(html, /if\(method!==\"nature\"&&matchingAccounts\.length>0&&!accountId\)/);
 });
+
+
+test("les KPI recettes et dépenses validées couvrent le même périmètre temporel", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.match(/function renderKpis\(\)\{[^\n]*/)?.[0] || "";
+  assert.match(source, /income=valid\.filter\(t=>t\.type===\"recette\"\)/);
+  assert.match(source, /expense=valid\.filter\(t=>t\.type===\"depense\"\)/);
+  assert.match(source, /cashValid=valid\.filter\(t=>\(t\.date\|\|\\"\\"\)<=asOf\)/);
+  assert.match(source, /cashBalance=cashIncome-expense\+openingBalances/);
+});
