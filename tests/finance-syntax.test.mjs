@@ -161,3 +161,12 @@ test("le rapprochement des comptes conserve un instantané distinct du solde et 
   assert.match(rules, /request\.auth\.uid != resource\.data\.createdBy/);
   assert.match(rules, /allow delete: if false;/);
 });
+
+test("les rapprochements utilisent un instantané daté et disposent d'un export CSV", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /accountComputedBalance\(accountId,date\)/);
+  assert.match(html, /function exportReconciliationsCsv\(\)/);
+  assert.match(html, /id="exportReconciliations"/);
+  assert.match(html, /WAT-rapprochements-financiers\.csv/);
+  assert.match(html, /aucun solde d’ouverture ni mouvement non associé n’est inclus/i);
+});
