@@ -5,7 +5,7 @@ import fs from "node:fs";
 const init = fs.readFileSync("firebase-init.js", "utf8");
 
 test("les modules opérationnels activent le cache Firestore hors connexion multi-onglets", () => {
-  assert.match(init, /db\.enablePersistence\(\{\s*synchronizeTabs:\s*true\s*\}\)/);
+  assert.match(init, /db\.enablePersistence\(\{\s*synchronizeTabs:\s*true\s*\}\)/);\n  assert.doesNotMatch(init, /club-khuddam-inscription\.html/);
   assert.match(init, /persistenceReady/);
   assert.match(init, /persistenceEnabled/);
 });
