@@ -44,11 +44,18 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Installer Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Installer la plateforme Android
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Configurer Android SDK
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager introuvable dans $SDK_ROOT"
+            exit 1
+          fi
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Installer Capacitor
         run: npm install --no-audit --no-fund
