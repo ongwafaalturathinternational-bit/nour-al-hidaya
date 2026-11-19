@@ -135,3 +135,16 @@ test("le registre des transferts internes est exportable séparément", () => {
   assert.match(html, /function exportTransfersCsv\(\)/);
   assert.match(html, /WAT-transferts-internes\.csv/);
 });
+
+test("la clôture annuelle est visible, irréversible et intégrée aux formulaires", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /id="periodArea"/);
+  assert.match(html, /id="periodForm"/);
+  assert.match(html, /function closePeriod\(year,note\)/);
+  assert.match(html, /fiscalYear:date\.slice\(0,4\)/);
+  assert.match(rules, /match \/financePeriods\//);
+  assert.match(rules, /finance\.periods\.manage/);
+  assert.match(rules, /!exists\(\/databases\/\$\(database\)\/documents\/financePeriods/);
+  assert.match(rules, /request\.resource\.data\.date\.matches/);
+});
