@@ -1,4 +1,6 @@
 /.github/
+/.git/
+/.wrangler/
 /docs/
 /tests/
 firebase.json
