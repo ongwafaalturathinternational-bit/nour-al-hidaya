@@ -62,7 +62,7 @@ test("attendance.manage autorise la présence, lecture dédiée et aucune suppre
   await seed("attendance-manager", ["activities.read", "attendance.read", "attendance.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "activities", "a"), activity("system")));
   const db = env.authenticatedContext("attendance-manager").firestore();
-  const ref = doc(db, "activities", "a", "attendance", "p1");
+  const ref = doc(db, "attendance", "p1");
   await assertSucceeds(setDoc(ref, attendance("attendance-manager")));
   await assertSucceeds(getDoc(ref));
   await assertFails(deleteDoc(ref));
