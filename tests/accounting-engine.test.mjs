@@ -12,7 +12,8 @@ const accounts = {
   "1011": { code: "1011", label: "Compte A", status: "active", postable: true },
   "1015": { code: "1015", label: "Compte B", status: "active", postable: true },
   "10": { code: "10", label: "Rubrique", status: "active", postable: false },
-  "1021": { code: "1021", label: "Inactif", status: "inactive", postable: true }
+  "1021": { code: "1021", label: "Inactif", status: "inactive", postable: true },
+  "101111": { code: "101111", label: "Subdivision WAT", status: "active", postable: true }
 };
 const openPeriod = { status: "open", startDate: "2026-01-01", endDate: "2026-12-31" };
 const balanced = {
@@ -155,8 +156,11 @@ test("accepte les années bissextiles et rejette les dates calendaires impossibl
 });
 
 
-test("le moteur accepte les comptes SYCEBNL à 2 à 5 chiffres et rejette les codes non conformes", () => {
-  for (const accountCode of ["1", "ABC", "123456"]) {
+test("le moteur accepte les comptes du plan SYCEBNL et les subdivisions numériques supplémentaires", () => {
+  const extended = structuredClone(balanced);
+  extended.lines[0].accountCode = "101111";
+  assert.deepEqual(validateAccountingEntry(extended, accounts, openPeriod), []);
+  for (const accountCode of ["1", "ABC"]) {
     const invalid = structuredClone(balanced);
     invalid.lines[0].accountCode = accountCode;
     assert.ok(validateAccountingEntry(invalid, accounts, openPeriod).some(x => x.includes("compte absent")));
