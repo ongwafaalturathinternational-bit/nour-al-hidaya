@@ -26,6 +26,7 @@ service cloud.firestore {
 
     function activeStaff() {
       return request.auth != null
+        && request.auth.token.email_verified == true
         && staffAccessExists(request.auth.uid)
         && staffAccessData(request.auth.uid).active == true;
     }

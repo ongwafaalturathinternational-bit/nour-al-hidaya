@@ -91,3 +91,24 @@ test("les collections métier non ouvertes restent refusées", async () => {
   await assertFails(getDoc(doc(aliceDb, "financeEntries/entry-001")));
   await assertFails(getDoc(doc(aliceDb, "attendance/session-001")));
 });
+
+test("un membre d'équipe non vérifié ne peut pas accéder aux données métier", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "staffAccess/unverified-staff"), {
+      displayName: "Compte non vérifié",
+      email: "unverified@example.org",
+      role: "formateur",
+      active: true,
+      scopes: ["programs.read"],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  });
+
+  const db = testEnv.authenticatedContext("unverified-staff", {
+    email: "unverified@example.org",
+    email_verified: false
+  }).firestore();
+
+  await assertFails(getDoc(doc(db, "programs", "private-program")));
+});
