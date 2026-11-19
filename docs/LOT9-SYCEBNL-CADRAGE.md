@@ -207,7 +207,7 @@ Plan de transition :
 ## 9. Limites connues à ce stade
 
 - Le module Finance existant n'est pas encore une comptabilité générale SYCEBNL.
-- Un extracteur local a été ajouté (`scripts/extract-sycebnl-chart.mjs`). Il prépare un brouillon JSON depuis les pages publiques classe par classe ; le comptage annoncé par la transcription secondaire (1 142) diffère d'une autre transcription (1 130). Le fichier produit doit être comparé au Journal officiel et à la copie détenue par WAT, compte par compte, avant son intégration ou son activation.
+- Un extracteur local a été ajouté (`scripts/extract-sycebnl-chart.mjs`). Son premier passage automatisé a parcouru les neuf pages de classe et extrait 1 133 comptes : classe 1 = 86, classe 2 = 279, classe 3 = 49, classe 4 = 224, classe 5 = 75, classe 6 = 261, classe 7 = 96, classe 8 = 46, classe 9 = 17. La page d'accueil de la transcription annonce 1 142 comptes, tandis qu'une autre transcription annonce 1 130 : les neuf comptes d'écart avec le total de la page d'accueil et les différences par classe doivent être résolus à partir du Journal officiel et de la copie détenue par WAT. Le JSON est publié comme artefact de revue, pas comme référentiel actif.
 - Le régime légal effectivement applicable à WAT et les états précis à produire restent à confirmer avec un professionnel comptable au Bénin.
 - L'environnement Preview Cloudflare utilise actuellement le projet Firebase `wat-connect` : aucune donnée réelle ni écriture financière réelle ne doit être saisie depuis la prévisualisation tant que l'isolation backend n'est pas établie.
 - Ce document est un cadrage de développement. Il ne constitue ni une certification de conformité, ni un avis comptable ou juridique.
