@@ -374,7 +374,7 @@ service cloud.firestore {
 
     // Comptes et caisses : registre séparé, sans accès implicite aux opérations financières.
     match /financeAccounts/{accountId} {
-      allow read: if staffHasScope("finance.read")
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
         || staffHasScope("finance.manage")
         || staffHasScope("finance.validate")
         || staffHasScope("finance.accounts.manage");
@@ -435,7 +435,7 @@ service cloud.firestore {
 
     // Registre financier confidentiel : lecture, saisie et validation sont des périmètres séparés.
     match /financeTransactions/{transactionId} {
-      allow read: if staffHasScope("finance.read")
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
         || staffHasScope("finance.manage")
         || staffHasScope("finance.validate");
 
@@ -561,7 +561,7 @@ service cloud.firestore {
     // Clôture annuelle irréversible : une année clôturée ne reçoit plus d'écritures.
     // Rapprochements : constats immuables soumis puis contrôlés par un second responsable.
     match /financeReconciliations/{reconciliationId} {
-      allow read: if staffHasScope("finance.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate");
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate");
       allow create: if staffHasScope("finance.manage")
         && request.resource.data.keys().hasOnly([
           "accountId", "accountName", "date", "fiscalYear", "statementBalance",
@@ -650,7 +650,7 @@ service cloud.firestore {
     }
 
     match /financePeriods/{year} {
-      allow read: if staffHasScope("finance.read")
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
         || staffHasScope("finance.manage")
         || staffHasScope("finance.validate")
         || staffHasScope("finance.periods.manage");
@@ -707,7 +707,7 @@ service cloud.firestore {
 
     // Transferts internes : mouvements entre deux comptes, jamais comptabilisés comme recettes ou dépenses.
     match /financeTransfers/{transferId} {
-      allow read: if staffHasScope("finance.read")
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
         || staffHasScope("finance.manage")
         || staffHasScope("finance.validate");
 
@@ -805,7 +805,7 @@ service cloud.firestore {
 
     // Budgets : autorisations indépendantes du registre des mouvements.
     match /financeBudgets/{budgetId} {
-      allow read: if staffHasScope("finance.read")
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
         || staffHasScope("finance.manage")
         || staffHasScope("finance.validate")
         || staffHasScope("finance.budgets.manage");
