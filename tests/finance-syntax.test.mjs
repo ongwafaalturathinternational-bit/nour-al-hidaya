@@ -531,3 +531,9 @@ test("la clôture accepte un exercice passé au format YYYY", async () => {
   assert.equal(confirmed, true, "un exercice passé valide doit atteindre la confirmation");
   assert.deepEqual(errors, []);
 });
+
+
+test("la validation d'une opération est bloquée dès l'interface pour son propre auteur", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /async function review\(t,status\)\{if\(!canValidate\|\|!user\|\|t\.status!==\"soumise\"\|\|t\.createdBy===user\.uid\)return;/);
+});
