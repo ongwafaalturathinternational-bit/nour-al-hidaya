@@ -29,4 +29,28 @@ for (const file of files) {
   await fs.access(source);
   await fs.copyFile(source, target);
 }
-console.log(`Préparation Capacitor terminée : ${files.length} ressources copiées dans web-dist.`);
+
+const vendor = path.join(output, "vendor");
+await fs.mkdir(vendor, { recursive: true });
+const sdkFiles = [
+  "firebase-app-compat.js",
+  "firebase-auth-compat.js",
+  "firebase-firestore-compat.js"
+];
+for (const file of sdkFiles) {
+  const url = `https://www.gstatic.com/firebasejs/11.10.0/${file}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Téléchargement Firebase impossible : ${file} (${response.status})`);
+  await fs.writeFile(path.join(vendor, file), Buffer.from(await response.arrayBuffer()));
+}
+
+const htmlFiles = files.filter(file => file.endsWith(".html"));
+for (const file of htmlFiles) {
+  const target = path.join(output, file);
+  let html = await fs.readFile(target, "utf8");
+  for (const sdk of sdkFiles) {
+    html = html.replaceAll(`https://www.gstatic.com/firebasejs/11.10.0/${sdk}`, `./vendor/${sdk}`);
+  }
+  await fs.writeFile(target, html);
+}
+console.log(`Préparation Capacitor terminée : ${files.length} ressources web et ${sdkFiles.length} SDK Firebase locaux copiés dans web-dist.`);
