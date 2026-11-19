@@ -162,6 +162,13 @@ test("le rapprochement des comptes conserve un instantané distinct du solde et 
   assert.match(rules, /allow delete: if false;/);
 });
 
+test("la clôture d’un compte exige aussi un droit de lecture du registre financier", () => {
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(rules, /allow update: if staffHasScope\("finance\.accounts\.manage"\)\s*&& \(staffHasScope\("finance\.read"\) \|\| staffHasScope\("finance\.manage"\) \|\| staffHasScope\("finance\.validate"\)\)/);
+  assert.match(html, /if\(canAccountsManage&&canRead\)/);
+});
+
 test("la clôture d’un compte est bloquée côté interface tant que des écritures, transferts ou rapprochements sont en attente", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /pendingTransactions=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="soumise"\)/);
