@@ -88,7 +88,8 @@ test("finance.budgets.manage gère les budgets sans ouvrir l'accès aux opérati
   const ref = doc(db, "financeBudgets", "education-2027");
   await assertSucceeds(setDoc(ref, budget("budget-manager")));
   await assertSucceeds(getDoc(ref));
-  await assertSucceeds(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "budget-manager" }));\n  await assertFails(updateDoc(ref, { status: "actif", updatedAt: serverTimestamp(), updatedBy: "budget-manager" }));
+  await assertSucceeds(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "budget-manager" }));
+  await assertFails(updateDoc(ref, { status: "actif", updatedAt: serverTimestamp(), updatedBy: "budget-manager" }));
   await assertFails(getDoc(doc(db, "financeTransactions", "secret")));
   await assertFails(deleteDoc(ref));
 });
