@@ -31,5 +31,7 @@ test("les pages Firebase signalent clairement une perte de connexion", () => {
   assert.match(init, /wat-network-notice/);
   assert.match(init, /addEventListener\("offline"/);
   assert.match(init, /addEventListener\("online"/);
-  assert.match(init, /Certaines fonctions nécessitant Firebase ne sont pas accessibles/);
+  assert.match(init, /données déjà consultées restent disponibles/);
+  assert.match(init, /cache hors connexion n'est pas disponible/);
+  assert.match(init, /persistenceStatus === "unavailable"/);
 });
