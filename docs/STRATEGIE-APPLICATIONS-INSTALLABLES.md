@@ -5,9 +5,11 @@
 - Le portail WAT Connect possède un manifeste PWA et un service worker dédié.
 - Le service worker précache les pages statiques du portail et des modules du premier bloc, puis utilise une navigation réseau avec repli sur le cache.
 - Les requêtes d'écriture et les services externes Firebase ne sont pas interceptés ni mis en cache.
-- Les pages utilisant Firebase affichent un avertissement explicite lorsque le navigateur signale une perte de connexion; elles ne promettent pas encore la création ou la synchronisation hors ligne des données métier.
-- Cette étape rend l'interface plus résiliente hors connexion ; elle ne signifie pas que les formulaires, les présences ou les modifications de données peuvent déjà être créés hors ligne.
-- La file locale et la synchronisation des données métier restent à développer et à tester avant toute promesse de fonctionnement terrain hors connexion.
+- Le service worker précache le shell et les trois SDK Firebase statiques versionnés nécessaires au démarrage hors connexion. Il n'intercepte aucune API métier et ne met aucune donnée privée en cache.
+- Les modules Projets, Activités, Présences et Club activent le cache Firestore IndexedDB multi-onglets. Les documents déjà consultés restent disponibles hors connexion et les écritures sont mises en attente par le SDK puis synchronisées au retour du réseau.
+- La première authentification et le premier chargement des données exigent une connexion. Les opérations en attente doivent être confirmées par le serveur; un affichage local n'est pas une validation.
+- La déconnexion attend la synchronisation des écritures puis efface le cache local. Elle est bloquée hors connexion pour éviter la perte silencieuse d'opérations.
+- Le cache contient des données privées déjà consultées : utilisation réservée aux appareils de confiance, verrouillés et non partagés.
 - Aucun APK Android n'a encore été construit. La chaîne Capacitor/GitHub Actions reste une étape ultérieure, après stabilisation du socle PWA.
 - Le déploiement Firebase en production n'est pas autorisé par cette étape.
 
