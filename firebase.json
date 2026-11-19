@@ -15,6 +15,12 @@
       ".firebaserc",
       "tests/**",
       ".github/**",
+      "scripts/**",
+      "android/**",
+      "web-dist/**",
+      "package.json",
+      "package-lock.json",
+      "capacitor.config.json",
       "**/*.test.*",
       "*.md"
     ]
