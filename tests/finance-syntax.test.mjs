@@ -324,3 +324,19 @@ test("la date proposée après une nouvelle opération utilise le calendrier loc
   assert.doesNotMatch(html, /toISOString\(\)\.slice\(0,10\)/);
   assert.match(html, /function todayLocal\(\)/);
 });
+
+
+test("les transferts et rapprochements respectent la date d'ouverture de chaque compte", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.match(/function accountEligibleForDate\(account,date\)\{[^}]*\}/)?.[0];
+  assert.ok(source, "accountEligibleForDate doit être défini");
+  const eligible = vm.runInNewContext(source + "; accountEligibleForDate", {});
+  const account = { status: "actif", openingDate: "2026-04-15" };
+  assert.equal(eligible(account, "2026-04-14"), false);
+  assert.equal(eligible(account, "2026-04-15"), true);
+  assert.equal(eligible(account, "2026-04-16"), true);
+  assert.equal(eligible({ ...account, status: "clos" }, "2026-04-16"), false);
+  assert.equal(eligible(account, ""), false);
+  assert.match(html, /!accountEligibleForDate\(source,date\)\|\|!accountEligibleForDate\(destination,date\)/);
+  assert.match(html, /if\(!accountEligibleForDate\(account,date\)\|\|!Number\.isSafeInteger\(statementBalance\)/);
+});
