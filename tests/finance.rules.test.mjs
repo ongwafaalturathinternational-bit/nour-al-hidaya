@@ -102,3 +102,15 @@ test("les montants invalides, catégories incohérentes et budgets sans autorisa
   await assertFails(setDoc(doc(manager, "financeTransactions", "bad-category"), transaction("finance-manager", { type: "depense", category: "don" })));
   await assertFails(setDoc(doc(reader, "financeBudgets", "no-right"), budget("finance-reader")));
 });
+
+
+test("un auteur ne peut pas valider sa propre opération même s’il possède les deux périmètres", async () => {
+  await seed("finance-dual", ["finance.read", "finance.manage", "finance.validate"]);
+  const db = env.authenticatedContext("finance-dual").firestore();
+  const ref = doc(db, "financeTransactions", "self-review");
+  await assertSucceeds(setDoc(ref, transaction("finance-dual")));
+  await assertFails(updateDoc(ref, {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "finance-dual",
+    updatedAt: serverTimestamp(), updatedBy: "finance-dual"
+  }));
+});
