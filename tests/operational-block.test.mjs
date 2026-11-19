@@ -19,7 +19,7 @@ test("une candidature publique vérifiée est examinée avant son entrée au reg
   assert.match(rules, /match \/volunteerApplications\/\{applicationId\}/);
   assert.match(rules, /request\.auth\.token\.email_verified == true/);
   assert.match(rules, /request\.resource\.data\.privacyConsent == true/);
-  assert.match(club, /runTransaction\(async tx =>?\s*\{/);
+  assert.match(club, /runTransaction\(async tx=>\{/);
   assert.match(club, /appSnap\.data\(\)\.status!==\"en_attente\"/);
   assert.match(club, /tx\.set\(volRef/);
   assert.match(club, /reviewedBy:user\.uid/);
@@ -29,6 +29,9 @@ test("une candidature publique vérifiée est examinée avant son entrée au reg
 test("l'affectation projet est réservée aux bénévoles actifs et aux gestionnaires autorisés", () => {
   assert.match(projects, /volunteers\.filter\(x=>x\.status===\"actif\"\)/);
   assert.match(projects, /collection\(\"volunteers\"\)\.doc\(volunteerId\)/);
+  assert.match(projects, /existingAssignment\.exists/);
+  assert.match(projects, /assignmentRef\.update\(\{assignmentRole:data\.assignmentRole,status:data\.status/);
+  assert.match(projects, /assignmentRef\.set\(data\)/);
   assert.match(rules, /match \/projects\/\{projectId\}[\s\S]*?match \/volunteers\/\{assignmentId\}/);
   assert.match(rules, /staffHasScope\(\"projects\.manage\"\)/);
   assert.match(rules, /request\.resource\.data\.status in \[\"propose\", \"confirme\", \"retire\"\]/);
