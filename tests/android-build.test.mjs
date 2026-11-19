@@ -21,6 +21,9 @@ test("la préparation APK ne copie que les pages et ressources web nécessaires"
     assert.ok(script.includes(JSON.stringify(file)), file);
   }
   assert.doesNotMatch(script, /firestore\.rules|\.env|service-account|\.jks|\.keystore/);
+  assert.match(script, /firebase-app-compat\.js/);
+  assert.match(script, /replaceAll\(/);
+  assert.match(script, /https:\/\/www\.gstatic\.com\/firebasejs\/11\.10\.0/);
 });
 
 test("le build APK est un artefact de test sans clé de signature de production", () => {
