@@ -129,6 +129,20 @@ service cloud.firestore {
         && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && (!( "accountId" in request.resource.data) || (
+          request.resource.data.accountId is string
+          && request.resource.data.accountId.size() >= 1
+          && request.resource.data.accountId.size() <= 100
+          && request.resource.data.paymentMethod != "nature"
+          && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId))
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.status == "actif"
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.type ==
+            (request.resource.data.paymentMethod == "especes" ? "caisse" :
+              request.resource.data.paymentMethod == "mobile_money" ? "mobile_money" : "banque")
+          && request.resource.data.accountName is string
+          && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
+        ))
+        && (!("accountName" in request.resource.data) || ("accountId" in request.resource.data))
         && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
@@ -363,6 +377,51 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Comptes et caisses : registre séparé, sans accès implicite aux opérations financières.
+    match /financeAccounts/{accountId} {
+      allow read: if staffHasScope("finance.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.accounts.manage");
+
+      allow create: if staffHasScope("finance.accounts.manage")
+        && request.resource.data.keys().hasOnly([
+          "name", "type", "institution", "reference", "currency", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "type", "currency", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.type in ["caisse", "banque", "mobile_money"]
+        && (!("institution" in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 120))
+        && (!("reference" in request.resource.data) || (request.resource.data.reference is string && request.resource.data.reference.size() <= 60))
+        && request.resource.data.currency == "XOF"
+        && request.resource.data.status == "actif"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      // Un compte ne peut être que clôturé; son identité et ses références restent immuables.
+      allow update: if staffHasScope("finance.accounts.manage")
+        && resource.data.status == "actif"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt", "updatedBy"])
+        && request.resource.data.status == "clos"
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.currency == resource.data.currency
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow delete: if false;
+    }
+
     // Registre financier confidentiel : lecture, saisie et validation sont des périmètres séparés.
     match /financeTransactions/{transactionId} {
       allow read: if staffHasScope("finance.read")
@@ -373,7 +432,7 @@ service cloud.firestore {
       allow create: if staffHasScope("finance.manage")
         && request.resource.data.keys().hasOnly([
           "type", "category", "amount", "date", "counterparty", "paymentMethod",
-          "reference", "description", "status", "projectId", "projectName", "evidenceRef",
+          "reference", "description", "status", "projectId", "projectName", "evidenceRef", "accountId", "accountName",
           "createdAt", "createdBy", "updatedAt", "updatedBy"
         ])
         && request.resource.data.keys().hasAll([
