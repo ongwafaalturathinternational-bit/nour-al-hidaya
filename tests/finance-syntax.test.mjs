@@ -78,3 +78,18 @@ test("les budgets disposent d'un export CSV distinct avec montants rapprochés s
   assert.match(html, /WAT-budgets-previsionnels\.csv/);
   assert.match(html, /String\.fromCharCode\(0xFEFF\)/);
 });
+
+test("le registre des caisses est isolé et les opérations peuvent référencer un compte actif", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const rules = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+  assert.match(html, /id="accountsArea"/);
+  assert.match(html, /id="accountForm"/);
+  assert.match(html, /id="accountId"/);
+  assert.match(html, /function renderAccounts\(\)/);
+  assert.match(html, /function closeAccount\(a\)/);
+  assert.match(html, /finance\.accounts\.manage/);
+  assert.match(rules, /match \/financeAccounts\//);
+  assert.match(rules, /request\.resource\.data\.accountId/);
+  assert.match(rules, /get\(\/databases\/\$\(database\)\/documents\/financeAccounts/);
+  assert.match(rules, /allow delete: if false;/);
+});
