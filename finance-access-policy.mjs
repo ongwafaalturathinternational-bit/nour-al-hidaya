@@ -43,7 +43,8 @@ const permissions = Object.freeze({
 });
 
 const forbiddenControllerActions = new Set([
-  "donors.register.create", "donors.register.update", "funders.create", "funders.update", "funders.delete", "grants.create", "grants.update", "grants.approve", "grants.suspend", "grants.close", "grants.delete",\n  "finance.operations.create", "finance.operations.update", "finance.operations.delete",
+  "donors.register.create", "donors.register.update", "funders.create", "funders.update", "funders.delete", "grants.create", "grants.update", "grants.approve", "grants.suspend", "grants.close", "grants.delete",
+  "finance.operations.create", "finance.operations.update", "finance.operations.delete",
   "finance.operations.validate", "finance.operations.pay", "finance.transfers.create",
   "finance.transfers.validate", "budgets.create", "budgets.update", "budgets.approve",
   "accounting.entries.create", "accounting.entries.update", "accounting.entries.validate",
