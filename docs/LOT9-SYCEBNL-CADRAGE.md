@@ -162,6 +162,7 @@ Plan de transition :
 
 **Phase 0 — Sources et paramétrage**
 - obtenir/extraire l'annexe officielle du plan de comptes et les modèles d'états ;
+- utiliser `scripts/extract-sycebnl-chart.mjs` pour extraire localement les neuf classes depuis les pages publiques de transcription ; le fichier généré `data/sycebnl-chart.review.json` reste en statut de revue et ne doit pas alimenter les écritures ;
 - comparer avec la copie de référence de WAT ;
 - faire valider le régime et les traitements par un professionnel comptable ;
 - figer une version de référence des données normatives.
@@ -206,7 +207,7 @@ Plan de transition :
 ## 9. Limites connues à ce stade
 
 - Le module Finance existant n'est pas encore une comptabilité générale SYCEBNL.
-- Le plan de comptes détaillé est identifié dans la copie consultable du Journal officiel OHADA (pages imprimées 76 à 105) ; son extraction structurée, la vérification de chaque compte et son import dans l'application restent à réaliser.
+- Un extracteur local a été ajouté (`scripts/extract-sycebnl-chart.mjs`). Il prépare un brouillon JSON depuis les pages publiques classe par classe ; le comptage annoncé par la transcription secondaire (1 142) diffère d'une autre transcription (1 130). Le fichier produit doit être comparé au Journal officiel et à la copie détenue par WAT, compte par compte, avant son intégration ou son activation.
 - Le régime légal effectivement applicable à WAT et les états précis à produire restent à confirmer avec un professionnel comptable au Bénin.
 - L'environnement Preview Cloudflare utilise actuellement le projet Firebase `wat-connect` : aucune donnée réelle ni écriture financière réelle ne doit être saisie depuis la prévisualisation tant que l'isolation backend n'est pas établie.
 - Ce document est un cadrage de développement. Il ne constitue ni une certification de conformité, ni un avis comptable ou juridique.
