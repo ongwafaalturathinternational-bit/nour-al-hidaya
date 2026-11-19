@@ -156,7 +156,8 @@ test("l'accès aux comptes reste distinct du registre des transactions", async (
     await setDoc(doc(c.firestore(), "financeTransactions", "private-ledger"), transaction("operator"));
   });
   const db = env.authenticatedContext("account-only").firestore();
-  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "cash-main"), financeAccount("system")));\n  await assertSucceeds(getDoc(doc(db, "financeAccounts", "cash-main")));
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "cash-main"), financeAccount("system")));
+  await assertSucceeds(getDoc(doc(db, "financeAccounts", "cash-main")));
   await assertFails(getDoc(doc(db, "financeTransactions", "private-ledger")));
 });
 
