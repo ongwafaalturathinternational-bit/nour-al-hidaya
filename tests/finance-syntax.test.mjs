@@ -149,8 +149,11 @@ test("les exports de transferts et rapprochements conservent la piste d'audit", 
 
 test("la synthèse des donateurs regroupe les variantes de casse, accents et espaces", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  assert.match(html, /name\.normalize\("NFD"\)\.replace\(\/[\\u0300-\\u036f]\/g,""\)\.toLocaleLowerCase\("fr"\)/);
-  assert.match(html, /replace\(\/\\s\+\/g," "\)/);
+  assert.match(html, /name\.normalize\("NFD"\)/);
+  assert.match(html, /toLocaleLowerCase\("fr"\)/);
+  assert.ok(html.includes(String.raw`replace(/[\\u0300-\\u036f]/g,"")`) === false);
+  assert.ok(html.includes(String.raw`replace(/[\u0300-\u036f]/g,"")`));
+  assert.ok(html.includes(String.raw`replace(/\s+/g," ")`));
   assert.match(html, /const row=groups\.get\(key\)\|\|\{name,count:0,cash:0,inKind:0,total:0\}/);
 });
 
