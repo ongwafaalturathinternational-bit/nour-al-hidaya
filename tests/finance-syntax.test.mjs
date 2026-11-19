@@ -316,3 +316,11 @@ test("les soldes de trésorerie et des comptes excluent les mouvements datés da
   assert.match(html, /t\.destinationAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
   assert.match(html, /t\.sourceAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
 });
+
+
+test("la date proposée après une nouvelle opération utilise le calendrier local", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /\$\("operationDate"\)\.value=todayLocal\(\)/);
+  assert.doesNotMatch(html, /toISOString\(\)\.slice\(0,10\)/);
+  assert.match(html, /function todayLocal\(\)/);
+});
