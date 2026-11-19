@@ -5,29 +5,29 @@
  */
 const permissions = Object.freeze({
   financial_reader: new Set([
-    "finance.dashboard.read", "finance.operations.read", "accounting.journals.read",
+    "finance.dashboard.read", "finance.operations.read", "donors.register.read", "funders.read", "grants.read", "accounting.journals.read",
     "accounting.ledger.read", "accounting.trial_balance.read", "accounting.reports.read",
     "accounting.accounts.read", "bank.reconciliation.read", "documents.read"
   ]),
   financial_manager: new Set([
-    "finance.dashboard.read", "finance.operations.read", "finance.operations.create",
+    "finance.dashboard.read", "finance.operations.read", "donors.register.read", "donors.register.create", "funders.read", "funders.create", "funders.update", "grants.read", "grants.create", "grants.update", "grants.submit", "finance.operations.create",
     "accounting.entries.create", "accounting.entries.submit", "accounting.journals.read",
     "accounting.ledger.read", "accounting.trial_balance.read", "accounting.reports.read",
     "accounting.accounts.read", "bank.reconciliation.read", "documents.read"
   ]),
   financial_validator: new Set([
-    "finance.dashboard.read", "finance.operations.read", "finance.operations.validate",
+    "finance.dashboard.read", "finance.operations.read", "donors.register.read", "funders.read", "grants.read", "grants.approve", "grants.suspend", "finance.operations.validate",
     "accounting.entries.read", "accounting.entries.validate", "accounting.entries.post",
     "accounting.journals.read", "accounting.ledger.read", "accounting.trial_balance.read",
     "accounting.reports.read", "accounting.accounts.read", "bank.reconciliation.read",
     "bank.reconciliation.validate", "documents.read"
   ]),
   budget_manager: new Set([
-    "finance.dashboard.read", "finance.operations.read", "budgets.read",
+    "finance.dashboard.read", "finance.operations.read", "donors.register.read", "funders.read", "grants.read", "grants.create", "grants.update", "grants.submit", "budgets.read",
     "budgets.create", "budgets.submit", "budgets.variance.read", "accounting.reports.read"
   ]),
   financial_controller: new Set([
-    "finance.dashboard.read", "finance.operations.read", "finance.operations.history.read",
+    "finance.dashboard.read", "finance.operations.read", "finance.operations.history.read", "donors.register.read", "funders.read", "grants.read", "grants.history.read", "grants.reports.read",
     "accounting.entries.read", "accounting.journals.read", "accounting.ledger.read",
     "accounting.trial_balance.read", "accounting.reports.read", "accounting.accounts.read",
     "bank.reconciliation.read", "bank.reconciliation.history.read", "budgets.read",
@@ -36,14 +36,14 @@ const permissions = Object.freeze({
     "control.observations.respond", "control.reports.create", "control.reports.export"
   ]),
   accounting_admin: new Set([
-    "finance.dashboard.read", "finance.operations.read", "accounting.accounts.read",
+    "finance.dashboard.read", "finance.operations.read", "donors.register.read", "funders.read", "grants.read", "accounting.accounts.read",
     "accounting.accounts.admin", "accounting.journals.read", "accounting.journals.admin",
     "accounting.periods.admin", "accounting.roles.admin", "audit.logs.read"
   ])
 });
 
 const forbiddenControllerActions = new Set([
-  "finance.operations.create", "finance.operations.update", "finance.operations.delete",
+  "donors.register.create", "donors.register.update", "funders.create", "funders.update", "funders.delete", "grants.create", "grants.update", "grants.approve", "grants.suspend", "grants.close", "grants.delete",\n  "finance.operations.create", "finance.operations.update", "finance.operations.delete",
   "finance.operations.validate", "finance.operations.pay", "finance.transfers.create",
   "finance.transfers.validate", "budgets.create", "budgets.update", "budgets.approve",
   "accounting.entries.create", "accounting.entries.update", "accounting.entries.validate",
