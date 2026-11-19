@@ -455,3 +455,39 @@ test("le périmètre de gestion des comptes seul ne permet pas de clôturer sans
   await assertSucceeds(setDoc(ref, financeAccount("account-manager-only", { openingDate: "2027-01-01", openingFiscalYear: "2027" })));
   await assertFails(updateDoc(ref, { status: "clos", updatedAt: serverTimestamp(), updatedBy: "account-manager-only" }));
 });
+
+
+test("les règles financières refusent les dates calendaires impossibles et acceptent le 29 février bissextile", async () => {
+  await seed("calendar-finance-manager", ["finance.manage", "finance.accounts.manage"]);
+  const db = env.authenticatedContext("calendar-finance-manager").firestore();
+
+  await assertSucceeds(setDoc(doc(db, "financeAccounts", "leap-day-account"), financeAccount("calendar-finance-manager", {
+    openingDate: "2024-02-29", openingFiscalYear: "2024"
+  })));
+  await assertFails(setDoc(doc(db, "financeAccounts", "invalid-opening-date"), financeAccount("calendar-finance-manager", {
+    openingDate: "2026-02-30", openingFiscalYear: "2026"
+  })));
+
+  await assertFails(setDoc(doc(db, "financeTransactions", "invalid-calendar-transaction"), transaction("calendar-finance-manager", {
+    date: "2026-02-30", fiscalYear: "2026"
+  })));
+
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "calendar-cash"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financeAccounts", "calendar-bank"), financeAccount("system", {
+      name: "Banque calendrier", type: "banque"
+    }));
+  });
+  await assertFails(setDoc(doc(db, "financeTransfers", "invalid-calendar-transfer"), financeTransfer("calendar-finance-manager", {
+    date: "2026-02-30", fiscalYear: "2026"
+  })));
+
+  await assertFails(setDoc(doc(db, "financeReconciliations", "invalid-calendar-reconciliation"), {
+    accountId: "calendar-cash", accountName: "Caisse principale",
+    date: "2026-02-30", fiscalYear: "2026",
+    statementBalance: 100, systemBalanceSnapshot: 100, difference: 0,
+    reference: "RECO-2026", note: "Rapprochement de test",
+    status: "soumise", createdAt: serverTimestamp(), createdBy: "calendar-finance-manager",
+    updatedAt: serverTimestamp(), updatedBy: "calendar-finance-manager"
+  }));
+});
