@@ -11,6 +11,7 @@ on:
       - "club-khuddam.html"
       - "finance.html"
       - "accounting-engine.mjs"
+      - "scripts/extract-sycebnl-chart.mjs"
       - "tests/accounting-engine.test.mjs"
       - "tests/finance.rules.test.mjs"
       - "tests/finance-syntax.test.mjs"
@@ -59,6 +60,9 @@ jobs:
 
       - name: Installer les outils de test
         run: npm install --no-save firebase-tools firebase @firebase/rules-unit-testing
+
+      - name: Vérifier la syntaxe de l’extracteur SYCEBNL
+        run: node --check scripts/extract-sycebnl-chart.mjs
 
       - name: Compiler et tester les règles Firestore
         run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/*.test.mjs"
