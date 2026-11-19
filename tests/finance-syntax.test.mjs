@@ -106,3 +106,18 @@ test("les transferts internes sont distincts des recettes et dépenses et soumis
   assert.match(rules, /request\.resource\.data\.sourceAccountId != request\.resource\.data\.destinationAccountId/);
   assert.match(rules, /request\.auth\.uid != resource\.data\.createdBy/);
 });
+
+test("les rapports financiers distinguent les apports en nature, les donateurs et les projets", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /function donorSummaryRows\(\)/);
+  assert.match(html, /function renderDonorSummary\(\)/);
+  assert.match(html, /function projectFinanceRows\(\)/);
+  assert.match(html, /function renderProjectFinance\(\)/);
+  assert.match(html, /function exportAnnualSummaryCsv\(\)/);
+  assert.match(html, /function exportDonorsCsv\(\)/);
+  assert.match(html, /function exportProjectFinanceCsv\(\)/);
+  assert.match(html, /paymentMethod==="nature"/);
+  assert.match(html, /WAT-rapport-annuel-financier\.csv/);
+  assert.match(html, /WAT-synthese-contributions\.csv/);
+  assert.match(html, /WAT-situation-financiere-projets\.csv/);
+});
