@@ -493,3 +493,40 @@ test("les règles financières refusent les dates calendaires impossibles et acc
     updatedAt: serverTimestamp(), updatedBy: "calendar-finance-manager"
   }));
 });
+
+
+test("les opérations et budgets exigent une référence de projet cohérente avec le référentiel", async () => {
+  await seed("project-reference-manager", ["finance.manage", "finance.budgets.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "projects", "project-education"), {
+      name: "Nour Al-Hidaya", code: "NAH", description: "Projet de formation", status: "en_cours"
+    });
+  });
+  const db = env.authenticatedContext("project-reference-manager").firestore();
+
+  await assertSucceeds(setDoc(doc(db, "financeTransactions", "project-linked-valid"), transaction("project-reference-manager", {
+    projectId: "project-education", projectName: "Nour Al-Hidaya"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "project-name-forged"), transaction("project-reference-manager", {
+    projectId: "project-education", projectName: "Projet inventé"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "project-name-without-id"), transaction("project-reference-manager", {
+    projectName: "Nour Al-Hidaya"
+  })));
+  await assertFails(setDoc(doc(db, "financeTransactions", "project-id-without-name"), transaction("project-reference-manager", {
+    projectId: "project-education"
+  })));
+
+  await assertSucceeds(setDoc(doc(db, "financeBudgets", "project-budget-valid"), budget("project-reference-manager", {
+    projectId: "project-education", projectName: "Nour Al-Hidaya"
+  })));
+  await assertFails(setDoc(doc(db, "financeBudgets", "project-budget-forged"), budget("project-reference-manager", {
+    projectId: "project-education", projectName: "Projet inventé"
+  })));
+  await assertFails(setDoc(doc(db, "financeBudgets", "project-budget-name-only"), budget("project-reference-manager", {
+    projectName: "Nour Al-Hidaya"
+  })));
+  await assertFails(setDoc(doc(db, "financeBudgets", "project-budget-id-only"), budget("project-reference-manager", {
+    projectId: "project-education"
+  })));
+});
