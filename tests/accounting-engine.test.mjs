@@ -9,10 +9,10 @@ import {
 } from "../accounting-engine.mjs";
 
 const accounts = {
-  "ACCOUNT-A": { code: "ACCOUNT-A", label: "Compte A", status: "active", postable: true },
-  "ACCOUNT-B": { code: "ACCOUNT-B", label: "Compte B", status: "active", postable: true },
-  "HEADER": { code: "HEADER", label: "Rubrique", status: "active", postable: false },
-  "DISABLED": { code: "DISABLED", label: "Inactif", status: "inactive", postable: true }
+  "1011": { code: "1011", label: "Compte A", status: "active", postable: true },
+  "1015": { code: "1015", label: "Compte B", status: "active", postable: true },
+  "10": { code: "10", label: "Rubrique", status: "active", postable: false },
+  "1021": { code: "1021", label: "Inactif", status: "inactive", postable: true }
 };
 const openPeriod = { status: "open", startDate: "2026-01-01", endDate: "2026-12-31" };
 const balanced = {
@@ -22,8 +22,8 @@ const balanced = {
   status: "posted",
   description: "Exemple de test",
   lines: [
-    { accountCode: "ACCOUNT-A", debit: 12500, credit: 0, description: "Débit" },
-    { accountCode: "ACCOUNT-B", debit: 0, credit: 12500, description: "Crédit" }
+    { accountCode: "1011", debit: 12500, credit: 0, description: "Débit" },
+    { accountCode: "1015", debit: 0, credit: 12500, description: "Crédit" }
   ]
 };
 
@@ -39,9 +39,9 @@ test("refuse une pièce déséquilibrée", () => {
 
 test("refuse les comptes non imputables et inactifs", () => {
   const entry = structuredClone(balanced);
-  entry.lines[0].accountCode = "HEADER";
+  entry.lines[0].accountCode = "10";
   assert.ok(validateAccountingEntry(entry, accounts, openPeriod).some(x => x.includes("non imputable")));
-  entry.lines[0].accountCode = "DISABLED";
+  entry.lines[0].accountCode = "1021";
   assert.ok(validateAccountingEntry(entry, accounts, openPeriod).some(x => x.includes("inactif")));
 });
 
@@ -69,26 +69,26 @@ test("le grand livre calcule un solde progressif et ignore les brouillons", () =
     date: "2026-04-11",
     entryNumber: "0002",
     lines: [
-      { accountCode: "ACCOUNT-B", debit: 3000, credit: 0 },
-      { accountCode: "ACCOUNT-A", debit: 0, credit: 3000 }
+      { accountCode: "1015", debit: 3000, credit: 0 },
+      { accountCode: "1011", debit: 0, credit: 3000 }
     ]
   };
-  const rows = buildGeneralLedger([balanced, second, { ...balanced, status: "draft" }], "ACCOUNT-A", { debit: 1000, credit: 0 });
+  const rows = buildGeneralLedger([balanced, second, { ...balanced, status: "draft" }], "1011", { debit: 1000, credit: 0 });
   assert.equal(rows.length, 2);
   assert.deepEqual(rows.map(x => [x.balanceDebit, x.balanceCredit]), [[13500, 0], [10500, 0]]);
 });
 
 test("la balance présente ouverture, mouvements et soldes de clôture équilibrés", () => {
   const rows = buildTrialBalance(
-    [accounts["ACCOUNT-A"], accounts["ACCOUNT-B"]],
+    [accounts["1011"], accounts["1015"]],
     [balanced],
-    { "ACCOUNT-A": { debit: 500, credit: 0 }, "ACCOUNT-B": { debit: 0, credit: 500 } }
+    { "1011": { debit: 500, credit: 0 }, "1015": { debit: 0, credit: 500 } }
   );
   const totals = trialBalanceTotals(rows);
   assert.equal(totals.openingDebit, totals.openingCredit);
   assert.equal(totals.movementDebit, totals.movementCredit);
   assert.equal(totals.closingDebit, totals.closingCredit);
-  assert.deepEqual(rows.map(x => x.accountCode), ["ACCOUNT-A", "ACCOUNT-B"]);
+  assert.deepEqual(rows.map(x => x.accountCode), ["1011", "1015"]);
 });
 
 test("la balance rejette les montants négatifs ou non entiers", () => {
@@ -106,38 +106,38 @@ test("refuse les dates calendaires impossibles même au format AAAA-MM-JJ", () =
 test("refuse une pièce comptabilisée corrompue avant le calcul du grand livre", () => {
   const corrupted = structuredClone(balanced);
   corrupted.lines[1].credit = 12499;
-  assert.throws(() => buildGeneralLedger([corrupted], "ACCOUNT-A"), /équilibrée/);
+  assert.throws(() => buildGeneralLedger([corrupted], "1011"), /équilibrée/);
 });
 
 test("refuse un compte absent du référentiel lors du calcul de la balance", () => {
   const corrupted = structuredClone(balanced);
   corrupted.lines[0].accountCode = "UNKNOWN";
   assert.throws(() => buildTrialBalance(
-    [accounts["ACCOUNT-A"], accounts["ACCOUNT-B"]], [corrupted]
+    [accounts["1011"], accounts["1015"]], [corrupted]
   ), /n'existe pas dans la balance/);
 });
 
 test("refuse les soldes d'ouverture négatifs, fractionnaires ou simultanément débiteurs et créditeurs", () => {
-  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: -1, credit: 0 }), /invalide/);
-  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: 1.5, credit: 0 }), /invalide/);
-  assert.throws(() => buildGeneralLedger([balanced], "ACCOUNT-A", { debit: 10, credit: 10 }), /invalide/);
+  assert.throws(() => buildGeneralLedger([balanced], "1011", { debit: -1, credit: 0 }), /invalide/);
+  assert.throws(() => buildGeneralLedger([balanced], "1011", { debit: 1.5, credit: 0 }), /invalide/);
+  assert.throws(() => buildGeneralLedger([balanced], "1011", { debit: 10, credit: 10 }), /invalide/);
 });
 
 test("refuse les codes de comptes dupliqués dans le référentiel de balance", () => {
   assert.throws(() => buildTrialBalance(
-    [accounts["ACCOUNT-A"], { ...accounts["ACCOUNT-A"] }], [balanced]
+    [accounts["1011"], { ...accounts["1011"] }], [balanced]
   ), /code en double/);
 });
 
 
 test("un compte désactivé reste visible dans la balance des exercices historiques", () => {
   const historical = structuredClone(balanced);
-  historical.lines[0].accountCode = "DISABLED";
+  historical.lines[0].accountCode = "1021";
   const rows = buildTrialBalance(
-    [accounts["DISABLED"], accounts["ACCOUNT-B"]], [historical]
+    [accounts["1021"], accounts["1015"]], [historical]
   );
-  assert.deepEqual(rows.map(x => x.accountCode), ["ACCOUNT-B", "DISABLED"]);
-  assert.equal(rows.find(x => x.accountCode === "DISABLED").movementDebit, 12500);
+  assert.deepEqual(rows.map(x => x.accountCode), ["1015", "1021"]);
+  assert.equal(rows.find(x => x.accountCode === "1021").movementDebit, 12500);
 });
 
 
