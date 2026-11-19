@@ -111,7 +111,7 @@ test("refuse une pièce comptabilisée corrompue avant le calcul du grand livre"
 
 test("refuse un compte absent du référentiel lors du calcul de la balance", () => {
   const corrupted = structuredClone(balanced);
-  corrupted.lines[0].accountCode = "UNKNOWN";
+  corrupted.lines[0].accountCode = "9999";
   assert.throws(() => buildTrialBalance(
     [accounts["1011"], accounts["1015"]], [corrupted]
   ), /n'existe pas dans la balance/);
