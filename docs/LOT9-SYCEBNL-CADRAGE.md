@@ -20,14 +20,15 @@ Les catégories actuelles « humanitaire », « éducation », « fonctionnement
 ## 2. Référentiel normatif et points à confirmer
 
 Références officielles de travail :
-- Acte uniforme relatif au SYCEBNL, adopté le 22 décembre 2022, publié le 22 février 2023 et entré en vigueur le 1er janvier 2024 : https://www.ohada.org/acte-uniforme-relatif-au-systeme-comptable-des-entites-a-but-non-lucratif/
+- Présentation officielle OHADA de l'Acte uniforme relatif au SYCEBNL (adopté le 22 décembre 2022, publié le 22 février 2023, en vigueur depuis le 1er janvier 2024) : https://www.ohada.org/acte-uniforme-relatif-au-systeme-comptable-des-entites-a-but-non-lucratif/
+- Copie consultable du Journal officiel OHADA n° spécial du 22 février 2023, Acte uniforme et annexe SYCEBNL (422 pages ; plan des comptes détaillé, Partie 2, chapitre 2, pages imprimées 75 à 105) : https://www.ohada.com/uploads/actualite/6692/SYSCEBNL.pdf
 - Notice OHADA précisant le champ d'application, les exclusions et l'existence du système normal et du système minimal de trésorerie : https://www.ohada.org/disponibilite-de-lacte-uniforme-relatif-au-systeme-comptable-des-entites-a-but-non-lucratif/
 - Guide officiel d'application SYCEBNL : https://www.ohada.org/disponibilite-du-guide-dapplication-du-syscebnl/
 - PDF officiel du guide : https://www.ohada.org/wp-content/uploads/2023/04/SYCEBNL-GUIDE-D-APPLICATION.pdf
 
-**Réserve de conformité :** le choix de construire un logiciel capable de tenir une comptabilité complète ne tranche pas, à lui seul, le régime légal auquel WAT est assujettie. Le professionnel comptable de WAT devra confirmer le régime applicable, les états à produire, les obligations locales au Bénin et les modalités de certification/présentation. Ne pas activer un régime simplifié par défaut.
+**Choix de conception retenu : système normal.** L'article 5 pose le système normal comme régime de principe, sous réserve des exceptions liées à la taille. L'article 6 prévoit que les petites entités répondant aux seuils de ressources relèvent du système minimal de trésorerie (SMT), sauf option pour le système normal. Les seuils mentionnés sont de 30 000 000 FCFA pour chacune des catégories de ressources énumérées et la règle prévoit également l'examen des ressources cumulées sur deux exercices. La demande du responsable de WAT Connect est de construire une comptabilité complète : le logiciel sera donc conçu sur le système normal, correspondant à une option pour ce système si WAT est éligible au SMT. Le professionnel comptable de WAT devra confirmer formellement l'éligibilité, l'option à exercer, les obligations locales au Bénin et les modalités de dépôt/présentation avant la première clôture réglementaire.
 
-Le plan de comptes doit être extrait de l'annexe officielle SYCEBNL et vérifié avec le document détenu par WAT ou son professionnel comptable. Aucun numéro, intitulé ou traitement comptable ne doit être inventé à partir de SYSCOHADA, d'un site secondaire ou d'une supposition.
+Le plan de comptes détaillé est bien présent dans l'annexe officielle du Journal officiel OHADA : Partie 2, chapitre 2, Section 3 « Plan des comptes », pages imprimées 76 à 105 (la structure du plan commence à la page 75). Les comptes principaux, divisionnaires et comptes d'imputation doivent être extraits fidèlement. Les comptes de base d'imputation sont en principe à quatre chiffres, avec quelques comptes à cinq chiffres prévus pour le tableau des flux de trésorerie ; le texte autorise des subdivisions complémentaires respectant l'arborescence. Aucun numéro ni libellé ne doit être inventé ou importé d'un plan SYSCOHADA.
 
 ## 3. Architecture fonctionnelle cible
 
@@ -71,7 +72,7 @@ Le logiciel doit produire à partir des seules écritures comptabilisées :
 Les totaux des journaux, du grand livre et de la balance doivent se réconcilier automatiquement. Les écritures en brouillon ou en attente de validation sont exclues des états officiels et clairement séparées.
 
 ### 3.4 États financiers et clôture
-Pour WAT, dont le cadre institutionnel est celui d'une ONG constituée en association, le jeu d'états à concevoir en priorité est celui prévu par le SYCEBNL pour les associations : **bilan, compte de résultat, tableau des flux de trésorerie et notes annexes**. Les états propres aux projets de développement (tableau emplois-ressources, tableau d'exécution budgétaire, tableau de réconciliation de trésorerie, etc.) ne seront ajoutés que pour un périmètre de projet qui doit effectivement produire ces états selon le référentiel et les conventions du bailleur. Les modèles, seuils, rubriques et règles de présentation doivent être vérifiés dans le texte intégral officiel et validés par le professionnel comptable de WAT. Les libellés et rubriques seront transcrits depuis le référentiel officiel, sans construire un bilan ou un compte de résultat générique d'entreprise.
+Pour WAT, dont le cadre institutionnel est celui d'une ONG constituée en association, le jeu complet d'états financiers annuels prévu à l'article 4 et à la Partie 4, chapitre 2 du SYCEBNL est : **bilan, compte de résultat, tableau des flux de trésorerie et notes annexes**. Les états spécifiques des projets de développement (tableau emplois-ressources, tableau d'exécution budgétaire, tableau de réconciliation de trésorerie, bilan, compte d'exploitation et notes annexes) concernent les entités ayant pour objet la gestion ou l'administration de projets de développement ; leur applicabilité à une activité/projet géré par WAT devra être examinée selon son statut, ses conventions et le référentiel. Les modèles officiels seront transcrits sans construire des états génériques d'entreprise.
 
 La clôture comprend :
 - contrôles de complétude et de cohérence ;
@@ -95,7 +96,7 @@ Le modèle doit pouvoir traiter les opérations spécifiques prévues par le SYC
 
 Ces opérations ne doivent pas être enregistrées par une règle simpliste « recette = entrée d'argent / dépense = sortie d'argent ». Leur traitement doit être paramétré d'après les comptes, conditions et exemples du SYCEBNL, puis vérifié par le comptable.
 
-Le registre des donateurs prévu par le référentiel doit être intégré au module. Le texte de l'Acte uniforme prévoit des exigences formelles de tenue ; les champs réglementaires, la cotation/paraphe, la numérotation continue, les signatures, la conservation et la procédure applicable au Bénin seront confirmés à partir de l'article exact et des règles locales avant de figer le modèle.
+Le registre des donateurs est obligatoire pour les dons, donations et legs reçus. L'article 17 précise les informations à conserver (date, identité et coordonnées du donateur selon sa qualité, montant et mode de libération) et prévoit que les écritures soient signées par le représentant légal. Le registre peut être physique ou électronique, mais doit être coté, paraphé et numéroté en continu par la juridiction compétente de l'État concerné. Le flux applicatif devra respecter ces exigences et permettre l'édition/signature réglementaire ; la procédure pratique au Bénin sera confirmée avant mise en service.
 
 ## 4. Comptabilité analytique et gestion WAT
 
@@ -205,7 +206,7 @@ Plan de transition :
 ## 9. Limites connues à ce stade
 
 - Le module Finance existant n'est pas encore une comptabilité générale SYCEBNL.
-- Le plan de comptes détaillé n'est pas encore importé : les codes ne seront intégrés qu'après extraction et vérification de l'annexe officielle.
+- Le plan de comptes détaillé est identifié dans la copie consultable du Journal officiel OHADA (pages imprimées 76 à 105) ; son extraction structurée, la vérification de chaque compte et son import dans l'application restent à réaliser.
 - Le régime légal effectivement applicable à WAT et les états précis à produire restent à confirmer avec un professionnel comptable au Bénin.
 - L'environnement Preview Cloudflare utilise actuellement le projet Firebase `wat-connect` : aucune donnée réelle ni écriture financière réelle ne doit être saisie depuis la prévisualisation tant que l'isolation backend n'est pas établie.
 - Ce document est un cadrage de développement. Il ne constitue ni une certification de conformité, ni un avis comptable ou juridique.
