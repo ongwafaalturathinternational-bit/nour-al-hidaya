@@ -40,3 +40,14 @@ test("les données financières restent séparées et les opérations ne sont pa
   assert.match(rules, /staffHasScope\("finance\.validate"\)/);
   assert.match(rules, /allow delete: if false;/);
 });
+
+
+test("le registre Finance expose les fiches détaillées et les rapports de trésorerie", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  assert.match(html, /id="transactionDialog"/);
+  assert.match(html, /function showTransactionDetails\(t\)/);
+  assert.match(html, /function renderMonthlyChart\(\)/);
+  assert.match(html, /function renderPaymentSummary\(\)/);
+  assert.match(html, /id="paymentRows"/);
+  assert.match(html, /id="monthlyChart"/);
+});
