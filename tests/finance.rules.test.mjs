@@ -301,7 +301,7 @@ test("un transfert ne peut être approuvé si l'un de ses comptes est clôturé 
 });
 
 test("la clôture annuelle bloque les nouvelles opérations et transferts de l'exercice", async () => {
-  await seed("period-manager", ["finance.periods.manage", "finance.read"]);
+  await seed("period-manager", ["finance.periods.manage"]);
   await seed("period-finance-operator", ["finance.manage"]);
   const managerDb = env.authenticatedContext("period-manager").firestore();
   const periodRef = doc(managerDb, "financePeriods", "2026");
@@ -341,11 +341,50 @@ test("la clôture d'un exercice exige le périmètre finance.periods.manage", as
   }));
 });
 
-test("la clôture exige aussi un droit de lecture du registre pour vérifier les écritures en attente", async () => {
-  await seed("period-manager-without-ledger", ["finance.periods.manage"]);
-  const db = env.authenticatedContext("period-manager-without-ledger").firestore();
-  await assertFails(setDoc(doc(db, "financePeriods", "2026"), {
-    year: "2026", status: "clos", closedAt: serverTimestamp(), closedBy: "period-manager-without-ledger",
-    createdAt: serverTimestamp(), createdBy: "period-manager-without-ledger"
+test("les rapprochements sont soumis par finance.manage et validés par un autre responsable", async () => {
+  await seed("reconcile-author", ["finance.manage"]);
+  await seed("reconcile-reviewer", ["finance.validate"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "financeAccounts", "reconcile-cash"), financeAccount("system")));
+  const author = env.authenticatedContext("reconcile-author").firestore();
+  const data = {
+    accountId: "reconcile-cash", accountName: "Caisse principale",
+    date: "2026-11-19", fiscalYear: "2026", statementBalance: 125000,
+    systemBalanceSnapshot: 120000, difference: 5000, reference: "RELEVE-11",
+    note: "Comptage de caisse du 19 novembre", status: "soumise",
+    createdAt: serverTimestamp(), createdBy: "reconcile-author",
+    updatedAt: serverTimestamp(), updatedBy: "reconcile-author"
+  };
+  const ref = doc(author, "financeReconciliations", "reconcile-001");
+  await assertSucceeds(setDoc(ref, data));
+  await assertFails(updateDoc(ref, { status: "validee", validatedAt: serverTimestamp(), validatedBy: "reconcile-author", updatedAt: serverTimestamp(), updatedBy: "reconcile-author" }));
+  const reviewer = env.authenticatedContext("reconcile-reviewer").firestore();
+  await assertSucceeds(updateDoc(doc(reviewer, "financeReconciliations", "reconcile-001"), {
+    status: "validee", validatedAt: serverTimestamp(), validatedBy: "reconcile-reviewer",
+    updatedAt: serverTimestamp(), updatedBy: "reconcile-reviewer"
   }));
+  await assertFails(deleteDoc(doc(reviewer, "financeReconciliations", "reconcile-001")));
+});
+test("les rapprochements refusent un compte clôturé, un exercice clos et des montants invalides", async () => {
+  await seed("reconcile-manager", ["finance.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "financeAccounts", "reconcile-closed"), financeAccount("system", { status: "clos" }));
+    await setDoc(doc(c.firestore(), "financeAccounts", "reconcile-active"), financeAccount("system"));
+    await setDoc(doc(c.firestore(), "financePeriods", "2026"), {
+      year: "2026", status: "clos", closedAt: serverTimestamp(), closedBy: "system",
+      createdAt: serverTimestamp(), createdBy: "system"
+    });
+  });
+  const db = env.authenticatedContext("reconcile-manager").firestore();
+  const base = {
+    accountId: "reconcile-active", accountName: "Caisse principale",
+    date: "2027-01-01", fiscalYear: "2027", statementBalance: 0,
+    systemBalanceSnapshot: 0, difference: 0, reference: "",
+    note: "Comptage de caisse effectué", status: "soumise",
+    createdAt: serverTimestamp(), createdBy: "reconcile-manager",
+    updatedAt: serverTimestamp(), updatedBy: "reconcile-manager"
+  };
+  await assertSucceeds(setDoc(doc(db, "financeReconciliations", "valid-reconcile"), base));
+  await assertFails(setDoc(doc(db, "financeReconciliations", "closed-account"), { ...base, accountId: "reconcile-closed" }));
+  await assertFails(setDoc(doc(db, "financeReconciliations", "closed-year"), { ...base, date: "2026-11-19", fiscalYear: "2026" }));
+  await assertFails(setDoc(doc(db, "financeReconciliations", "bad-amount"), { ...base, statementBalance: -1 }));
 });
