@@ -52,13 +52,36 @@ test("un projet refuse les données invalides et la suppression", async () => {
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "keep"), project("system")));
   await assertFails(deleteDoc(doc(db, "projects", "keep")));
 });
-test("projects.manage autorise l’affectation d’un bénévole à un projet", async () => {
+test("une affectation exige un projet existant et un bénévole actif correspondant à son identifiant", async () => {
   await seed("assignment-manager", ["projects.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    const db = c.firestore();
+    await setDoc(doc(db, "projects", "ramadan"), project("system"));
+    await setDoc(doc(db, "volunteers", "vol-001"), volunteer("system"));
+    await setDoc(doc(db, "volunteers", "vol-inactive"), volunteer("system", { status: "inactif" }));
+  });
   const db = env.authenticatedContext("assignment-manager").firestore();
-  const ref = doc(db, "projects", "ramadan", "volunteers", "vol-001");
-  await assertSucceeds(setDoc(ref, assignment("assignment-manager")));
-  await assertSucceeds(getDoc(ref));
-  await assertFails(deleteDoc(ref));
+  const validRef = doc(db, "projects", "ramadan", "volunteers", "vol-001");
+  await assertSucceeds(setDoc(validRef, assignment("assignment-manager")));
+  await assertSucceeds(getDoc(validRef));
+  await assertFails(deleteDoc(validRef));
+
+  await assertFails(setDoc(
+    doc(db, "projects", "ramadan", "volunteers", "vol-absent"),
+    assignment("assignment-manager", { volunteerId: "vol-absent", volunteerName: "Bénévole absent" })
+  ));
+  await assertFails(setDoc(
+    doc(db, "projects", "ramadan", "volunteers", "vol-inactive"),
+    assignment("assignment-manager", { volunteerId: "vol-inactive" })
+  ));
+  await assertFails(setDoc(
+    doc(db, "projects", "ramadan", "volunteers", "another-id"),
+    assignment("assignment-manager")
+  ));
+  await assertFails(setDoc(
+    doc(db, "projects", "project-absent", "volunteers", "vol-001"),
+    assignment("assignment-manager")
+  ));
 });
 test("volunteers.manage autorise le registre privé du Club Khuddam", async () => {
   await seed("volunteer-manager", ["volunteers.read", "volunteers.manage"]);
