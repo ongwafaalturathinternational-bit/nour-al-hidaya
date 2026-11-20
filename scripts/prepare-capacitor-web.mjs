@@ -5,6 +5,7 @@ const root = process.cwd();
 const output = path.join(root, "web-dist");
 const files = [
   "index.html",
+  "site-institutionnel.html",
   "nour-al-hidaya.html",
   "administration.html",
   "programmes.html",
