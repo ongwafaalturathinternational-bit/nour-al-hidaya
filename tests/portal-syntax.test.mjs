@@ -64,8 +64,8 @@ test("les pages opérationnelles ne référencent pas d'identifiants DOM inexist
     "activites.html"
   ]) {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
-    const ids = new Set([...html.matchAll(/\\bid=["']([^"']+)["']/g)].map(match => match[1]));
-    const lookups = [...html.matchAll(/\\$\\(["']([^"']+)["']\\)/g)].map(match => match[1]);
+    const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]));
+    const lookups = [...html.matchAll(/\$\(["']([^"']+)["']\)/g)].map(match => match[1]);
     const missing = [...new Set(lookups.filter(id => !ids.has(id)))];
     assert.deepEqual(missing, [], file + " référence des identifiants DOM absents");
   }
