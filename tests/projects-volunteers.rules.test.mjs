@@ -49,6 +49,7 @@ test("un projet refuse les données invalides et la suppression", async () => {
   await seed("project-owner", ["projects.manage"]);
   const db = env.authenticatedContext("project-owner").firestore();
   await assertFails(setDoc(doc(db, "projects", "bad"), project("project-owner", { status: "inconnu" })));
+  await assertFails(setDoc(doc(db, "projects", "missing-program"), project("project-owner", { programId: "program-absent" })));
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "keep"), project("system")));
   await assertFails(deleteDoc(doc(db, "projects", "keep")));
 });
