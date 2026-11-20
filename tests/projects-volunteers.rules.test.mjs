@@ -68,7 +68,7 @@ test("un projet refuse les données invalides et la suppression", async () => {
   await assertFails(deleteDoc(doc(db, "projects", "keep")));
 });
 test("une affectation exige un projet existant et un bénévole actif correspondant à son identifiant", async () => {
-  await seed("assignment-manager", ["projects.manage"]);
+  await seed("assignment-manager", ["projects.manage", "volunteers.read"]);
   await env.withSecurityRulesDisabled(async c => {
     const db = c.firestore();
     await setDoc(doc(db, "projects", "ramadan"), project("system"));
@@ -98,6 +98,34 @@ test("une affectation exige un projet existant et un bénévole actif correspond
     assignment("assignment-manager")
   ));
 });
+test("les affectations ne sont pas accessibles avec les seuls périmètres projets", async () => {
+  await seed("project-reader-no-volunteer", ["projects.read"]);
+  await seed("project-manager-no-volunteer", ["projects.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    const db = c.firestore();
+    await setDoc(doc(db, "projects", "private-assignment-project"), project("system"));
+    await setDoc(doc(db, "volunteers", "private-assignment-volunteer"), volunteer("system"));
+    await setDoc(
+      doc(db, "projects", "private-assignment-project", "volunteers", "private-assignment-volunteer"),
+      assignment("system", { volunteerId: "private-assignment-volunteer", volunteerName: "Benevole Test" })
+    );
+  });
+  const reader = env.authenticatedContext("project-reader-no-volunteer", {
+    email: "project-reader-no-volunteer@example.org", email_verified: true
+  }).firestore();
+  const manager = env.authenticatedContext("project-manager-no-volunteer", {
+    email: "project-manager-no-volunteer@example.org", email_verified: true
+  }).firestore();
+  await assertFails(getDoc(doc(reader, "projects", "private-assignment-project", "volunteers", "private-assignment-volunteer")));
+  await assertFails(getDoc(doc(manager, "projects", "private-assignment-project", "volunteers", "private-assignment-volunteer")));
+  await assertFails(setDoc(
+    doc(manager, "projects", "private-assignment-project", "volunteers", "another-volunteer"),
+    assignment("project-manager-no-volunteer", {
+      volunteerId: "another-volunteer", volunteerName: "Autre bénévole"
+    })
+  ));
+});
+
 test("volunteers.manage autorise le registre privé du Club Khuddam", async () => {
   await seed("volunteer-manager", ["volunteers.manage"]);
   const db = env.authenticatedContext("volunteer-manager", { email: "volunteer-manager@example.org", email_verified: true }).firestore();
@@ -128,7 +156,7 @@ test("un bénévole ne peut pas être supprimé et un statut invalide est refus�
 });
 
 test("une affectation conserve l'identité du bénévole mais autorise la mise à jour du rôle", async () => {
-  await seed("assignment-identity-manager", ["projects.manage"]);
+  await seed("assignment-identity-manager", ["projects.manage", "volunteers.read"]);
   await env.withSecurityRulesDisabled(async c => {
     const db = c.firestore();
     await setDoc(doc(db, "projects", "identity-project"), project("system"));
