@@ -38,6 +38,50 @@ Il n'existe volontairement aucun formulaire public « devenir administrateur ».
 
 Les règles Firestore interdisent au titulaire de créer ou modifier son propre document `staffAccess`. Le rôle seul ne confère aucun droit : les scopes sont contrôlés dans les règles de sécurité.
 
+### Procédure technique détaillée — provisionnement manuel
+
+Cette procédure est réservée à la personne de confiance qui administre le projet Firebase. Elle n'est pas un formulaire public.
+
+1. Ouvrir Firebase Console et sélectionner le projet **wat-connect**.
+2. Aller dans **Authentication → Users → Add user**; saisir l'adresse personnelle/institutionnelle validée et un mot de passe temporaire robuste. Ne jamais envoyer ce mot de passe dans un groupe WhatsApp.
+3. Transmettre au membre la procédure de connexion et de vérification de son adresse. Le membre choisit un mot de passe personnel après la première connexion si le mécanisme de réinitialisation est utilisé.
+4. Dans la liste Authentication, copier l'UID exact du compte créé.
+5. Ouvrir **Firestore Database → Data → staffAccess → Add document**. L'identifiant du document doit être exactement cet UID.
+6. Ajouter les champs suivants (types Firestore indiqués) :
+
+| Champ | Type | Valeur |
+|---|---|---|
+| `displayName` | string | Nom institutionnel validé |
+| `email` | string | Adresse du compte Authentication |
+| `role` | string | Un rôle exact de la matrice |
+| `active` | boolean | `true` après décision de nomination |
+| `scopes` | array | Uniquement les périmètres nécessaires |
+| `createdAt` | timestamp | Date de création |
+| `updatedAt` | timestamp | Date de modification |
+
+7. Faire connecter le membre à la page d'accueil WAT Connect. Il doit avoir vérifié son adresse e-mail.
+8. Contrôler avec ce compte que les modules autorisés apparaissent et que les accès non autorisés restent refusés.
+9. Pour suspendre le compte, modifier `active` à `false`; conserver le document pour la traçabilité.
+
+**Périmètres actuellement implémentés :** `members.read`, `members.manage`, `programs.read`, `programs.manage`, `activities.read`, `activities.manage`, `projects.read`, `projects.manage`, `volunteers.read`, `volunteers.manage`, `attendance.read`, `attendance.manage`. Les périmètres `documents.*`, `meetings.*`, `finance.*` et `audit.*` ne doivent pas être attribués comme s'ils étaient déjà opérationnels.
+
+Exemple de forme de données (valeurs fictives à remplacer, ne pas coller telle quelle) :
+
+```json
+{
+  "displayName": "Nom du membre",
+  "email": "membre@exemple.org",
+  "role": "responsable_administratif",
+  "active": true,
+  "scopes": ["members.read", "members.manage"],
+  "createdAt": "timestamp Firestore",
+  "updatedAt": "timestamp Firestore"
+}
+```
+
+La création du compte Authentication et du document Firestore sont deux opérations distinctes. Si le document utilise un UID différent, si le courriel n'est pas vérifié ou si aucun scope opérationnel n'est attribué, l'accès ne fonctionnera pas.
+
+
 **Évolution prévue :** écran d'invitation administrateur et gestion des affectations, uniquement après mise en place d'un service serveur de confiance (jetons à usage limité, expiration, journal d'audit, révocation et contrôles de rôle). Aucun secret Firebase Admin ne doit être placé dans le navigateur.
 
 ## 4. Site institutionnel public et portail privé
