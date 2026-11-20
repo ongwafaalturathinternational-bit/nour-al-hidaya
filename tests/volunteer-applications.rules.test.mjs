@@ -40,6 +40,17 @@ test("un compte dont l'adresse n'est plus vérifiée ne peut pas relire son doss
   await assertFails(getDoc(doc(db, "volunteerApplications", "applicant-unverified-read")));
 });
 
+test("un candidat vérifié ne peut consulter que son propre dossier", async () => {
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "volunteerApplications", "other-candidate"), application("other-candidate", "other@example.org"));
+  });
+  const db = env.authenticatedContext("applicant-self-only", {
+    email: "self-only@example.org", email_verified: true
+  }).firestore();
+  await assertFails(getDoc(doc(db, "volunteerApplications", "other-candidate")));
+  await assertFails(getDocs(collection(db, "volunteerApplications")));
+});
+
 test("un compte non vérifié ne peut pas déposer une candidature", async () => {
   const db = env.authenticatedContext("applicant-2", { email: "unverified@example.org", email_verified: false }).firestore();
   await assertFails(setDoc(doc(db, "volunteerApplications", "applicant-2"), application("applicant-2", "unverified@example.org")));
