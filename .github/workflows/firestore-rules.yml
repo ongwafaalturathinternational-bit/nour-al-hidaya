@@ -9,6 +9,18 @@ on:
       - "activites.html"
       - "projets.html"
       - "club-khuddam.html"
+      - "finance.html"
+      - "accounting-engine.mjs"
+      - "accounting-lettering.mjs"
+      - "finance-access-policy.mjs"
+      - "donor-funding.mjs"
+      - "scripts/extract-sycebnl-chart.mjs"
+      - "tests/accounting-engine.test.mjs"
+      - "tests/accounting-lettering.test.mjs"
+      - "tests/finance-access-policy.test.mjs"
+      - "tests/donor-funding.test.mjs"
+      - "tests/finance.rules.test.mjs"
+      - "tests/finance-syntax.test.mjs"
       - "tests/projects-volunteers.rules.test.mjs"
       - "tests/projects-volunteers-syntax.test.mjs"
       - "tests/volunteer-applications.rules.test.mjs"
@@ -22,6 +34,9 @@ on:
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
+      - "wrangler.json"
+      - ".assetsignore"
+      - "tests/cloudflare-preview.test.mjs"
       - "sw.js"
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
@@ -49,10 +64,27 @@ jobs:
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Installer les outils de test
         run: npm install --no-save firebase-tools firebase @firebase/rules-unit-testing
+
+      - name: Vérifier la syntaxe de l’extracteur SYCEBNL
+        run: node --check scripts/extract-sycebnl-chart.mjs
+
+      - name: Extraire le plan SYCEBNL pour revue
+        id: sycebnl_extract
+        continue-on-error: true
+        run: node scripts/extract-sycebnl-chart.mjs
+
+      - name: Publier le brouillon SYCEBNL
+        if: steps.sycebnl_extract.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sycebnl-chart-review
+          path: data/sycebnl-chart.review.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Compiler et tester les règles Firestore
         run: npx firebase emulators:exec --only firestore --project demo-wat-connect "node --test tests/*.test.mjs"

@@ -13,7 +13,7 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-const projectId = "demo-wat-connect";
+const projectId = "demo-wat-connect-core";
 const testEnv = await initializeTestEnvironment({
   projectId,
   firestore: {

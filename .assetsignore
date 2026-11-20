@@ -1,0 +1,12 @@
+/.github/
+/.git/
+/.wrangler/
+/docs/
+/tests/
+firebase.json
+wrangler.json
+firestore.rules
+*.md
+*.txt
+*.zip
+**/*.test.*
