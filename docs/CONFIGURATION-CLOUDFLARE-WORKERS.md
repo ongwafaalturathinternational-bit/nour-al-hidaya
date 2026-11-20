@@ -1,0 +1,51 @@
+# Configuration Cloudflare Workers — WAT Connect
+
+## Configuration du dépôt
+
+- Worker Cloudflare : `nour-al-hidaya`
+- Répertoire racine : `/`
+- Configuration Wrangler : `wrangler.jsonc`
+- Dossier publié : `web-dist/`
+- Commande de compilation : `bun run build:android:web`
+- Commande de déploiement de production : `npx wrangler deploy`
+- Commande d'aperçu des branches : `bun run preview:cloudflare`
+
+## Séparation production / aperçu
+
+La branche de production Cloudflare reste `main`. Les branches de travail et les pull requests doivent être validées via les aperçus Cloudflare. Ne pas fusionner une pull request et ne pas publier en production sans autorisation explicite.
+
+## Construction des fichiers statiques
+
+Le script `scripts/prepare-capacitor-web.mjs` prépare le répertoire `web-dist/`, utilisé à la fois par l'application Android Capacitor et par les actifs statiques du Worker. Il copie les pages autorisées et prépare les SDK Firebase locaux nécessaires au démarrage hors connexion.
+
+Le script `preview:cloudflare` exécute explicitement la préparation des fichiers web, puis lance Wrangler Preview :
+```sh
+bun run build:android:web && npx wrangler preview
+```
+
+Cette séquence est volontairement intégrée à la commande d'aperçu, afin que `web-dist/` existe même si l'étape « Build command » des branches d'aperçu n'est pas exécutée par Cloudflare.
+
+## Paramètres des builds Cloudflare
+
+### Production
+
+- Build command : `bun run build:android:web`
+- Deploy command : `npx wrangler deploy`
+- Branche : `main`
+
+### Branches d'aperçu
+
+- Builds de prévisualisation : activés dans Cloudflare
+- Build command : `bun run build:android:web`
+- Preview command : `bun run preview:cloudflare`
+- Répertoire racine : `/`
+- Chemins inclus : `*`
+- Chemins exclus recommandés : `node_modules/**`, `.git/`
+
+La commande d'aperçu construit elle-même les ressources avant Wrangler. Le champ « Build command » des aperçus peut rester configuré à `bun run build:android:web` ; dans ce cas, la préparation sera répétée, sans modifier les sources. Le cache de build peut rester activé.
+
+Les builds de branches d'aperçu ne doivent pas modifier la branche de production ni remplacer son déploiement actif.
+
+## Contrôle après modification des paramètres Cloudflare
+
+Après avoir modifié la commande « Preview command » dans l'onglet « Base des aperçus », un nouveau commit sur la branche de travail déclenche le test de cette configuration. Vérifier les journaux du commit correspondant, puis ouvrir l'URL d'aperçu et contrôler les pages, l'authentification et les fonctions opérationnelles avant toute fusion.

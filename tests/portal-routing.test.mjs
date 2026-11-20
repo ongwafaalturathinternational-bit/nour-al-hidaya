@@ -9,6 +9,7 @@ test("la page d’accueil est WAT Connect et le programme garde sa propre adress
   const program = read("../nour-al-hidaya.html");
   assert.match(portal, /<title>WAT Connect/);
   assert.match(portal, /href="nour-al-hidaya\.html"/);
+  assert.match(portal, /href="club-khuddam-inscription\.html"/);
   assert.match(program, /<title>Nour Al-Hidaya<\/title>/);
   assert.match(program, /manifest-nour\.json/);
 });

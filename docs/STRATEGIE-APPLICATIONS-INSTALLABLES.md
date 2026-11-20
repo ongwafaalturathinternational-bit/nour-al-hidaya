@@ -1,5 +1,19 @@
 # Stratégie des applications installables de WAT Connect
 
+## État d'avancement technique — 18 novembre 2026
+
+- Le portail WAT Connect possède un manifeste PWA et un service worker dédié.
+- Le service worker précache les pages statiques du portail et des modules du premier bloc, puis utilise une navigation réseau avec repli sur le cache.
+- Les requêtes d'écriture et les services externes Firebase ne sont pas interceptés ni mis en cache.
+- Le service worker précache le shell et les trois SDK Firebase statiques versionnés nécessaires au démarrage hors connexion. Il n'intercepte aucune API métier et ne met aucune donnée privée en cache.
+- Les modules Projets, Activités, Présences et Club activent le cache Firestore IndexedDB multi-onglets. Les documents déjà consultés restent disponibles hors connexion et les écritures sont mises en attente par le SDK puis synchronisées au retour du réseau.
+- La première authentification et le premier chargement des données exigent une connexion. Les opérations en attente doivent être confirmées par le serveur; un affichage local n'est pas une validation.
+- La déconnexion attend la synchronisation des écritures puis efface le cache local. Elle est bloquée hors connexion pour éviter la perte silencieuse d'opérations.
+- Le cache contient des données privées déjà consultées : utilisation réservée aux appareils de confiance, verrouillés et non partagés.
+- Une chaîne Capacitor 8 / GitHub Actions est ajoutée pour construire un APK Android de test (debug), sans clé de production ni publication automatique. Le paquet final reste à vérifier sur appareil Android avant toute distribution.
+- Les fichiers Firebase SDK nécessaires sont copiés dans le paquet Android afin que l'application locale puisse démarrer sans télécharger ces scripts au premier lancement.
+- Le déploiement Firebase en production n'est pas autorisé par cette étape.
+
 ## Décision d'architecture
 
 WAT Connect est le portail numérique central de l'ONG Wafa Al-Turath. Les applications métier doivent pouvoir être utilisées depuis le portail et, lorsque cela est pertinent, installées et utilisées de manière autonome.
@@ -17,7 +31,7 @@ Une application autonome reste reliée aux services communs autorisés de WAT Co
 ### 2. Application Android APK
 - Pour les applications qui justifient une distribution Android dédiée, produire un paquet APK installable.
 - Étudier et valider une enveloppe Android Capacitor autour de l'application web existante, en conservant les mêmes services Firebase et les mêmes règles d'accès.
-- Construire les APK de façon reproductible avec GitHub Actions, sans imposer Android Studio à l'équipe WAT.
+- Construire les APK de façon reproductible avec GitHub Actions, sans imposer Android Studio à l'équipe WAT. Le pipeline actuel produit un APK debug de test; une signature release dédiée et protégée sera créée uniquement après validation des essais terrain.
 - Publier les APK de test comme artefacts ou versions GitHub, puis fournir un téléchargement depuis la fiche du programme dans WAT Connect.
 - Signer les versions de distribution avec une clé protégée dans les secrets du dépôt ou un mécanisme équivalent. Ne jamais committer la clé privée, les mots de passe ou les fichiers de signature.
 - Prévoir un numéro de version, des notes de version, une vérification d'intégrité et une procédure de mise à jour. Les mises à jour directes hors Play Store peuvent demander à l'utilisateur d'accepter l'installation de sources externes et de mettre à jour l'application.
@@ -39,7 +53,7 @@ Les deux modes doivent partager le même backend, les mêmes comptes apprenants,
 
 - Aucun secret Firebase Admin ou clé privée dans le code client ou le dépôt.
 - Authentification et autorisations validées côté serveur par les règles Firestore.
-- Les opérations hors connexion sont mises en file locale et synchronisées sans écrasement silencieux.
+- Les opérations hors connexion sont mises en file locale par la persistance Firestore IndexedDB et synchronisées au retour du réseau; les conflits et refus serveur doivent rester visibles à l'utilisateur.
 - Les fichiers APK distribués sont signés, versionnés et associés à un artefact de build vérifiable.
 - Les tests couvrent le routage portail/application, les manifestes, la compatibilité mobile et les parcours d'authentification.
 - Le téléchargement d'un APK n'est activé qu'après validation du build, de la signature, des permissions et de la politique de confidentialité.

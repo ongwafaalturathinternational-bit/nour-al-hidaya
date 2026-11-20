@@ -104,55 +104,42 @@ Les règles Firestore devront vérifier l'identité authentifiée, l'état actif
 
 Ne pas introduire de Cloud Functions, de stockage payant ou de service nécessitant une facturation sans vérifier le coût et obtenir l'accord préalable de WAT.
 
-## 7. Lots de réalisation
+## 7. Ordre officiel de réalisation WAT Connect
 
-### Lot 1 — Socle commun et sécurité
-- Architecture des comptes et des rôles.
-- Provisionnement sécurisé des comptes d'équipe.
-- Référentiels communs et conventions d'identifiants.
-- Règles Firestore par domaine et tests de règles.
-- Journalisation des opérations sensibles.
-- Gestion des erreurs, états hors ligne et synchronisation.
-- Préparation du tableau de bord et navigation selon les droits.
+L'ordre ci-dessous est la feuille de route opérationnelle validée par la direction de WAT. Il ne doit pas être inversé. Les travaux transversaux (sécurité, PWA, APK, synchronisation) soutiennent ces modules sans remplacer ni réordonner les priorités.
 
-### Lot 2 — Nour Al-Hidaya complet
-- Comptes apprenants et équipe.
-- Inscriptions, groupes, cours et contenus.
-- Progression, notes privées, pratiques et devoirs.
-- Séances, présences, retards et justificatifs.
-- Suivi des formateurs et rapports pédagogiques.
-- Vues apprenant, formateur, coordonnateur et direction.
+### Bloc 1 — Gestion des activités, projets et présences
+- Registre des programmes, projets et activités.
+- Planification, statuts, périodes et rattachements.
+- Feuilles de présence et historique de participation.
+- Club Khuddam Al-Turath : inscription contrôlée, profils, catégories occasionnel/engagé/contributeur, compétences, intérêts, disponibilités, affectations et historique d'engagement.
+- Tests de sécurité, accès distincts et synchronisation hors ligne.
 
-### Lot 3 — Administration et gouvernance
-- Membres, bénévoles et personnel.
-- Organes, fonctions, mandats et affectations.
-- Réunions, décisions, PV et documents.
-- Courriers entrants/sortants et archivage.
+### Bloc 2 — Gestion financière
+- Budgets, lignes budgétaires, recettes, dons, cotisations et financements.
+- Dépenses, validations, justificatifs et rapports.
+- Séparation stricte des rôles de saisie, validation et contrôle.
 
-### Lot 4 — Finances et ressources
-- Budgets et lignes budgétaires.
-- Recettes, dons, cotisations et financements.
-- Dépenses, validations et justificatifs.
-- Rapports périodiques et exports.
-- Inventaire et mouvements de stock.
-
-### Lot 5 — Action sociale et bénéficiaires
+### Bloc 3 — Gestion sociale
 - Dossiers et demandes d'aide.
-- Évaluation, critères, décisions et historique.
-- Distributions, bourses et accompagnement.
-- Protection renforcée des données personnelles.
+- Critères, évaluation, décisions et historique.
+- Distributions, bourses et accompagnement, avec protection renforcée des données.
 
-### Lot 6 — Site web institutionnel
-- Site public administrable.
-- Pages institutionnelles, programmes, actualités et rapports.
-- Formulaires de contact, adhésion et partenariat.
-- Liens cohérents avec les espaces privés, sans exposer les données internes.
+### Bloc 4 — Gestion documentaire, réunions et décisions
+- Documents, modèles, courriers, conventions et archives.
+- Réunions, convocations, procès-verbaux et décisions.
+- Accès contrôlé et historique des versions.
 
-### Lot 7 — Automatisation et pilotage
-- Notifications et rappels.
-- Tableaux de bord consolidés.
-- Rapports et documents générés.
-- Exports, archivage, contrôles et indicateurs.
+### Bloc 5 — Tableau de bord général de la présidence
+- Vue consolidée des activités, projets, finances, actions sociales et gouvernance.
+- Indicateurs, alertes et rapports utiles à la prise de décision.
+- Exports limités aux autorisations du compte.
+
+### Chantiers transversaux
+- PWA installable, puis application Android APK via une chaîne de compilation gratuite si possible.
+- Compatibilité iOS via PWA.
+- Comptes, sécurité, sauvegarde, synchronisation et fonctionnement hors connexion.
+- Aucun service payant, activation de facturation ou déploiement de production sans accord explicite.
 
 ## 8. Critères de validation de chaque lot
 
@@ -169,7 +156,7 @@ Un lot n'est considéré comme prêt que lorsque :
 ## 9. État des travaux et limites connues
 
 - Nour Al-Hidaya v7 : résultats de quiz, notes, pratiques et devoirs écrits disposent d'une synchronisation Firestore prévue pour les comptes apprenants vérifiés. Le devoir, les notes et pratiques ont été retrouvés lors des tests de navigation privée selon les retours reçus; les notes et pratiques doivent encore faire l'objet d'un test explicite après déconnexion/reconnexion pour confirmer leur persistance.
-- Les présences ne sont pas encore synchronisées dans Firestore.
+- Les modules programmes, activités, présences, projets et registre interne du Club Khuddam sont en cours de réalisation dans des branches de travail non fusionnées; ils ne sont pas encore en production.
 - Les rôles réels d'équipe ne sont pas encore opérationnels.
 - Les parcours de démonstration présents dans l'interface ne doivent pas être confondus avec des fonctions administratives sécurisées.
 - Le site institutionnel n'est pas encore intégré à ce dépôt comme produit final.

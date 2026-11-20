@@ -121,7 +121,7 @@ service cloud.firestore {
     match /activities/{activityId} {
       allow read: if staffHasScope("activities.read") || staffHasScope("activities.manage");
       allow create: if staffHasScope("activities.manage")
-        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
@@ -129,10 +129,11 @@ service cloud.firestore {
         && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("activities.manage")
-        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasOnly(["title", "description", "category", "activityDate", "location", "projectId", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.keys().hasAll(["title", "description", "category", "activityDate", "location", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
@@ -140,6 +141,7 @@ service cloud.firestore {
         && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
         && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if false;
@@ -172,6 +174,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if false;
     }
+
 
     match /members/{memberId} {
       allow read: if staffHasScope("members.read") || staffHasScope("members.manage");
@@ -239,6 +242,133 @@ service cloud.firestore {
         && request.resource.data.updatedBy == request.auth.uid;
 
       // Conservation de l'historique : désactiver une fiche au lieu de la supprimer.
+      allow delete: if false;
+    }
+
+    // Projets : actions délimitées dans le temps, rattachables à un programme.
+    match /projects/{projectId} {
+      allow read: if staffHasScope("projects.read") || staffHasScope("projects.manage");
+      allow create: if staffHasScope("projects.manage")
+        && request.resource.data.keys().hasOnly(["name", "code", "description", "programId", "status", "startDate", "endDate", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["name", "code", "description", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 3 && request.resource.data.name.size() <= 140
+        && request.resource.data.code is string && request.resource.data.code.size() >= 2 && request.resource.data.code.size() <= 40
+        && request.resource.data.description is string && request.resource.data.description.size() <= 2000
+        && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
+        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
+        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
+        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("projects.manage")
+        && request.resource.data.keys().hasOnly(["name", "code", "description", "programId", "status", "startDate", "endDate", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["name", "code", "description", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 3 && request.resource.data.name.size() <= 140
+        && request.resource.data.code is string && request.resource.data.code.size() >= 2 && request.resource.data.code.size() <= 40
+        && request.resource.data.description is string && request.resource.data.description.size() <= 2000
+        && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
+        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
+        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
+        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+
+      match /volunteers/{assignmentId} {
+        allow read: if staffHasScope("projects.read") || staffHasScope("projects.manage");
+        allow create: if staffHasScope("projects.manage")
+          && exists(/databases/$(database)/documents/projects/$(projectId))
+          && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+          && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+          && request.resource.data.volunteerId is string
+          && request.resource.data.volunteerId == assignmentId
+          && request.resource.data.volunteerId.size() >= 1 && request.resource.data.volunteerId.size() <= 100
+          && exists(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId))
+          && get(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId)).data.status == "actif"
+          && request.resource.data.volunteerName == get(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId)).data.fullName
+          && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
+          && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
+          && request.resource.data.status in ["propose", "confirme", "retire"]
+          && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+          && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+        allow update: if staffHasScope("projects.manage")
+          && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+          && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+          && request.resource.data.volunteerId == resource.data.volunteerId
+          && request.resource.data.volunteerId == assignmentId
+          && request.resource.data.volunteerName == resource.data.volunteerName
+          && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
+          && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
+          && request.resource.data.status in ["propose", "confirme", "retire"]
+          && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+        allow delete: if false;
+      }
+    }
+
+    // Club Khuddam Al-Turath : registre privé des bénévoles, sans accès public.
+    match /volunteers/{volunteerId} {
+      allow read: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
+      allow create: if staffHasScope("volunteers.manage")
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
+        && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
+        && request.resource.data.status in ["en_attente", "actif", "inactif", "suspendu", "rejete"]
+        && (!("email" in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 160))
+        && (!("phone" in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("volunteers.manage")
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
+        && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
+        && request.resource.data.status in ["en_attente", "actif", "inactif", "suspendu", "rejete"]
+        && (!("email" in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 160))
+        && (!("phone" in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Candidatures au Club : dépôt par le titulaire d'un compte vérifié.
+    // L'approbation reste une action explicite d'un gestionnaire autorisé.
+    match /volunteerApplications/{applicationId} {
+      allow get: if (request.auth != null && request.auth.uid == applicationId)
+        || staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
+      allow list: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
+      allow create: if request.auth != null
+        && request.auth.uid == applicationId
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasOnly(["fullName", "email", "phone", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.keys().hasAll(["fullName", "email", "category", "skills", "interests", "availability", "privacyConsent", "consentAt", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
+        && request.resource.data.privacyConsent == true
+        && request.resource.data.consentAt == request.time
+        && request.resource.data.status == "en_attente"
+        && (!("phone" in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("volunteers.manage")
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "reviewedAt", "reviewedBy", "updatedAt", "updatedBy"])
+        && resource.data.status == "en_attente"
+        && request.resource.data.status in ["acceptee", "refusee"]
+        && request.resource.data.reviewedAt == request.time
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if false;
     }
 

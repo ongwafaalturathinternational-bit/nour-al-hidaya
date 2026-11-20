@@ -26,9 +26,9 @@ Les droits activités ne donnent pas automatiquement accès aux présences. Pour
 ## Modèle Firestore
 
 - activities/{activityId} : données d'activité et métadonnées de création/mise à jour.
-- attendance/{recordId} : enregistrement individuel lié à une activité par activityId. Ce registre central facilite les consultations et rapports transversaux tout en conservant la référence de l'activité.
+- activities/{activityId}/attendance/{recordId} : enregistrement individuel de présence.
 
-Les écritures imposent des champs autorisés, des catégories/statuts contrôlés, une référence vers une activité existante, des horodatages serveur et l'identité du compte auteur. Les données sont accessibles uniquement aux comptes d'équipe actifs disposant des scopes correspondants.
+Les écritures imposent des champs autorisés, des catégories/statuts contrôlés, des horodatages serveur et l'identité du compte auteur. Les données sont accessibles uniquement aux comptes d'équipe actifs disposant des scopes correspondants.
 
 ## Limites actuelles
 

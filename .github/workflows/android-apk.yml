@@ -1,0 +1,81 @@
+name: Android APK test build
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "nour-al-hidaya.html"
+      - "administration.html"
+      - "programmes.html"
+      - "activites.html"
+      - "projets.html"
+      - "club-khuddam.html"
+      - "club-khuddam-inscription.html"
+      - "firebase-init.js"
+      - "sw.js"
+      - "manifest.json"
+      - "manifest-nour.json"
+      - "icon-192.png"
+      - "icon-512.png"
+      - "package.json"
+      - "capacitor.config.json"
+      - "scripts/prepare-capacitor-web.mjs"
+      - ".github/workflows/android-apk.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurer Android SDK
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager introuvable dans $SDK_ROOT"
+            exit 1
+          fi
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Installer Capacitor
+        run: npm install --no-audit --no-fund
+
+      - name: Préparer les fichiers web
+        run: npm run build:android:web
+
+      - name: Générer le projet Android
+        run: npx cap add android
+
+      - name: Synchroniser les ressources web
+        run: npx cap sync android
+
+      - name: Construire l'APK de test
+        run: cd android && ./gradlew --no-daemon assembleDebug
+
+      - name: Publier l'APK de test
+        uses: actions/upload-artifact@v4
+        with:
+          name: wat-connect-android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
