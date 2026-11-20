@@ -40,3 +40,15 @@ test("la vitrine conserve une navigation accessible et respecte les préférence
   assert.match(html, /name="description"/);
   assert.match(html, /property="og:title"/);
 });
+
+test("les scripts de l'espace candidat sont syntaxiquement valides et isolés", () => {
+  const html = readFileSync(new URL("../club-khuddam-espace.html", import.meta.url), "utf8");
+  const scripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
+    .filter(([, attributes]) => !/\\bsrc\\s*=/.test(attributes))
+    .map(([, , source]) => source)
+    .filter(source => source.trim());
+  assert.ok(scripts.length > 0);
+  scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), "script espace candidat n°" + (index + 1)));
+  assert.match(html, /collection\("volunteerApplications"\)/);
+  assert.match(html, /doc\(user\.uid\)/);
+});
