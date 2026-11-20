@@ -80,3 +80,11 @@ test("un membre de l'équipe sans périmètre Club ne peut pas lire les candidat
   await assertFails(getDoc(doc(db, "volunteerApplications", "private-candidate")));
   await assertFails(getDocs(collection(db, "volunteerApplications")));
 });
+
+test("une candidature déjà traitée ne peut pas recevoir une seconde décision", async () => {
+  await seed("reviewer-once", ["volunteers.manage"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "already-reviewed"), application("candidate", "candidate@example.org", { status: "acceptee" })));
+  const db = env.authenticatedContext("reviewer-once").firestore();
+  const ref = doc(db, "volunteerApplications", "already-reviewed");
+  await assertFails(updateDoc(ref, { status: "refusee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-once", updatedAt: serverTimestamp(), updatedBy: "reviewer-once" }));
+});
