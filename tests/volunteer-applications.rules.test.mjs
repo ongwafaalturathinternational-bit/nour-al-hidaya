@@ -51,6 +51,7 @@ test("volunteers.read peut consulter mais pas traiter une candidature", async ()
   const db = env.authenticatedContext("reader").firestore();
   const ref = doc(db, "volunteerApplications", "candidate2");
   await assertSucceeds(getDoc(ref));
+  await assertSucceeds(getDocs(collection(db, "volunteerApplications")));
   await assertFails(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reader", updatedAt: serverTimestamp(), updatedBy: "reader" }));
 });
 
