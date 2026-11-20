@@ -255,7 +255,7 @@ service cloud.firestore {
         && request.resource.data.code is string && request.resource.data.code.size() >= 2 && request.resource.data.code.size() <= 40
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
-        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() <= 100))
+        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
         && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
         && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
@@ -267,7 +267,7 @@ service cloud.firestore {
         && request.resource.data.code is string && request.resource.data.code.size() >= 2 && request.resource.data.code.size() <= 40
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
-        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() <= 100))
+        && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
         && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
         && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
         && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
