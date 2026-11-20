@@ -105,7 +105,8 @@ test("la fiche du Club synthétise les participations et les affectations sans c
   assert.match(html, /Présences confirmées/);
   assert.match(html, /Projets confirmés/);
   assert.match(html, /if\(canAttendanceRead\)tasks\.push/);
-  assert.match(html, /if\(canProjectsRead\)tasks\.push/);
+  assert.match(html, /canAssignmentsRead=canProjectsRead&&canRead/);
+  assert.match(html, /if\(canAssignmentsRead\)tasks\.push/);
   assert.match(html, /if\(canActivitiesRead\)/);
   assert.match(html, /where\("participantRef","==",v\.id\)/);
   assert.match(html, /where\("volunteerId","==",v\.id\)/);
