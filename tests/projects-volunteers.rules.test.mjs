@@ -1,4 +1,5 @@
 import test, { after } from "node:test";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
 import { doc, getDoc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -87,6 +88,9 @@ test("une affectation exige un projet existant et un bénévole actif correspond
 test("volunteers.manage autorise le registre privé du Club Khuddam", async () => {
   await seed("volunteer-manager", ["volunteers.read", "volunteers.manage"]);
   const db = env.authenticatedContext("volunteer-manager").firestore();
+  const access = await assertSucceeds(getDoc(doc(db, "staffAccess", "volunteer-manager")));
+  assert.equal(access.data().active, true);
+  assert.ok(access.data().scopes.includes("volunteers.manage"));
   await assertSucceeds(setDoc(doc(db, "volunteers", "vol-001"), volunteer("volunteer-manager")));
   await assertSucceeds(getDoc(doc(db, "volunteers", "vol-001")));
 });
