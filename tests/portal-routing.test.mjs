@@ -43,3 +43,10 @@ test("un candidat vérifié retrouve son espace depuis la connexion centrale san
   assert.match(portal, /club-khuddam-espace\.html/);
   assert.match(portal, /staffAccess/);
 });
+
+test("le portail masque son contenu public après authentification sans référence DOM absente", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /<div id="public">/);
+  assert.match(portal, /\$\("public"\)\.hidden=true/);
+  assert.match(portal, /<section id="workspace"/);
+});
