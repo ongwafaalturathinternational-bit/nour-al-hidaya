@@ -86,7 +86,7 @@ test("une affectation exige un projet existant et un bénévole actif correspond
   ));
 });
 test("volunteers.manage autorise le registre privé du Club Khuddam", async () => {
-  await seed("volunteer-manager", ["volunteers.read", "volunteers.manage"]);
+  await seed("volunteer-manager", ["volunteers.manage"]);
   const db = env.authenticatedContext("volunteer-manager").firestore();
   const access = await assertSucceeds(getDoc(doc(db, "staffAccess", "volunteer-manager")));
   assert.equal(access.data().active, true);
