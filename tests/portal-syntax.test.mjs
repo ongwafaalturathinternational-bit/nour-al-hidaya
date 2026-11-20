@@ -84,6 +84,14 @@ test("la candidature actualise les informations et le jeton de vérification ava
   assert.match(html, /club-khuddam-espace\.html/);
 });
 
+test("le suivi des affectations exige les périmètres projets et bénévoles dans le Club", () => {
+  const club = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  const projects = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(club, /canAssignmentsRead=canProjectsRead&&canRead/);
+  assert.match(club, /if\(canAssignmentsRead\)tasks/);
+  assert.match(projects, /canAssign=canManage&&\(scopes\.includes\("volunteers\.read"\)\|\|scopes\.includes\("volunteers\.manage"\)\)/);
+});
+
 test("le site institutionnel est une page publique distincte et reprend les trois axes officiels", () => {
   const html = readFileSync(new URL("../site-institutionnel.html", import.meta.url), "utf8");
   for (const fragment of ["ONG Wafa Al-Turath", "Éduquer", "Servir", "Préserver", "Nour Al-Hidaya", "Club Khuddam Al-Turath", 'href="index.html"']) {
