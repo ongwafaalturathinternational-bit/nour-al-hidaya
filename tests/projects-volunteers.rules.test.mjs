@@ -2,7 +2,7 @@ import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
@@ -102,6 +102,7 @@ test("volunteers.read ne permet pas de créer et les bénévoles ne sont pas pub
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteers", "seed"), volunteer("system")));
   const db = env.authenticatedContext("volunteer-reader").firestore();
   await assertSucceeds(getDoc(doc(db, "volunteers", "seed")));
+  await assertSucceeds(getDocs(collection(db, "volunteers")));
   await assertFails(setDoc(doc(db, "volunteers", "new"), volunteer("volunteer-reader")));
   await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "volunteers", "seed")));
 });
