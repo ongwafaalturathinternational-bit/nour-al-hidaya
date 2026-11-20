@@ -16,6 +16,7 @@ const files = [
   "club-khuddam-espace.html",
   "portail.html",
   "firebase-init.js",
+  "wat-brand.css",
   "sw.js",
   "manifest.json",
   "manifest-nour.json",
