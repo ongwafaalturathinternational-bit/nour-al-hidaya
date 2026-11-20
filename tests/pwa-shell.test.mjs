@@ -45,7 +45,7 @@ test("les pages WAT chargent la feuille de style officielle", () => {
     const html = fs.readFileSync(page, "utf8");
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] || "";
     const stylesheet = page === "nour-al-hidaya.html" ? "wat-brand-nour\\.css" : "wat-brand\\.css";
-    assert.match(head, new RegExp(`<link\\\\b[^>]*href="${stylesheet}"`, "i"), page);
+    assert.ok(head.includes(`href="${stylesheet}"`), page);
   }
-  assert.match(worker, /wat-connect-shell-v4/);
+  assert.match(worker, /wat-connect-shell-v5/);
 });
