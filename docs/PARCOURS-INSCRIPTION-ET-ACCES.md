@@ -65,7 +65,7 @@ Cette procédure est réservée à la personne de confiance qui administre le pr
 
 **Périmètres actuellement implémentés :** `members.read`, `members.manage`, `programs.read`, `programs.manage`, `activities.read`, `activities.manage`, `projects.read`, `projects.manage`, `volunteers.read`, `volunteers.manage`, `attendance.read`, `attendance.manage`. Les périmètres `documents.*`, `meetings.*`, `finance.*` et `audit.*` ne doivent pas être attribués comme s'ils étaient déjà opérationnels.
 
-Exemple de forme de données (valeurs fictives à remplacer, ne pas coller telle quelle) :
+Exemple de forme de données (valeurs fictives à remplacer, ne pas coller telle quelle). Ajouter séparément les champs `createdAt` et `updatedAt` avec le type **timestamp Firestore**, et non string :
 
 ```json
 {
@@ -73,9 +73,7 @@ Exemple de forme de données (valeurs fictives à remplacer, ne pas coller telle
   "email": "membre@exemple.org",
   "role": "responsable_administratif",
   "active": true,
-  "scopes": ["members.read", "members.manage"],
-  "createdAt": "timestamp Firestore",
-  "updatedAt": "timestamp Firestore"
+  "scopes": ["members.read", "members.manage"]
 }
 ```
 
