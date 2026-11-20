@@ -27,7 +27,6 @@ Le rôle décrit la fonction institutionnelle de la personne. Le tableau `scopes
 | Projets | `projects.read` | `projects.manage` |
 | Club Khuddam Al-Turath | `volunteers.read` | `volunteers.manage` |
 | Présences | `attendance.read` | `attendance.manage` |
-| Présences | `attendance.read` | `attendance.manage` |
 
 ## Périmètres futurs à implémenter
 
