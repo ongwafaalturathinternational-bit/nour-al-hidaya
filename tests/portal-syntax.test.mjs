@@ -91,7 +91,7 @@ test("le site institutionnel est une page publique distincte et reprend les troi
   }
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main">/);
-  assert.match(html, /prefers-reduced-motion:\\s*reduce/);
+  assert.match(html, /prefers-reduced-motion:\s*reduce/);
   assert.match(html, /name="theme-color" content="#103047"/);
   assert.match(html, /property="og:title"/);
   assert.match(html, /property="og:description"/);
