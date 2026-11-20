@@ -39,7 +39,7 @@ test("la vitrine publique présente les missions, programmes et appels à partic
 test("la vitrine conserve une navigation accessible et respecte les préférences de mouvement réduit", () => {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   assert.match(html, /<nav[^>]+aria-label="Navigation principale"/);
-  assert.match(html, /prefers-reduced-motion:\s*reduce/);
+  assert.ok(html.includes("@media(prefers-reduced-motion:reduce)"));
   assert.match(html, /name="description"/);
   assert.match(html, /property="og:title"/);
 });
