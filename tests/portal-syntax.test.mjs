@@ -52,3 +52,21 @@ test("les scripts de l'espace candidat sont syntaxiquement valides et isolés", 
   assert.match(html, /collection\("volunteerApplications"\)/);
   assert.match(html, /doc\(user\.uid\)/);
 });
+
+test("les pages opérationnelles ne référencent pas d'identifiants DOM inexistants", () => {
+  for (const file of [
+    "index.html",
+    "club-khuddam-inscription.html",
+    "club-khuddam-espace.html",
+    "club-khuddam.html",
+    "administration.html",
+    "projets.html",
+    "activites.html"
+  ]) {
+    const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
+    const ids = new Set([...html.matchAll(/\\bid=["']([^"']+)["']/g)].map(match => match[1]));
+    const lookups = [...html.matchAll(/\\$\\(["']([^"']+)["']\\)/g)].map(match => match[1]);
+    const missing = [...new Set(lookups.filter(id => !ids.has(id)))];
+    assert.deepEqual(missing, [], file + " référence des identifiants DOM absents");
+  }
+});
