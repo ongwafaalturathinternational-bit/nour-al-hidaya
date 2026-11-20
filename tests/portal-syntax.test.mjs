@@ -24,12 +24,15 @@ test("la vitrine publique présente les missions, programmes et appels à partic
     'id="connexion"',
     'Nour Al-Hidaya',
     'Club Khuddam Al-Turath',
-    'Transmettre le savoir',
-    'Agir avec solidarité',
-    'Mobiliser les compétences',
+    'Éduquer',
+    'Servir',
+    'Préserver',
     'club-khuddam-inscription.html',
     'id="loginForm"',
-    'id="workspace"'
+    'id="workspace"',
+    'site-institutionnel.html',
+    'Éduquer · Servir · Préserver',
+    'Il n’existe pas d’inscription libre au portail interne.'
   ]) assert.ok(html.includes(fragment), "élément de vitrine absent : " + fragment);
 });
 
@@ -69,4 +72,28 @@ test("les pages opérationnelles ne référencent pas d'identifiants DOM inexist
     const missing = [...new Set(lookups.filter(id => !ids.has(id)))];
     assert.deepEqual(missing, [], file + " référence des identifiants DOM absents");
   }
+});
+
+
+test("la candidature actualise les informations et le jeton de vérification avant l'envoi", () => {
+  const html = readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  assert.match(html, /await currentUser\.reload\(\)/);
+  assert.match(html, /await currentUser\.getIdToken\(true\)/);
+  assert.match(html, /currentUser\.emailVerified/);
+  assert.match(html, /permission-denied/);
+  assert.match(html, /club-khuddam-espace\.html/);
+});
+
+test("le site institutionnel est une page publique distincte et reprend les trois axes officiels", () => {
+  const html = readFileSync(new URL("../site-institutionnel.html", import.meta.url), "utf8");
+  for (const fragment of ["ONG Wafa Al-Turath", "Éduquer", "Servir", "Préserver", "Nour Al-Hidaya", "Club Khuddam Al-Turath", 'href="index.html"']) {
+    assert.ok(html.includes(fragment), "élément du site institutionnel absent : " + fragment);
+  }
+});
+
+test("le portail public propose un seul point d'entrée principal vers le Club", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const publicArea = html.slice(html.indexOf('<div id="public">'), html.indexOf('<section id="workspace"'));
+  const entries = publicArea.match(/href="club-khuddam-inscription\.html"/g) || [];
+  assert.equal(entries.length, 1);
 });
