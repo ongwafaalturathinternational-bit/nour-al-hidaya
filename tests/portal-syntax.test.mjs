@@ -43,8 +43,8 @@ test("la vitrine conserve une navigation accessible et respecte les préférence
 
 test("les scripts de l'espace candidat sont syntaxiquement valides et isolés", () => {
   const html = readFileSync(new URL("../club-khuddam-espace.html", import.meta.url), "utf8");
-  const scripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
-    .filter(([, attributes]) => !/\\bsrc\\s*=/.test(attributes))
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .filter(([, attributes]) => !/\bsrc\s*=/.test(attributes))
     .map(([, , source]) => source)
     .filter(source => source.trim());
   assert.ok(scripts.length > 0);
