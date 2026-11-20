@@ -296,6 +296,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.volunteerId == resource.data.volunteerId
           && request.resource.data.volunteerId == assignmentId
+          && request.resource.data.volunteerName == resource.data.volunteerName
           && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
           && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
           && request.resource.data.status in ["propose", "confirme", "retire"]
