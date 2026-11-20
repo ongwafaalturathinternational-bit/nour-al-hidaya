@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "index.html"
+      - "site-institutionnel.html"
       - "nour-al-hidaya.html"
       - "administration.html"
       - "programmes.html"
