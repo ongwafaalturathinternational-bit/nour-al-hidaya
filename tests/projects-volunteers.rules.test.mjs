@@ -91,8 +91,11 @@ test("volunteers.manage autorise le registre privé du Club Khuddam", async () =
   const access = await assertSucceeds(getDoc(doc(db, "staffAccess", "volunteer-manager")));
   assert.equal(access.data().active, true);
   assert.ok(access.data().scopes.includes("volunteers.manage"));
-  await assertSucceeds(setDoc(doc(db, "volunteers", "vol-001"), volunteer("volunteer-manager")));
-  await assertSucceeds(getDoc(doc(db, "volunteers", "vol-001")));
+  // Identifiant dédié : un test précédent conserve déjà /volunteers/vol-001
+  // dans le même environnement d'émulation, ce qui transformerait setDoc en update.
+  const volunteerRef = doc(db, "volunteers", "volunteer-manager-record");
+  await assertSucceeds(setDoc(volunteerRef, volunteer("volunteer-manager")));
+  await assertSucceeds(getDoc(volunteerRef));
 });
 test("volunteers.read ne permet pas de créer et les bénévoles ne sont pas publics", async () => {
   await seed("volunteer-reader", ["volunteers.read"]);
