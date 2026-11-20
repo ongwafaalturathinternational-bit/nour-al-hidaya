@@ -277,9 +277,15 @@ service cloud.firestore {
       match /volunteers/{assignmentId} {
         allow read: if staffHasScope("projects.read") || staffHasScope("projects.manage");
         allow create: if staffHasScope("projects.manage")
+          && exists(/databases/$(database)/documents/projects/$(projectId))
           && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
-          && request.resource.data.volunteerId is string && request.resource.data.volunteerId.size() <= 100
+          && request.resource.data.volunteerId is string
+          && request.resource.data.volunteerId == assignmentId
+          && request.resource.data.volunteerId.size() >= 1 && request.resource.data.volunteerId.size() <= 100
+          && exists(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId))
+          && get(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId)).data.status == "actif"
+          && request.resource.data.volunteerName == get(/databases/$(database)/documents/volunteers/$(request.resource.data.volunteerId)).data.fullName
           && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
           && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
           && request.resource.data.status in ["propose", "confirme", "retire"]
@@ -289,6 +295,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.volunteerId == resource.data.volunteerId
+          && request.resource.data.volunteerId == assignmentId
           && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
           && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
           && request.resource.data.status in ["propose", "confirme", "retire"]
