@@ -43,7 +43,7 @@ test("les pages Firebase signalent clairement une perte de connexion", () => {
 test("les pages WAT chargent la feuille de style officielle", () => {
   for (const page of ["index.html", "site-institutionnel.html", "nour-al-hidaya.html", "administration.html", "programmes.html", "projets.html", "activites.html", "club-khuddam.html", "club-khuddam-inscription.html", "club-khuddam-espace.html"]) {
     const html = fs.readFileSync(page, "utf8");
-    assert.match(html, /href="wat-brand\\.css"/, page);
+    assert.match(html, /href="wat-brand\.css"/, page);
   }
   assert.match(worker, /wat-connect-shell-v4/);
 });
