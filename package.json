@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:android:web": "node scripts/prepare-capacitor-web.mjs"
+    "build:android:web": "node scripts/prepare-capacitor-web.mjs",
+    "preview:cloudflare": "bun run build:android:web && npx wrangler preview"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
