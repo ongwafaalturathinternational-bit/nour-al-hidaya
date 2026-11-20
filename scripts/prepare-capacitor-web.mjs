@@ -17,6 +17,7 @@ const files = [
   "portail.html",
   "firebase-init.js",
   "wat-brand.css",
+  "wat-brand-nour.css",
   "sw.js",
   "manifest.json",
   "manifest-nour.json",
