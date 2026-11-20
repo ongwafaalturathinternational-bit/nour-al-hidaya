@@ -105,6 +105,13 @@ test("le site institutionnel est une page publique distincte et reprend les troi
   assert.match(html, /property="og:description"/);
 });
 
+test("la vitrine ne présente pas un monogramme provisoire comme logo officiel", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.doesNotMatch(html, /class="logo">WAT<|class="orbit-mark">WAT</);
+  assert.match(html, /Portail numérique de l’ONG Wafa Al-Turath/);
+  assert.match(html, /class="orbit-mark"><\\/div>/);
+});
+
 test("le portail public propose un seul point d'entrée principal vers le Club", () => {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   const publicArea = html.slice(html.indexOf('<div id="public">'), html.indexOf('<section id="workspace"'));
