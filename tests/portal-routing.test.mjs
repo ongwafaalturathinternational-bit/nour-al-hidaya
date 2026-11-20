@@ -22,3 +22,16 @@ test("les manifestes installables ouvrent chacun le bon espace", () => {
   assert.equal(nour.name, "Nour Al-Hidaya");
   assert.equal(nour.start_url, "./nour-al-hidaya.html");
 });
+
+test("le parcours candidat possède un espace de suivi personnel et l'APK l'embarque", () => {
+  const signup = read("../club-khuddam-inscription.html");
+  const candidate = read("../club-khuddam-espace.html");
+  const worker = read("../sw.js");
+  const build = read("../scripts/prepare-capacitor-web.mjs");
+  assert.match(signup, /club-khuddam-espace\.html/);
+  assert.match(candidate, /volunteerApplications/);
+  assert.match(candidate, /emailVerified/);
+  assert.match(candidate, /En attente d’examen/);
+  assert.match(worker, /\.\/club-khuddam-espace\.html/);
+  assert.match(build, /"club-khuddam-espace\.html"/);
+});
