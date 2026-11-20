@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build:android:web": "node scripts/prepare-capacitor-web.mjs",
-    "preview:cloudflare": "bun run build:android:web && npx wrangler preview"
+    "preview:cloudflare": "bun run build:android:web && npx wrangler preview",
+    "postinstall": "node scripts/prepare-capacitor-web.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
