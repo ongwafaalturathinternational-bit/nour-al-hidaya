@@ -1496,8 +1496,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
  testpr(){prayerAlert(nextPrayer().p);return false},
  allown(){try{if(window.Notification)Notification.requestPermission().then(r=>toast(r==="granted"?"Notifications autorisées":"Notifications refusées"));else toast("Non disponible sur cet appareil")}catch(e){toast("Non disponible ici")}return false},
  dl(v){const e=R.exp;if(!e)return false;const tbl="<table><tr>"+e.head.map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr>"+e.rows.map(r=>"<tr>"+r.map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")+"</table>";
-  const html='<html><head><meta charset="utf-8"><title>'+esc(e.title)+'</title><style>body{font-family:Georgia,serif;color:#0F2240}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4px 8px;font-size:11pt}th{background:#0F2240;color:#fff}h2{border-bottom:3px solid #C9972B}</style>  <link rel="stylesheet" href="wat-brand.css">
-</head><body><h2>'+esc(e.title)+'</h2><p>Programme Nour Al-Hidaya · '+fmt(dayISO())+'</p>'+tbl+'</body></html>';
+  const html='<html><head><meta charset="utf-8"><title>'+esc(e.title)+'</title><style>body{font-family:Georgia,serif;color:#0F2240}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4px 8px;font-size:11pt}th{background:#0F2240;color:#fff}h2{border-bottom:3px solid #C9972B}</style>  <link rel="stylesheet" href="wat-brand.css"></head><body><h2>'+esc(e.title)+'</h2><p>Programme Nour Al-Hidaya · '+fmt(dayISO())+'</p>'+tbl+'</body></html>';
   const nm=e.title.replace(/[^\w]+/g,"_");
   const csv=[e.head].concat(e.rows).map(r=>r.map(c=>'"'+String(c??"").replace(/"/g,'""')+'"').join(";")).join("\n");
   const host=async(name,data)=>{try{const d=window.claude&&claude.use?await claude.use("downloads"):null;if(!d)return false;await d.save({filename:name,data});return true}catch(x){if(x&&x.code==="declined")return true;return false}};
