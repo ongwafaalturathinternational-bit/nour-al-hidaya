@@ -1,0 +1,30 @@
+/* Nour Al-Hidaya — déclinaison applicative de l'identité WAT.
+   Palette institutionnelle et facettes discrètes ; les composants pédagogiques,
+   états et contrastes propres à l'application restent définis par sa feuille interne. */
+:root{
+  --wat-turquoise:#1d788f;
+  --wat-blue:#14566b;
+  --wat-deep:#103047;
+  --wat-gold:#d2b75f;
+  --wat-gold-light:#e6d18a;
+  --wat-ice:#eaf5f7;
+  --navy:var(--wat-deep);
+  --gold:var(--wat-gold);
+}
+header.top{
+  background-color:var(--navy);
+  background-image:
+    linear-gradient(145deg,transparent 0 18%,rgba(255,255,255,.055) 18.2% 29%,transparent 29.2%),
+    linear-gradient(35deg,transparent 0 58%,rgba(29,120,143,.22) 58.2% 72%,transparent 72.2%),
+    linear-gradient(125deg,transparent 0 76%,rgba(210,183,95,.16) 76.2% 88%,transparent 88.2%),
+    linear-gradient(110deg,#103047 0%,#07506c 58%,#103047 100%);
+  border-bottom:3px solid var(--gold);
+}
+header.top .portal-link:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--wat-gold-light);
+  outline-offset:2px;
+}
+.hero{
+  background:linear-gradient(135deg,var(--navy) 0%,#14566b 100%);
+  border-color:var(--gold);
+}
