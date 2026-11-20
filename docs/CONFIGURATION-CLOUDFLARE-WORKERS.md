@@ -36,6 +36,7 @@ Cette séquence est volontairement intégrée à la commande d'aperçu, afin que
 ### Branches d'aperçu
 
 - Builds de prévisualisation : activés dans Cloudflare
+- Build command : `bun run build:android:web`
 - Preview command : `bun run preview:cloudflare`
 - Répertoire racine : `/`
 - Chemins inclus : `*`
@@ -47,4 +48,4 @@ Les builds de branches d'aperçu ne doivent pas modifier la branche de productio
 
 ## Contrôle après modification des paramètres Cloudflare
 
-Après toute modification des paramètres de compilation, déclencher une nouvelle compilation sur le dernier commit de la branche concernée. Vérifier les journaux de compilation, puis ouvrir l'URL d'aperçu et contrôler les pages, l'authentification et les fonctions opérationnelles avant toute fusion.
+Après avoir modifié la commande « Preview command » dans l'onglet « Base des aperçus », un nouveau commit sur la branche de travail déclenche le test de cette configuration. Vérifier les journaux du commit correspondant, puis ouvrir l'URL d'aperçu et contrôler les pages, l'authentification et les fonctions opérationnelles avant toute fusion.
