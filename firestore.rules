@@ -355,6 +355,7 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("volunteers.manage")
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "reviewedAt", "reviewedBy", "updatedAt", "updatedBy"])
+        && resource.data.status == "en_attente"
         && request.resource.data.status in ["acceptee", "refusee"]
         && request.resource.data.reviewedAt == request.time
         && request.resource.data.reviewedBy == request.auth.uid
