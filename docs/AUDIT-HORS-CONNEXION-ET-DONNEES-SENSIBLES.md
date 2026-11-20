@@ -52,3 +52,14 @@ Le mode hors connexion actuel constitue une **persistance de travail pour les mo
 La prochaine évolution doit être un composant d'inscription assistée et de synchronisation protégé, conçu séparément du cache Firestore générique, puis raccordé au dossier central des bénéficiaires après validation du cahier des charges initial.
 
 **Aucune donnée réelle de bénéficiaire ne doit être utilisée pour la recette de ce mécanisme avant validation de sa protection locale et de ses règles d'accès.**
+
+
+## Addendum de validation — 20 novembre 2026
+
+Le présent audit a été initialement vérifié sur le commit applicatif `a8308fbffe3e5e8d844bb0aa454ab58162890cfc`. Le commit `61ab7fba2a87909f74befef529c289bfa7954e25` ajoute cette documentation et ne modifie pas le comportement applicatif décrit ci-dessus.
+
+Sur ce dernier commit :
+- Tests Firestore et applicatifs : **106 réussis, 0 échec, 0 ignoré** — [workflow réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44813393400).
+- Build APK Android debug : **réussi** — [workflow réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44813393313).
+
+Ces validations automatisées ne remplacent pas les tests multi-onglets, la recette sur appareil Android physique, ni les essais terrain avec données fictives. La limite de protection des données locales demeure inchangée.
