@@ -89,6 +89,12 @@ test("le site institutionnel est une page publique distincte et reprend les troi
   for (const fragment of ["ONG Wafa Al-Turath", "Éduquer", "Servir", "Préserver", "Nour Al-Hidaya", "Club Khuddam Al-Turath", 'href="index.html"']) {
     assert.ok(html.includes(fragment), "élément du site institutionnel absent : " + fragment);
   }
+  assert.match(html, /<a class="skip-link" href="#main">/);
+  assert.match(html, /<main id="main">/);
+  assert.match(html, /prefers-reduced-motion:\\s*reduce/);
+  assert.match(html, /name="theme-color" content="#103047"/);
+  assert.match(html, /property="og:title"/);
+  assert.match(html, /property="og:description"/);
 });
 
 test("le portail public propose un seul point d'entrée principal vers le Club", () => {
