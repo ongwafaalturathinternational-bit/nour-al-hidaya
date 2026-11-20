@@ -47,7 +47,7 @@ Compléter le premier bloc opérationnel WAT Connect en reliant les programmes, 
 - Le registre interne et les affectations sont implémentés dans ce lot de travail.
 - Le formulaire public de candidature est ajouté : création/connexion à un compte, vérification obligatoire de l'e-mail et consentement explicite avant dépôt.
 - Les responsables autorisés peuvent examiner les candidatures, accepter ou refuser; une acceptation crée une fiche bénévole dans le registre du Club.
-- Les notifications automatiques et la synchronisation hors ligne restent à réaliser.
+- Les notifications automatiques restent à réaliser. Le cache persistant IndexedDB et la mise en attente des écritures hors ligne sont intégrés pour les écrans opérationnels, sous réserve de la validation fonctionnelle sur appareil réel.
 - Les affectations sont enregistrées par projet; la présence effective à une activité reste tracée dans le module Activités, avec sélection directe des bénévoles du Club lorsque le périmètre d'accès le permet.
 - Aucune donnée réelle de bénévole n'est préchargée.
 
