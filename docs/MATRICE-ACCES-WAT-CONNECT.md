@@ -34,12 +34,14 @@ Le rôle décrit la fonction institutionnelle de la personne. Le tableau `scopes
 |---|---|---|
 | Finances | `finance.read` | `finance.manage` |
 | Bénéficiaires / action sociale | `beneficiaries.read` | `beneficiaries.manage` |
-| Affectations bénévoles aux projets | Accès via `projects.read` | `projects.manage` |
+| Affectations bénévoles aux projets | `projects.read` ou `projects.manage` **et** `volunteers.read` ou `volunteers.manage` | `projects.manage` **et** `volunteers.read` ou `volunteers.manage` |
 | Pédagogie | `learning.read` | `learning.manage` |
 | Documents | `documents.read` | `documents.manage` |
 | Audit | `audit.read` | réservé à un mécanisme de journalisation en lecture |
 
 Ces périmètres futurs sont une nomenclature de conception et ne donnent aucun accès tant que les règles et tests correspondants ne sont pas livrés.
+
+**Règle déjà implémentée pour les affectations de projets :** les documents d'affectation contiennent le nom du bénévole. La consultation exige donc un périmètre projet et un périmètre Club. La création et la mise à jour exigent en plus `projects.manage`. Aucun de ces droits croisés ne doit être remplacé par le seul périmètre projet.
 
 ## Attribution prudente
 
