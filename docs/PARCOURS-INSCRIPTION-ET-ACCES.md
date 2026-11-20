@@ -16,7 +16,7 @@ La vérification du courriel ne vaut ni acceptation de la candidature, ni attrib
 1. Le candidat ouvre `club-khuddam-inscription.html`, crée son compte ou se connecte.
 2. Il vérifie son adresse depuis le lien reçu par e-mail.
 3. Il revient sur le formulaire et utilise « J'ai vérifié mon adresse e-mail » si l'état n'a pas été actualisé automatiquement.
-4. Il complète et envoie sa candidature; le document est créé sous son UID.
+4. Avant l’écriture, la page recharge le compte Firebase et force le renouvellement du jeton afin que la revendication `email_verified` soit à jour. Il complète et envoie sa candidature; le document est créé sous son UID.
 5. En cas de dossier existant, le formulaire affiche le lien vers `club-khuddam-espace.html`, au lieu de laisser le candidat sans indication.
 6. Depuis l'espace candidat, il se connecte et consulte son statut : en attente, acceptée ou refusée.
 7. Seul un responsable doté de `volunteers.manage` peut accepter/refuser. Une acceptation crée la fiche bénévole; le candidat ne peut ni s'approuver ni modifier son dossier.
@@ -26,7 +26,7 @@ Le candidat peut aussi ouvrir « Suivre ma candidature au Club » depuis la page
 
 ## 3. Accès des membres de l'administration
 
-Il n'existe volontairement aucun formulaire public « devenir administrateur ». Un tel formulaire permettrait à n'importe qui de demander ou de s'attribuer des droits institutionnels.
+Il n’existe volontairement aucun formulaire public « devenir administrateur » ou auto-inscription au portail interne. Un tel formulaire permettrait à n'importe qui de demander ou de s'attribuer des droits institutionnels.
 
 **Procédure provisoire sécurisée :**
 1. La Présidence confirme l'identité, la fonction et la décision de nomination/délégation.
@@ -84,9 +84,9 @@ La création du compte Authentication et du document Firestore sont deux opérat
 
 ## 4. Site institutionnel public et portail privé
 
-Le dépôt contient une page d'accueil publique `index.html`, qui présente l'ONG et les programmes, ainsi que l'espace privé WAT Connect. Ce n'est pas encore un site institutionnel complet avec CMS, actualités administrables, publications et gestion de contenus.
+Le dépôt contient désormais une page publique distincte `site-institutionnel.html`, séparée de la page d’accueil et du portail privé WAT Connect (`index.html`). Le portail donne accès au site institutionnel depuis la navigation publique et depuis le tableau de bord connecté. La page publique présente les axes officiels « Éduquer · Servir · Préserver » et les programmes disponibles.
 
-Le site public et le portail privé doivent être présentés comme deux espaces distincts, avec navigation explicite. Avant d'annoncer une adresse publique, vérifier que le Worker sert bien `index.html` à la racine et que les liens de navigation fonctionnent sur le domaine retenu.
+Cette page est une vitrine publique statique : elle ne constitue pas encore un CMS. La gestion éditoriale des actualités, publications, pages, médias et mises à jour par des responsables habilités reste à construire. Avant d’annoncer une adresse publique définitive, vérifier que le Worker sert bien les deux pages et que les liens fonctionnent sur le domaine retenu.
 
 ## 5. Données personnelles et sécurité
 
