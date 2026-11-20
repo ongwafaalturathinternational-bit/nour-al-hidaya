@@ -2,16 +2,18 @@
    Palette issue des logos : turquoise, bleu profond, or. Les facettes polygonales
    rappellent les surfaces cristallisées des emblèmes sans gêner la lecture. */
 :root{
-  --wat-turquoise:#0787a8;
-  --wat-blue:#07506c;
+  --wat-turquoise:#1d788f;
+  --wat-blue:#14566b;
   --wat-deep:#103047;
-  --wat-gold:#c5a04a;
-  --wat-gold-light:#e2c36e;
+  --wat-gold:#d2b75f;
+  --wat-gold-light:#e6d18a;
   --wat-ice:#eaf5f7;
-  --wat-ink:#193447;
-  --wat-line:#d7e4e8;
-  --wat-facet-a:rgba(7,135,168,.16);
-  --wat-facet-b:rgba(197,160,74,.14);
+  --wat-ink:#41403d;
+  --wat-line:#d9e2e4;
+  --wat-khuddam-gold:#c49f5e;
+  --wat-gray:#41403d;
+  --wat-facet-a:rgba(29,120,143,.16);
+  --wat-facet-b:rgba(210,183,95,.14);
   --navy:var(--wat-deep);
   --gold:var(--wat-gold);
 }
@@ -21,8 +23,8 @@ header{
   background-color:var(--wat-deep)!important;
   background-image:
     linear-gradient(145deg,transparent 0 18%,rgba(255,255,255,.055) 18.2% 29%,transparent 29.2%),
-    linear-gradient(35deg,transparent 0 58%,rgba(7,135,168,.22) 58.2% 72%,transparent 72.2%),
-    linear-gradient(125deg,transparent 0 76%,rgba(197,160,74,.16) 76.2% 88%,transparent 88.2%),
+    linear-gradient(35deg,transparent 0 58%,rgba(29,120,143,.22) 58.2% 72%,transparent 72.2%),
+    linear-gradient(125deg,transparent 0 76%,rgba(210,183,95,.16) 76.2% 88%,transparent 88.2%),
     linear-gradient(110deg,#103047 0%,#07506c 58%,#103047 100%)!important;
   border-bottom:3px solid var(--wat-gold)!important;
 }
@@ -41,12 +43,12 @@ header a:focus-visible,button:focus-visible,input:focus-visible,select:focus-vis
 .tag{background:var(--wat-ice)!important;color:var(--wat-blue)!important}
 .note{border-left-color:var(--wat-gold)!important}
 a{ text-underline-offset:3px }
-::selection{background:rgba(7,135,168,.2);color:var(--wat-deep)}
+::selection{background:rgba(29,120,143,.2);color:var(--wat-deep)}
 /* Motif facetté discret : réservé aux bandeaux et aux surfaces de mise en avant. */
 .wat-crystal-surface{
   background-color:var(--wat-deep);
   background-image:
     linear-gradient(145deg,transparent 0 24%,rgba(255,255,255,.08) 24.2% 39%,transparent 39.2%),
-    linear-gradient(35deg,transparent 0 54%,rgba(7,135,168,.25) 54.2% 70%,transparent 70.2%),
-    linear-gradient(125deg,transparent 0 76%,rgba(197,160,74,.2) 76.2% 90%,transparent 90.2%);
+    linear-gradient(35deg,transparent 0 54%,rgba(29,120,143,.25) 54.2% 70%,transparent 70.2%),
+    linear-gradient(125deg,transparent 0 76%,rgba(210,183,95,.2) 76.2% 90%,transparent 90.2%);
 }
