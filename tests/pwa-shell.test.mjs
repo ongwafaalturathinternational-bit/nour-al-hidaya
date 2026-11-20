@@ -49,3 +49,22 @@ test("les pages WAT chargent la feuille de style officielle", () => {
   }
   assert.match(worker, /wat-connect-shell-v5/);
 });
+
+test("tous les modules métier Firestore utilisent la persistance avant leurs lectures", () => {
+  const init = fs.readFileSync("firebase-init.js", "utf8");
+  for (const page of ["administration.html", "programmes.html", "activites.html", "projets.html", "club-khuddam.html"]) {
+    assert.ok(init.includes(JSON.stringify(page)), page + " doit activer le cache Firestore");
+  }
+  for (const page of ["administration.html", "programmes.html", "activites.html", "projets.html", "club-khuddam.html"]) {
+    const html = fs.readFileSync(page, "utf8");
+    assert.match(html, /await WATFirebase\.persistenceReady/, page + " doit attendre l'initialisation du cache");
+  }
+});
+
+test("la déconnexion des modules membres et programmes passe par le nettoyage sécurisé", () => {
+  for (const page of ["administration.html", "programmes.html"]) {
+    const html = fs.readFileSync(page, "utf8");
+    assert.match(html, /WATFirebase\.signOutSafely\(\)/, page);
+    assert.doesNotMatch(html, /WATFirebase\.auth\.signOut\(\)/, page);
+  }
+});
