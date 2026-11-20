@@ -37,7 +37,7 @@ test("la candidature ne peut pas être auto-approuvée ou modifiée par le candi
   const db = env.authenticatedContext("applicant-3", { email: "candidate3@example.org", email_verified: true }).firestore();
   await assertFails(setDoc(doc(db, "volunteerApplications", "applicant-3"), application("applicant-3", "candidate3@example.org", { status: "acceptee" })));
 });
-test("seul volunteers.manage peut consulter et traiter une candidature", async () => {
+test("volunteers.read consulte une candidature et volunteers.manage peut la traiter", async () => {
   await seed("reviewer", ["volunteers.read", "volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate"), application("candidate", "candidate@example.org")));
   const db = env.authenticatedContext("reviewer").firestore();
