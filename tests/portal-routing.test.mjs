@@ -35,3 +35,11 @@ test("le parcours candidat possède un espace de suivi personnel et l'APK l'emba
   assert.match(worker, /\.\/club-khuddam-espace\.html/);
   assert.match(build, /"club-khuddam-espace\.html"/);
 });
+
+test("un candidat vérifié retrouve son espace depuis la connexion centrale sans devenir membre de l'équipe", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /collection\("volunteerApplications"\)\.doc\(user\.uid\)/);
+  assert.match(portal, /Candidat au Club Khuddam Al-Turath/);
+  assert.match(portal, /club-khuddam-espace\.html/);
+  assert.match(portal, /staffAccess/);
+});
