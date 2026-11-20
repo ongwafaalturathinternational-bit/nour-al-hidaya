@@ -63,3 +63,17 @@ Sur ce dernier commit :
 - Build APK Android debug : **réussi** — [workflow réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44813393313).
 
 Ces validations automatisées ne remplacent pas les tests multi-onglets, la recette sur appareil Android physique, ni les essais terrain avec données fictives. La limite de protection des données locales demeure inchangée.
+
+
+## Addendum — vérification multi-onglet et artefact Android — 20 novembre 2026
+
+Commit vérifié : `d37a8e5d6237c3dba07e6167bafa9e882c79ac6a`.
+
+- Les tests Firestore et applicatifs du workflow [44815244154](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44815244154) sont réussis.
+- Le workflow Android [44815244468](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44815244468) a construit et publié l'APK debug.
+- Artefact `wat-connect-android-debug-apk`, ID `14669087281`, taille 4 370 489 octets, expiration le 4 décembre 2026 : [télécharger depuis GitHub Actions](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44815244468/artifacts/14669087281).
+- Deux tests de régression simulés avec `node:test` et `vm` couvrent l'échec de `clearPersistence()` lorsqu'une autre instance/onglet est actif et le refus de déconnexion hors connexion. Ils vérifient que l'application ne poursuit pas la déconnexion dans ces conditions.
+
+**Limite de portée :** ces tests sont des simulations unitaires du comportement, pas une intégration réelle entre deux onglets de navigateur ni une recette sur appareil Android. Ces essais restent requis avant toute utilisation avec des données réelles. La persistance Firestore standard reste non chiffrée au niveau applicatif et ne remplace pas le coffre local protégé prévu pour l'inscription universelle.
+
+La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun déploiement de production n'a été effectué.
