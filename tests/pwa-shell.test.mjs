@@ -44,7 +44,7 @@ test("les pages WAT chargent la feuille de style officielle", () => {
   for (const page of ["index.html", "site-institutionnel.html", "nour-al-hidaya.html", "administration.html", "programmes.html", "projets.html", "activites.html", "club-khuddam.html", "club-khuddam-inscription.html", "club-khuddam-espace.html"]) {
     const html = fs.readFileSync(page, "utf8");
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] || "";
-    const stylesheet = page === "nour-al-hidaya.html" ? "wat-brand-nour\\.css" : "wat-brand\\.css";
+    const stylesheet = page === "nour-al-hidaya.html" ? "wat-brand-nour.css" : "wat-brand.css";
     assert.ok(head.includes(`href="${stylesheet}"`), page);
   }
   assert.match(worker, /wat-connect-shell-v5/);
