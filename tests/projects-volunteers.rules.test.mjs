@@ -1,7 +1,7 @@
 import test, { after } from "node:test";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, serverTimestamp }
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
@@ -103,4 +103,19 @@ test("un bénévole ne peut pas être supprimé et un statut invalide est refus�
   await assertFails(setDoc(doc(db, "volunteers", "bad"), volunteer("volunteer-owner", { status: "valide" })));
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteers", "keep"), volunteer("system")));
   await assertFails(deleteDoc(doc(db, "volunteers", "keep")));
+});
+
+test("une affectation conserve l'identité du bénévole mais autorise la mise à jour du rôle", async () => {
+  await seed("assignment-identity-manager", ["projects.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    const db = c.firestore();
+    await setDoc(doc(db, "projects", "identity-project"), project("system"));
+    await setDoc(doc(db, "volunteers", "identity-volunteer"), volunteer("system"));
+  });
+  const db = env.authenticatedContext("assignment-identity-manager").firestore();
+  const ref = doc(db, "projects", "identity-project", "volunteers", "identity-volunteer");
+  await assertSucceeds(setDoc(ref, assignment("assignment-identity-manager", { volunteerId: "identity-volunteer", volunteerName: "Benevole Test" })));
+  await assertFails(updateDoc(ref, { volunteerName: "Autre personne", updatedAt: serverTimestamp(), updatedBy: "assignment-identity-manager" }));
+  await assertFails(updateDoc(ref, { volunteerId: "another-volunteer", updatedAt: serverTimestamp(), updatedBy: "assignment-identity-manager" }));
+  await assertSucceeds(updateDoc(ref, { assignmentRole: "Coordination terrain", status: "confirme", updatedAt: serverTimestamp(), updatedBy: "assignment-identity-manager" }));
 });
