@@ -341,7 +341,8 @@ service cloud.firestore {
     // Candidatures au Club : dépôt par le titulaire d'un compte vérifié.
     // L'approbation reste une action explicite d'un gestionnaire autorisé.
     match /volunteerApplications/{applicationId} {
-      allow get: if (request.auth != null && request.auth.uid == applicationId)
+      allow get: if (request.auth != null && request.auth.uid == applicationId
+          && request.auth.token.email_verified == true)
         || staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow list: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow create: if request.auth != null
