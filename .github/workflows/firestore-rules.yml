@@ -13,6 +13,7 @@ on:
       - "tests/projects-volunteers-syntax.test.mjs"
       - "tests/volunteer-applications.rules.test.mjs"
       - "club-khuddam-inscription.html"
+      - "club-khuddam-espace.html"
       - "tests/activities.rules.test.mjs"
       - "tests/activities-syntax.test.mjs"
       - "tests/programs.rules.test.mjs"
