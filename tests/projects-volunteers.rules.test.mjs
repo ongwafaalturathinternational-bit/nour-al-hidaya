@@ -33,6 +33,19 @@ function assignment(uid, extra = {}) {
     updatedAt: serverTimestamp(), updatedBy: uid, ...extra };
 }
 
+test("un compte d'équipe dont l'adresse n'est pas vérifiée ne peut pas utiliser ses périmètres", async () => {
+  await seed("staff-unverified", ["projects.read", "volunteers.read"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "projects", "private-unverified"), project("system"));
+    await setDoc(doc(c.firestore(), "volunteers", "private-unverified"), volunteer("system"));
+  });
+  const db = env.authenticatedContext("staff-unverified", {
+    email: "staff-unverified@example.org", email_verified: false
+  }).firestore();
+  await assertFails(getDoc(doc(db, "projects", "private-unverified")));
+  await assertFails(getDoc(doc(db, "volunteers", "private-unverified")));
+});
+
 test("projects.manage autorise la création et la lecture d’un projet", async () => {
   await seed("project-manager", ["projects.read", "projects.manage"]);
   const db = env.authenticatedContext("project-manager").firestore();
