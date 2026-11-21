@@ -64,3 +64,10 @@ L'audit a relevé qu'une affectation créée pour un bénévole actif pouvait en
 Le correctif ajoute une vérification côté Firestore de l'état final du document bénévole avec existsAfter/getAfter. Une affectation d'un bénévole absent ou inactif peut être clôturée (« retirée »), mais ne peut plus être réactivée. L'interface désactive les choix incompatibles et explique la raison; la règle serveur reste décisive si le statut change après le chargement de la page.
 
 Les tests de règles vérifient aussi qu'une opération atomique qui désactive le bénévole tout en confirmant son affectation est refusée (contrôle de l'état final via existsAfter/getAfter), puis que les états « proposée » et « confirmée » restent refusés après désactivation tandis que la clôture est autorisée. Un test d'interface vérifie la disponibilité de la seule action de clôture.
+
+
+## 8. Frontière du cache PWA — contrôle complémentaire
+
+L'inspection de `sw.js` confirme que le service worker met en cache un ensemble explicite de ressources statiques de l'application et trois SDK Firebase versionnés. Les requêtes autres que GET sont ignorées; les ressources externes non listées et les URL locales absentes de la liste ne sont pas interceptées par la stratégie de cache. Les appels Firestore/Auth ne figurent pas dans les ressources précachées.
+
+Un fichier de tests statiques `tests/service-worker-cache.test.mjs` a été ajouté pour verrouiller ces frontières : liste des ressources, liste blanche des SDK, refus des requêtes non-GET et absence de cache des URL métier non listées. Ce contrôle de code ne remplace pas un essai hors connexion réel sur Android ni une inspection des caches du navigateur.
