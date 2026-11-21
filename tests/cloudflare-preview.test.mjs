@@ -32,4 +32,6 @@ test("the staging Worker has its own isolated Wrangler target", () => {
   assert.ok(readFileSync(new URL("../.assetsignore", import.meta.url), "utf8").includes("wrangler.staging.json"));
   const firebase = JSON.parse(readFileSync(new URL("../firebase.json", import.meta.url), "utf8"));
   assert.ok(firebase.hosting.ignore.includes("wrangler.staging.json"));
+  const firebaseIgnore = readFileSync(new URL("../.firebaseignore", import.meta.url), "utf8");
+  assert.ok(firebaseIgnore.includes("wrangler.staging.json"));
 });
