@@ -35,14 +35,25 @@ const ALLOWED_SCOPES = new Set([
   "volunteers.manage", "volunteers.read"
 ]);
 
-function requireWatAdmin(request) {
+async function requireWatAdmin(request) {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Connexion requise.");
   }
-  if (request.auth.token.email_verified !== true) {
+  // Le jeton client peut rester valide après une suspension ou un retrait de claim.
+  // Recontrôler le compte et ses claims actuels côté Admin SDK à chaque opération.
+  let user;
+  try {
+    user = await auth.getUser(request.auth.uid);
+  } catch (error) {
+    throw new HttpsError("unauthenticated", "Compte administrateur introuvable.");
+  }
+  if (user.disabled) {
+    throw new HttpsError("permission-denied", "Ce compte administrateur est désactivé.");
+  }
+  if (user.emailVerified !== true) {
     throw new HttpsError("permission-denied", "Une adresse e-mail vérifiée est requise.");
   }
-  if (request.auth.token.watAdmin !== true) {
+  if (user.customClaims?.watAdmin !== true) {
     throw new HttpsError("permission-denied", "Action réservée à l'administration centrale.");
   }
   return request.auth.uid;
@@ -73,7 +84,7 @@ function validateStaffInput(data) {
 }
 
 exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
-  const actorUid = requireWatAdmin(request);
+  const actorUid = await requireWatAdmin(request);
   const { email, displayName, role, scopes } = validateStaffInput(request.data || {});
 
   let userRecord;
@@ -147,7 +158,7 @@ exports.updateStaffAccountAccess = onCall({ region: "us-central1", enforceAppChe
 });
 
 exports.listStaffAccounts = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
-  requireWatAdmin(request);
+  await requireWatAdmin(request);
   const snapshot = await db.collection("staffAccess").limit(500).get();
   const accounts = [];
   const batchSize = 25;
