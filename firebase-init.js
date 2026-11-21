@@ -34,12 +34,15 @@
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
       return;
     }
-    // Le Worker staging sélectionne toujours son propre projet Firebase,
-    // même si l'utilisateur ouvre directement son URL sans paramètre.
-    // Sur les autres domaines, le staging reste une sélection explicite.
-    const requestedEnvironment = new URLSearchParams(window.location.search).get("wat-env");
-    const isStagingHost = window.location.hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev";
-    const environment = requestedEnvironment === "staging" || isStagingHost ? "staging" : "production";
+    // Les aperçus de branche et le Worker dédié utilisent Firebase staging.
+    // Les domaines normaux et les APK ordinaires restent en production.
+    // Seul le build Android de test peut injecter WAT_FIREBASE_ENV=staging ;
+    // aucun paramètre d'URL ne peut changer l'environnement.
+    const hostname = window.location.hostname;
+    const isStagingHost = hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev"
+      || hostname.endsWith("-nour-al-hidaya.ongwafaalturathinternational.workers.dev");
+    const requestedEnvironment = window.WAT_FIREBASE_ENV;
+    const environment = isStagingHost || requestedEnvironment === "staging" ? "staging" : "production";
     const configs = {
       production: {
         apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
