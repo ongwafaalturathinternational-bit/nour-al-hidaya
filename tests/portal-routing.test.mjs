@@ -30,3 +30,11 @@ test("le portail n’affiche le module Finance qu’aux comptes disposant d’un
   assert.match(portal, /addModule\("₣","Gestion financière WAT"/);
   assert.match(portal, /"finance\.html"/);
 });
+
+test("les modules métier partagent une navigation cohérente incluant les finances", () => {
+  for (const path of ["../administration.html", "../programmes.html", "../projets.html", "../activites.html", "../club-khuddam.html", "../finance.html"]) {
+    const html = read(path);
+    assert.match(html, /href="index\.html">Portail/);
+    assert.match(html, /href="finance\.html">Finances/);
+  }
+});
