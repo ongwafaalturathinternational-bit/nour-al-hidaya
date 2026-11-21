@@ -100,3 +100,15 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - L'audit confirme que le service worker ne précache pas les réponses Firestore/Auth. Ce contrôle statique ne remplace pas la recette hors connexion sur téléphone.
 - CI déclenchée pour le commit applicatif `9397c0e5ed612bacc53ef7f6699301c48bd5eefb` : [APK Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908287789) et [règles Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908287825). À la dernière lecture, la compilation APK était en cours et l'installation des outils de test Firestore se poursuivait.
 - Le commit `cfab95cc73960124cbc811496e769a8314e1198c` a déjà obtenu la réussite du workflow Firestore, incluant le nouveau test de mise à jour des dates de projet.
+
+
+## Poursuite — politique d'accès Activités / Présences — 21 novembre 2026
+
+- L'arbitrage de l'écran commun est désormais explicite : ouverture avec `activities.read` ou `activities.manage`, puis affichage des feuilles uniquement avec `attendance.read` ou `attendance.manage`.
+- Un compte « Présences seulement » conserve ses droits Firestore sur `attendance`, mais ne reçoit aucun droit de lecture des activités. Une vue autonome Présences pourra être développée plus tard, sans élargir aujourd'hui le périmètre de confidentialité.
+- L'interface affiche maintenant un message précis lorsqu'un compte dispose d'un droit Présences mais pas du droit Activités requis par cet écran commun.
+- Test de règles ajouté : un compte avec `attendance.read` et `attendance.manage` ne peut pas lire `activities`, peut lire les présences et peut enregistrer une présence pour une activité existante.
+- Audit Lot 8 mis à jour pour fermer ce point d'arbitrage.
+- Dernier commit de branche au moment de cette mise à jour : `cc705649b05b2f4b98131055d81081c14aa8b33e`.
+- Validations CI déclenchées sur ce SHA : [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44911642880) · [APK Android debug](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44911642899). Elles étaient en cours à la dernière vérification.
+- Aucune règle de production modifiée, aucun déploiement, aucune fusion et aucune publication Android.
