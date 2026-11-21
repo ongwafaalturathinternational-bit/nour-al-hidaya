@@ -6,7 +6,8 @@ Ces fonctions sont destinées à **wat-connect-staging**. Elles ne doivent pas �
 ## Sécurité
 - Les fonctions exigent une session Firebase Auth, un e-mail vérifié, le custom claim `watAdmin: true` et App Check.
 - Le navigateur ne reçoit jamais de privilège Admin SDK.
-- Les rôles et scopes sont validés par listes autorisées.
+- Les rôles et scopes sont validés par listes autorisées à la création et à chaque modification.
+- `updateStaffAccountAccess` permet de modifier la fonction et les périmètres d'un compte existant ; chaque changement actualise `updatedAt` et `updatedBy`.
 - Un nouveau compte d'équipe est créé inactif. L'activation est refusée tant que l'adresse n'est pas vérifiée.
 - Les documents `staffAccess` sont écrits uniquement par Admin SDK ; les règles Firestore client restent fermées en écriture.
 - Le claim administrateur n'est jamais attribuable par une fonction callable.
@@ -31,7 +32,7 @@ La page `staff-accounts.html` est intégrée et initialise App Check côté clie
 
 ## Interface de gestion des comptes
 
-La page `staff-accounts.html` fournit le registre, la création et l'activation/suspension des comptes. Elle vérifie le claim `watAdmin` avant d'afficher les outils et appelle les fonctions dans `us-central1`.
+La page `staff-accounts.html` fournit le registre, la création, la modification des rôles et périmètres, ainsi que l'activation/suspension des comptes. Elle vérifie le claim `watAdmin` avant d'afficher les outils et appelle les fonctions dans `us-central1`.
 
 ### Configuration App Check obligatoire avant utilisation
 
