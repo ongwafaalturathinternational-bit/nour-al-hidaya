@@ -1,53 +1,66 @@
 # Journal de continuité — WAT Connect / Nour Al-Hidaya
 
-**Dernière mise à jour : 21 novembre 2026**  
-**PR de travail :** [#20 — Correctif parcours candidat et Club Khuddam](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/20)  
+**Mise à jour : 21 novembre 2026**  
+**PR de travail :** [#20 — Correctif Club Khuddam et accès](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/20)  
 **Branche :** `fix/lot8-club-onboarding-and-access`  
-**Base de PR :** `audit/wat-connect-lot8-projects-club-khuddam`
+**Base :** `audit/wat-connect-lot8-projects-club-khuddam`
 
-## Point de reprise vérifié avant les changements de cette session
+## Dernier état applicatif vérifié
 
-- Head de PR #20 : `ea8b8d2955df32b360df14cdc633d56d2785ebef`.
-- PR ouverte, en brouillon, non fusionnée; aucune publication de production.
-- Le commit précédent ajoutait l'architecture cible des notifications unifiées. Cette architecture ne correspond pas à une fonction de notification déjà livrée.
-- Sur ce head exact, le workflow Firestore a réussi avec **108 tests, 0 échec, 0 ignoré** : [run 44844830257](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44844830257).
-- Sur ce même head exact, le build Android debug a réussi : [run 44844830267](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44844830267). Artefact [14682447612](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44844830267/artifacts/14682447612), 4 370 493 octets, expiration prévue le 5 décembre 2026.
-- Ces résultats remplacent les résultats antérieurs pour le contrôle du head courant; les validations historiques des commits précédents ne sont pas réutilisées comme preuve du head.
+- **SHA applicatif validé :** `9843ff601ca145e31b6c24eead59e58c553d1489`.
+- PR #20 : ouverte, en brouillon, non fusionnée.
+- Aucun merge, déploiement de production, changement de données Firebase réelles ou publication Android n'a été effectué.
+- Les PR #10, #11 et #12 n'ont pas été modifiées. Le Lot 9 Finances reste suspendu jusqu'à validation explicite du Lot 8.
 
-## Travail engagé dans cette session
+### Validations exactes de ce SHA
 
-- Correction d'une course de session dans l'espace candidat : un chargement asynchrone ancien ne doit plus pouvoir réafficher le dossier après déconnexion ou changement de compte.
-- Ajout d'un test de régression de session et de syntaxe.
-- Ajout d'un audit ciblé des règles Club / Projets / Présences.
-- Les validations CI du nouveau commit sont à inscrire ici après leur conclusion; ne pas confondre le SHA parent ci-dessus avec le commit de correction.
+- **Firestore / tests applicatifs :** [workflow 44850323784 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44850323784) — **113 tests réussis, 0 échec, 0 ignoré**.
+- **Android debug :** [workflow 44850323664 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44850323664) — tâche Gradle `assembleDebug` réussie.
+- **Artefact APK debug :** [wat-connect-android-debug-apk — ID 14684149210](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44850323664/artifacts/14684149210), 4 370 994 octets, expiration le **5 décembre 2026**.
+- Ces validations portent sur le SHA applicatif ci-dessus. Toute modification ultérieure de code doit déclencher et réussir ses propres validations.
 
-## Constats à garder visibles
+## Travaux réellement livrés dans la session
 
-- Les règles Firestore protègent le registre du Club, les candidatures et les affectations par compte vérifié, état actif et scopes explicites.
-- L'interface Activités exige actuellement `activities.read/manage` même pour un compte qui possède seulement `attendance.read/manage`; l'écran de présence dépend du chargement des activités. Décider si les deux scopes doivent être attribués ensemble ou si une vue Présences autonome doit être développée. Aucune élévation de droit n'a été faite.
-- Les références de présence saisies librement ne sont pas encore des liens garantis vers un dossier bénéficiaire central.
-- Le cache IndexedDB Firestore n'est pas chiffré au niveau applicatif.
-- Le formulaire du Club avec e-mail vérifié n'est pas l'inscription universelle sans e-mail de Nour Al-Hidaya.
-- Le cahier des charges initial de Nour Al-Hidaya n'est pas encore disponible dans les fichiers consultés; ne pas implémenter le registre universel avant de le confronter à l'architecture proposée.
+1. **Espace candidat Club Khuddam — confidentialité des sessions**
+   - Ajout d'un compteur de génération de session et d'une vérification du UID Firebase courant.
+   - Les réponses asynchrones anciennes ne peuvent plus réafficher le dossier après déconnexion ou changement de compte.
+   - Les éléments personnels affichés sont vidés lors du retour à l'écran de connexion.
+   - Les boutons de renvoi et de vérification ignorent les réponses devenues obsolètes.
+   - Test de régression ajouté pour la syntaxe, les deux frontières asynchrones et l'ordre renouvellement du jeton / lecture du dossier.
+
+2. **Affectations projets — bénévoles devenus inactifs**
+   - La règle Firestore revalide l'état final du dossier bénévole avec `existsAfter/getAfter`.
+   - Une affectation d'un bénévole absent ou inactif peut être clôturée (« retirée »), mais ne peut plus être remise à « proposée » ou « confirmée ».
+   - L'interface désactive les choix incompatibles et explique la raison; le serveur reste l'autorité si le statut change après le chargement de la page.
+   - Test de règles couvrant la désactivation préalable et la tentative atomique de désactiver un bénévole tout en confirmant son affectation; test d'interface ajouté.
+
+3. **Documentation d'audit**
+   - `docs/AUDIT-LOT8-ACCES.md` consigne les contrôles d'accès et les écarts qui restent à arbitrer.
+   - `docs/CONTINUITE-CHANTIER.md` sert de point de reprise entre les conversations.
+
+## Constats techniques encore ouverts
+
+- **Présences :** les règles distinguent `activities.read/manage` et `attendance.read/manage`, mais l'interface Activités exige actuellement un scope Activités avant d'ouvrir le module. Un compte avec seulement `attendance.read/manage` ne peut donc pas exploiter l'écran malgré le droit de lecture des présences côté règles. Décider si l'écran exige les deux scopes ou si une vue Présences autonome doit être créée. Aucune permission n'a été élargie.
+- **Références de présence :** `participantRef` peut encore être saisi librement et n'est pas garanti comme lien vers un dossier bénéficiaire central. Ne pas traiter cette valeur comme un identifiant de bénéficiaire vérifié.
+- **Hors connexion :** la persistance Firestore IndexedDB n'est pas un coffre local chiffré au niveau applicatif. Elle ne doit pas servir à stocker les dossiers sensibles de bénéficiaires sur des appareils partagés ou non maîtrisés.
+- **Inscription Nour Al-Hidaya :** le formulaire du Club dépend d'un compte Firebase Auth avec e-mail vérifié; il n'est pas l'inscription universelle sans e-mail. L'architecture cible est documentée, mais n'est pas implémentée.
+- **Notifications :** seule l'architecture cible est documentée. Aucun centre de notifications ni service d'envoi n'est livré.
+- **Cahier des charges initial :** il n'a pas été retrouvé dans les fichiers consultés. Ne pas prétendre l'avoir lu et ne pas lancer l'implémentation irréversible du registre universel avant confrontation avec ce document.
 
 ## À faire par l'utilisateur
 
-1. Transmettre le cahier des charges initial de Nour Al-Hidaya pour arbitrer les champs, les rôles, les structures et les règles de gestion.
-2. Installer l'APK debug sur un téléphone Android réel et exécuter la recette `docs/RECETTE-OPERATIONNELLE-LOT7-8.md` avec des comptes et données fictifs.
-3. Confirmer la politique d'accès Présences : scope `attendance.read` seul autonome, ou dépendance explicite à `activities.read`.
-4. Effectuer les essais de connexion / vérification d'e-mail et de traitement d'une candidature avec des comptes Firebase de test, puis confirmer le comportement observé.
+1. **Transmettre le cahier des charges initial de Nour Al-Hidaya** afin de confronter les champs, parcours, rôles, structures et règles de gestion à l'architecture proposée.
+2. **Installer l'APK debug sur un téléphone Android réel** et exécuter la recette de `docs/RECETTE-OPERATIONNELLE-LOT7-8.md` avec des comptes et données fictifs. Le build CI ne prouve pas le fonctionnement sur appareil physique.
+3. **Arbitrer le droit Présences :** `attendance.read` seul doit-il ouvrir une vue autonome, ou les responsables de présence doivent-ils également recevoir `activities.read` ?
+4. **Effectuer les essais de recette avec des comptes Firebase de test** : candidature, vérification d'e-mail, lecture personnelle, compte équipe actif, compte sans scope et révocation. Ne pas utiliser de données réelles de bénéficiaires.
 
 ## Je poursuis de mon côté
 
-1. Auditer `projets.html`, les affectations et les transitions lorsqu'un bénévole devient inactif.
-2. Auditer la cohérence des requêtes Activités / Présences et des filtres de scopes sans élargir les règles.
-3. Vérifier le shell PWA, les ressources Capacitor et les scénarios de synchronisation.
-4. Préparer une feuille de recette Lot 8 claire avant toute validation utilisateur.
+1. Auditer les transitions de projets, activités et affectations restantes, notamment les lectures croisées et la cohérence des requêtes.
+2. Auditer les parcours PWA, cache, déconnexion, synchronisation et ressources Capacitor sans prétendre avoir testé un téléphone physique.
+3. Préparer une feuille de recette Lot 8 et une liste de contrôles de confidentialité pour la validation utilisateur.
+4. Confronter l'architecture d'inscription universelle au cahier des charges lorsqu'il sera disponible, sans réduire l'ambition du système.
 
 ## Limites d'autorisation
 
-Aucun merge, déploiement Cloudflare/Firebase, changement de règles ou données de production, création de comptes réels ou publication Android n'est autorisé. Les PR #10, #11 et #12 restent inchangées; le Lot 9 Finances reste suspendu jusqu'à validation explicite du Lot 8.
-
-## Complément d'audit — affectations et statut bénévole
-
-Une affectation existante pouvait être remise à l'état « proposée » ou « confirmée » après le passage du bénévole à l'état inactif. La règle Firestore et l'interface sont en cours de correction : l'état « retirée » reste autorisé pour préserver et clôturer l'historique; les états actifs sont refusés si le dossier bénévole n'est plus actif. Les tests de non-régression couvrent la désactivation préalable et une tentative de désactivation + confirmation dans la même écriture atomique; le lot de validation CI doit confirmer ce comportement.
+Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou données Firebase de production, création de comptes réels, release Android ou publication de production sans autorisation explicite. Le Lot 9 Finances reste suspendu jusqu'à validation du Lot 8.
