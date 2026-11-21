@@ -12,12 +12,13 @@ Ces fonctions sont destinées à **wat-connect-staging**. Elles ne doivent pas �
 - Le claim administrateur n'est jamais attribuable par une fonction callable.
 
 ## Initialisation unique de l'administrateur staging
-1. Vérifier l'adresse `ongwafaalturathinternational@gmail.com` dans Firebase Authentication.
-2. Exécuter le script `scripts/bootstrap-wat-admin.js` depuis un environnement de confiance authentifié par Application Default Credentials, avec le projet explicitement fixé à `wat-connect-staging` et l'UID du compte.
-3. Déconnecter puis reconnecter le compte afin de renouveler son jeton.
-4. Déployer les fonctions uniquement sur staging et tester avec Firebase Emulator avant toute ouverture.
+1. Exécuter le script `scripts/bootstrap-wat-admin.js` depuis un environnement de confiance authentifié par Application Default Credentials, avec le projet explicitement fixé à `wat-connect-staging` et l'UID du compte.
+2. Si l'adresse n'est pas encore vérifiée, le script génère un lien de confirmation à ouvrir dans un navigateur ; relancer ensuite la même commande.
+3. Une fois l'adresse vérifiée, le script attribue le claim `watAdmin`.
+4. Déconnecter puis reconnecter le compte afin de renouveler son jeton.
+5. Déployer les fonctions uniquement sur staging et tester avec Firebase Emulator avant toute ouverture.
 
-Le script refuse tout projet autre que `wat-connect-staging`, vérifie l'adresse et exige que l'e-mail soit vérifié. Aucune clé de service ne doit être ajoutée au dépôt.
+Le script refuse tout projet autre que `wat-connect-staging` et vérifie que l'UID fourni correspond à l'adresse administrateur autorisée. Aucune clé de service ne doit être ajoutée au dépôt.
 
 ## Invitation
 `createStaffAccount` crée le compte Auth et un document `staffAccess` inactif. Elle renvoie un lien de vérification et un lien de définition du mot de passe à remettre à la personne concernée par un canal privé. Ne jamais publier ces liens dans un ticket, un journal ou un canal collectif.
