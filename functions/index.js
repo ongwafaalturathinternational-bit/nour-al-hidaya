@@ -14,6 +14,8 @@ const ALLOWED_ROLES = new Set([
   "administrateur_systeme",
   "responsable_administratif",
   "responsable_financier",
+  "controleur_financier",
+  "responsable_formation_islamique_orientations",
   "responsable_programme",
   "coordonnateur",
   "formateur",
