@@ -2,7 +2,7 @@
 
 ## Fonctionnement
 
-Le workflow `.github/workflows/cloudflare-staging-preview.yml` prépare une publication manuelle du dépôt sur le Worker **wat-connect-staging**.
+Le workflow `.github/workflows/cloudflare-staging-preview.yml` prépare une publication manuelle du dépôt sur le Worker **wat-connect-staging**. Il est actuellement présent dans la branche de travail de la PR 21, pas encore dans la branche par défaut `main`. GitHub ne rend un workflow `workflow_dispatch` déclenchable que lorsque son fichier existe aussi sur la branche par défaut. Il ne sera donc disponible dans l'onglet Actions qu'après une intégration explicite de ce fichier à `main` (ou une autre solution de déclenchement validée).
 
 - Déclenchement : manuel uniquement depuis la branche `security/staff-account-provisioning`.
 - Cible : Worker de prévisualisation `wat-connect-staging`.
@@ -21,7 +21,7 @@ Ne jamais mettre le jeton dans le dépôt, dans un fichier de configuration ou d
 
 ## Déclenchement
 
-Dans GitHub : **Actions → Cloudflare staging preview → Run workflow**, choisir la branche `security/staff-account-provisioning`, puis lancer.
+Après intégration explicite du fichier de workflow à la branche par défaut, dans GitHub : **Actions → Cloudflare staging preview → Run workflow**, choisir la branche `security/staff-account-provisioning`, puis lancer. Tant que le fichier n'est pas sur `main`, ce déclenchement n'est pas encore disponible dans l'interface GitHub.
 
 Le workflow refuse toute autre branche et échoue explicitement si l'un des deux secrets manque. La publication réelle ne se produit qu'après ce déclenchement manuel.
 
