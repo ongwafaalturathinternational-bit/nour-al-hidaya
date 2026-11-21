@@ -62,6 +62,26 @@ test("un projet refuse une période dont la date de fin précède la date de dé
   })));
 });
 
+test("un projet existant refuse une modification qui inverse ses dates", async () => {
+  await seed("project-update-period", ["projects.read", "projects.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "projects", "period-to-update"), project("system"));
+  });
+  const db = env.authenticatedContext("project-update-period", {
+    email: "project-update-period@example.org", email_verified: true
+  }).firestore();
+  await assertFails(updateDoc(doc(db, "projects", "period-to-update"), {
+    endDate: "2027-01-15",
+    updatedAt: serverTimestamp(),
+    updatedBy: "project-update-period"
+  }));
+  await assertSucceeds(updateDoc(doc(db, "projects", "period-to-update"), {
+    endDate: "2027-04-15",
+    updatedAt: serverTimestamp(),
+    updatedBy: "project-update-period"
+  }));
+});
+
 test("projects.read autorise la lecture mais pas l’écriture", async () => {
   await seed("project-reader", ["projects.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "seed"), project("system")));
