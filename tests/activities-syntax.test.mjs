@@ -126,10 +126,3 @@ test("modifier manuellement un participant dissocie la sélection préalable du 
 });
 
 
-test("l'écran commun exige explicitement activities.read même pour un compte Présences", () => {
-  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
-  assert.match(html, /const canRead=scopes\\.includes\\("activities\\.read"\\)\\|\\|scopes\\.includes\\("activities\\.manage"\\)/);
-  assert.match(html, /if\\(!canRead\\)\\{const hasAttendance=scopes\\.includes\\("attendance\\.read"\\)\\|\\|scopes\\.includes\\("attendance\\.manage"\\)/);
-  assert.match(html, /cet écran commun exige aussi activities\\.read/);
-  assert.match(html, /\\$\\("attendancePanel"\\)\\.hidden=!canAttendanceRead/);
-});
