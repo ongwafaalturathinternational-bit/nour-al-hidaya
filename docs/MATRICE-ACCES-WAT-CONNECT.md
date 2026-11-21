@@ -27,13 +27,13 @@ Le rôle décrit la fonction institutionnelle de la personne. Le tableau `scopes
 | Projets | `projects.read` | `projects.manage` |
 | Club Khuddam Al-Turath | `volunteers.read` | `volunteers.manage` |
 | Présences | `attendance.read` | `attendance.manage` |
-| Présences | `attendance.read` | `attendance.manage` |
 
 ## Périmètres futurs à implémenter
 
+Les périmètres financiers sont déjà acceptés par le serveur et sont utilisés par le module Finance. Les domaines ci-dessous restent à concevoir et à sécuriser.
+
 | Domaine | Consultation | Gestion |
 |---|---|---|
-| Finances | `finance.read` | `finance.manage` |
 | Bénéficiaires / action sociale | `beneficiaries.read` | `beneficiaries.manage` |
 | Affectations bénévoles aux projets | Accès via `projects.read` | `projects.manage` |
 | Pédagogie | `learning.read` | `learning.manage` |

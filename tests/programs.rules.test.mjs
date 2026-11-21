@@ -53,4 +53,6 @@ test("les programmes ne peuvent pas être supprimés et les données sont valid�
   await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(), "programs", "keep"), program("program-owner")));
   await assertFails(deleteDoc(doc(db, "programs", "keep")));
   await assertFails(setDoc(doc(db, "programs", "bad"), program("program-owner", { status: "unknown" })));
+  await assertFails(setDoc(doc(db, "programs", "invalid-date"), program("program-owner", { startDate: "2027-02-29" })));
+  await assertFails(setDoc(doc(db, "programs", "reversed-dates"), program("program-owner", { startDate: "2027-03-01", endDate: "2027-02-28" })));
 });

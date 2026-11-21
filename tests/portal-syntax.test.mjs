@@ -48,3 +48,12 @@ test("un compte non vérifié reçoit un lien de confirmation avant toute décon
   assert.match(html, /Un lien de confirmation vient d’être envoyé/);
   assert.match(html, /await WATFirebase\.auth\.signOut\(\)/);
 });
+
+
+test("la connexion bascule vers l'espace membre sans référencer un conteneur inexistant", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /<div id="publicContent">/);
+  assert.match(html, /\$\("publicContent"\)\.hidden=true/);
+  assert.match(html, /\$\("publicContent"\)\.hidden=false/);
+  assert.doesNotMatch(html, /\$\("public"\)\.hidden/);
+});

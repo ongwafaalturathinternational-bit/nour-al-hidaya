@@ -16,7 +16,23 @@
       "tests/**",
       ".github/**",
       "**/*.test.*",
-      "*.md"
+      "*.md",
+      "functions/**",
+      "scripts/**",
+      "package.json",
+      "package-lock.json",
+      "npm-shrinkwrap.json",
+      "*.zip",
+      "*.apk",
+      "*.aab",
+      "*.keystore",
+      "*.jks",
+      ".env*",
+      "wrangler.staging.json"
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
   }
 }

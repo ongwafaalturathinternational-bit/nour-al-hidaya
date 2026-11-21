@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#103047">
+<meta name="wat-recaptcha-site-key" content="6LfLziouAAAAAPiLIT0cr4ybQJmvq5NSCkLyqElR">
+<title>Comptes d'équipe — WAT Connect</title>
+<style>
+:root{--navy:#103047;--teal:#1d788f;--gold:#d2b75f;--paper:#f4f6f8;--ink:#202d38;--muted:#667580;--line:#dce3e8;--red:#a83232;--green:#176b49}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,sans-serif}header{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold)}.head{max-width:1180px;margin:auto;padding:15px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font:700 1.2rem Georgia,serif}.brand small{display:block;font:normal .78rem system-ui;opacity:.8}header a{color:#fff}main{max-width:1180px;margin:auto;padding:26px 22px 55px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:18px}.top h1{font:700 1.8rem Georgia,serif;margin:0}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.5fr);gap:18px}.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;min-width:0}.panel h2{font:700 1.2rem Georgia,serif;margin:0 0 8px}label{display:block;font-size:.82rem;font-weight:700;margin:12px 0 5px}input,select{width:100%;padding:10px 11px;border:1px solid #cbd3df;border-radius:9px;background:white;color:var(--ink);font:inherit}button{font:inherit;cursor:pointer}.primary{background:var(--teal);color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:750}.secondary{background:white;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-weight:650}.primary:disabled,button:disabled{opacity:.55;cursor:not-allowed}.full{width:100%;margin-top:15px}.message{padding:11px 13px;border-radius:9px;background:#edf2f5;margin:12px 0}.error{background:#fbe9e8;color:var(--red)}.success{background:#e7f4ec;color:var(--green)}.notice{border-left:4px solid var(--gold);padding:9px 0 9px 13px;color:var(--muted);font-size:.88rem;margin:15px 0}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.checks label{display:flex;align-items:center;gap:8px;margin:0;font-weight:500}.checks input{width:auto}.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:670px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:.74rem;color:var(--muted);text-transform:uppercase}td{font-size:.88rem}.pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#e7f4ec;color:var(--green);font-size:.72rem;font-weight:750}.pill.off{background:#fbe9e8;color:var(--red)}.actions{display:flex;gap:6px;flex-wrap:wrap}details.access-editor{margin-top:7px}details.access-editor summary{cursor:pointer;color:var(--teal);font-size:.8rem;font-weight:700}.access-editor form{min-width:240px;padding:9px;border:1px solid var(--line);border-radius:9px;margin-top:7px;background:#f9fbfc}.access-editor .checks{grid-template-columns:1fr;max-height:190px;overflow:auto}.access-editor button{margin-top:8px}.links{display:grid;gap:8px;margin-top:10px}.links a{overflow-wrap:anywhere;color:var(--teal)}.empty{text-align:center;padding:25px;color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}main{padding:20px 14px 40px}.head{padding:13px 15px}.checks{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="head"><div class="brand">WAT Connect <small>Administration sécurisée des comptes d'équipe</small></div><a href="index.html">Retour au portail</a></div></header>
+<main>
+<div class="top"><div><h1>Comptes de l'équipe</h1><div class="muted">Créer les accès, attribuer les périmètres et suspendre un compte.</div></div><button class="secondary" id="logout">Se déconnecter</button></div>
+<div id="status" class="message" role="status" aria-live="polite">Vérification de l'identité administrateur…</div>
+<div id="app" class="grid" hidden>
+<section class="panel">
+<h2>Créer un compte d'équipe</h2>
+<p class="muted">Le compte est créé inactif. Le titulaire doit vérifier son adresse avant activation.</p>
+<form id="createForm">
+<label for="displayName">Nom complet *</label><input id="displayName" maxlength="120" required>
+<label for="email">Adresse e-mail *</label><input id="email" type="email" maxlength="160" required>
+<label for="role">Fonction principale *</label><select id="role" required>
+<option value="agent">Agent</option><option value="formateur">Formateur</option><option value="coordonnateur">Coordonnateur</option><option value="responsable_programme">Responsable programme</option><option value="responsable_administratif">Responsable administratif</option><option value="responsable_financier">Responsable financier</option><option value="commissaire_aux_comptes">Commissaire aux comptes</option><option value="bureau">Bureau exécutif</option><option value="president">Président</option><option value="administrateur_systeme">Administrateur système (périmètres métier)</option>
+</select>
+<label>Permissions précises</label>
+<div class="checks" id="scopeChecks"></div>
+<button class="primary full" id="createButton" type="submit">Créer le compte et générer les liens</button>
+</form>
+<div id="inviteResult" class="message" hidden></div>
+<div class="notice">Le rôle indique la fonction institutionnelle ; seules les permissions cochées ouvrent les modules. Le rôle « Administrateur système » ne donne pas le droit central watAdmin de gérer les comptes. Les liens de vérification et de définition du mot de passe sont confidentiels. Transmettez-les individuellement au titulaire, jamais dans un groupe.</div>
+</section>
+<section class="panel">
+<h2>Registre des accès</h2><div class="toolbar"><span class="muted" id="count">Chargement…</span><input id="searchAccounts" type="search" placeholder="Rechercher un nom ou un e-mail" aria-label="Rechercher un compte" style="max-width:260px"><select id="statusFilter" aria-label="Filtrer les comptes" style="max-width:170px"><option value="all">Tous les comptes</option><option value="active">Accès actifs</option><option value="inactive">Accès suspendus</option><option value="unverified">E-mails non vérifiés</option></select><button class="secondary" id="refresh">Actualiser</button></div>
+<div class="table-wrap"><table><thead><tr><th>Personne</th><th>Fonction</th><th>Vérification</th><th>Accès WAT</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div id="empty" class="empty" hidden>Aucun compte d'équipe n'est encore enregistré.</div>
+</section>
+</div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-check-compat.js"></script>
+<script src="firebase-init.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const scopeLabels={"members.read":"Annuaire : consulter","members.manage":"Annuaire : gérer","programs.read":"Programmes : consulter","programs.manage":"Programmes : gérer","projects.read":"Projets : consulter","projects.manage":"Projets : gérer","activities.read":"Activités : consulter","activities.manage":"Activités : gérer","attendance.read":"Présences : consulter","attendance.manage":"Présences : gérer","volunteers.read":"Bénévoles : consulter","volunteers.manage":"Bénévoles : gérer","finance.read":"Finances : consulter","finance.manage":"Finances : gérer","finance.validate":"Finances : valider","finance.budgets.manage":"Budgets : gérer","finance.accounts.manage":"Comptes financiers : gérer","finance.periods.manage":"Périodes financières : gérer"};
+const roleLabels={president:"Président",administrateur_systeme:"Administrateur système",responsable_administratif:"Responsable administratif",responsable_financier:"Responsable financier",responsable_programme:"Responsable programme",coordonnateur:"Coordonnateur",formateur:"Formateur",agent:"Agent",commissaire_aux_comptes:"Commissaire aux comptes",bureau:"Bureau exécutif"};
+let functionsApi=null,accountRows=[];
+function say(text,type=""){const el=$("status");el.textContent=text;el.className="message "+type}
+function setupScopes(){for(const [value,label] of Object.entries(scopeLabels)){const l=document.createElement("label"),i=document.createElement("input"),s=document.createElement("span");i.type="checkbox";i.value=value;s.textContent=label;l.append(i,s);$("scopeChecks").append(l)}}
+function selectedScopes(){return [...$("scopeChecks").querySelectorAll("input:checked")].map(x=>x.value)}
+function initAppCheck(){if(window.WATFirebase?.environment!=="staging"||window.WATFirebase?.projectId!=="wat-connect-staging")throw new Error("Cette administration est réservée à WAT Connect staging.");if(window.WATFirebase?.appCheckReady!==true)throw new Error("App Check reCAPTCHA Enterprise n'a pas été initialisé. Vérifiez la configuration staging.");return true}
+async function callable(name,data){return await functionsApi.httpsCallable(name)(data)}
+function render(){
+  const body=$("rows");body.replaceChildren();
+  const query=$("searchAccounts").value.trim().toLocaleLowerCase("fr");
+  const status=$("statusFilter").value;
+  const visible=accountRows.filter(a=>{
+    const active=a.active&&!a.authDisabled;
+    const matchesText=!query||[a.displayName,a.email,roleLabels[a.role]||a.role].some(value=>(value||"").toLocaleLowerCase("fr").includes(query));
+    const matchesStatus=status==="all"||(status==="active"&&active)||(status==="inactive"&&!active)||(status==="unverified"&&!a.emailVerified);
+    return matchesText&&matchesStatus;
+  });
+  $("count").textContent=visible.length+" affiché(s) / "+accountRows.length+" compte(s)";
+  $("empty").hidden=visible.length!==0;
+  $("empty").textContent=accountRows.length===0?"Aucun compte d'équipe n'est encore enregistré.":"Aucun compte ne correspond à ces filtres.";
+  for(const a of visible){
+    const tr=document.createElement("tr");
+    const person=document.createElement("td"),name=document.createElement("strong"),email=document.createElement("div");
+    name.textContent=a.displayName||"Nom non renseigné";email.className="muted";email.textContent=a.email;person.append(name,email);
+    const role=document.createElement("td");role.textContent=roleLabels[a.role]||a.role||"Rôle non défini";
+    const scopeCount=document.createElement("div");scopeCount.className="muted";scopeCount.textContent=(a.scopes||[]).length+" permission(s)";role.append(scopeCount);
+    const verified=document.createElement("td");verified.textContent=a.emailVerified?"Vérifiée":"Non vérifiée";
+    const access=document.createElement("td"),pill=document.createElement("span");
+    pill.className="pill"+(a.active&&!a.authDisabled?"":" off");pill.textContent=a.active&&!a.authDisabled?"Actif":"Suspendu / inactif";access.append(pill);
+    const actions=document.createElement("td"),wrap=document.createElement("div");wrap.className="actions";
+    const btn=document.createElement("button");btn.className="secondary";btn.textContent=a.active?"Suspendre":"Activer";
+    btn.disabled=!a.emailVerified&&!a.active;btn.addEventListener("click",()=>changeStatus(a.uid,!a.active,btn));wrap.append(btn);
+    const details=document.createElement("details");details.className="access-editor";
+    const summary=document.createElement("summary");summary.textContent="Modifier les droits";details.append(summary);
+    const form=document.createElement("form"),roleLabel=document.createElement("label"),roleSelect=document.createElement("select");
+    roleLabel.textContent="Fonction";roleSelect.required=true;
+    for(const [value,label] of Object.entries(roleLabels)){const option=document.createElement("option");option.value=value;option.textContent=label;roleSelect.append(option)}
+    roleSelect.value=a.role;roleLabel.append(roleSelect);form.append(roleLabel);
+    const scopeTitle=document.createElement("label");scopeTitle.textContent="Permissions";form.append(scopeTitle);
+    const checks=document.createElement("div");checks.className="checks";
+    for(const [value,label] of Object.entries(scopeLabels)){
+      const l=document.createElement("label"),input=document.createElement("input"),span=document.createElement("span");
+      input.type="checkbox";input.value=value;input.checked=(a.scopes||[]).includes(value);span.textContent=label;l.append(input,span);checks.append(l);
+    }
+    form.append(checks);
+    const save=document.createElement("button");save.className="primary";save.type="submit";save.textContent="Enregistrer les droits";form.append(save);
+    form.addEventListener("submit",event=>{
+      event.preventDefault();
+      const scopes=[...checks.querySelectorAll("input:checked")].map(input=>input.value);
+      changeAccess(a.uid,roleSelect.value,scopes,save);
+    });
+    details.append(form);wrap.append(details);actions.append(wrap);tr.append(person,role,verified,access,actions);body.append(tr);
+  }
+}
+async function loadAccounts(){const result=await callable("listStaffAccounts",{});accountRows=result.data.accounts||[];render();if(result.data.truncated)say("Les 500 premiers comptes sont affichés. Contactez l'administrateur technique pour un registre plus volumineux.","")}
+async function changeAccess(uid,role,scopes,button){
+  button.disabled=true;
+  try{
+    await callable("updateStaffAccountAccess",{uid,role,scopes});
+    await loadAccounts();
+    say("Fonction et permissions mises à jour.","success");
+  }catch(e){
+    console.error(e);
+    say(e.message||"Impossible de modifier les permissions.","error");
+  }finally{
+    button.disabled=false;
+  }
+}
+async function changeStatus(uid,active,button){button.disabled=true;try{await callable("setStaffAccountStatus",{uid,active});await loadAccounts();say(active?"Compte activé.":"Compte suspendu.","success")}catch(e){console.error(e);say(e.message||"Impossible de modifier le statut du compte.","error")}finally{button.disabled=false}}
+function showInvite(data){const box=$("inviteResult");box.replaceChildren();box.hidden=false;const title=document.createElement("strong");title.textContent="Compte créé, mais encore inactif.";const p=document.createElement("p");p.textContent="UID : "+data.uid+" · "+data.email;box.append(title,p);for(const [label,url] of [["Vérifier l'adresse e-mail",data.verificationLink],["Définir le mot de passe",data.passwordSetupLink]]){const line=document.createElement("div"),a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=label+" — ouvrir le lien";line.append(a);box.append(line)}const note=document.createElement("p");note.textContent="Transmettez ces deux liens en privé au titulaire. Après vérification de son adresse, revenez ici pour activer son accès.";box.append(note)}
+$("createForm").addEventListener("submit",async e=>{e.preventDefault();const button=$("createButton");button.disabled=true;button.textContent="Création…";$("inviteResult").hidden=true;try{const result=await callable("createStaffAccount",{displayName:$("displayName").value.trim(),email:$("email").value.trim(),role:$("role").value,scopes:selectedScopes()});showInvite(result.data);$("createForm").reset();await loadAccounts();say("Compte créé avec succès. Il reste inactif jusqu'à vérification et activation.","success")}catch(error){console.error(error);say(error.message||"La création du compte a échoué.","error")}finally{button.disabled=false;button.textContent="Créer le compte et générer les liens"}});
+$("searchAccounts").addEventListener("input",render);
+$("statusFilter").addEventListener("change",render);
+$("refresh").addEventListener("click",()=>loadAccounts().catch(e=>say(e.message||"Actualisation impossible.","error")));
+$("logout").addEventListener("click",async()=>{if(window.WATFirebase?.ready)await WATFirebase.auth.signOut();location.href="index.html"});
+async function start(user){if(!user){say("Connectez-vous d'abord avec le compte administrateur WAT.");return}if(!user.emailVerified){say("L'adresse e-mail de l'administrateur doit être vérifiée.","error");return}const token=await user.getIdTokenResult(true);if(token.claims.watAdmin!==true){say("Accès refusé : ce compte n'a pas le droit administrateur central watAdmin.","error");return}initAppCheck();functionsApi=firebase.app().functions("us-central1");$("app").hidden=false;say("Identité administrateur confirmée. Chargement du registre…","success");await loadAccounts()}
+setupScopes();
+if(window.WATFirebase?.ready){WATFirebase.auth.onAuthStateChanged(user=>start(user).catch(e=>{console.error(e);say(e.message||"Initialisation de l'administration impossible.","error")}))}else say("Firebase n'est pas disponible. Vérifiez la configuration du portail.","error");
+</script>
+</body></html>

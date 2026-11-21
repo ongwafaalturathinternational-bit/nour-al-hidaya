@@ -34,10 +34,12 @@
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
       return;
     }
-    // Production reste l'environnement par défaut. Le staging doit être demandé
-    // explicitement avec ?wat-env=staging afin d'éviter toute bascule accidentelle.
+    // Le Worker staging sélectionne toujours son propre projet Firebase,
+    // même si l'utilisateur ouvre directement son URL sans paramètre.
+    // Sur les autres domaines, le staging reste une sélection explicite.
     const requestedEnvironment = new URLSearchParams(window.location.search).get("wat-env");
-    const environment = requestedEnvironment === "staging" ? "staging" : "production";
+    const isStagingHost = window.location.hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev";
+    const environment = requestedEnvironment === "staging" || isStagingHost ? "staging" : "production";
     const configs = {
       production: {
         apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
@@ -64,13 +66,32 @@
       throw new Error("Firebase est déjà initialisé sur un autre projet.");
     }
     const app = existingApp || window.firebase.initializeApp(firebaseConfig);
+    // App Check est initialisé avant Auth/Firestore lorsqu'une page le requiert.
+    // La clé Enterprise de l'écran d'administration n'est valable que sur le projet staging.
+    let appCheckReady = false;
+    const appCheckMeta = typeof document.querySelector === "function"
+      ? document.querySelector('meta[name="wat-recaptcha-site-key"]')
+      : null;
+    const appCheckSiteKey = appCheckMeta ? appCheckMeta.content.trim() : "";
+    if (appCheckSiteKey) {
+      if (environment !== "staging" || firebaseConfig.projectId !== "wat-connect-staging") {
+        throw new Error("App Check reCAPTCHA Enterprise est réservé à WAT Connect staging.");
+      }
+      if (!window.firebase.appCheck || !window.firebase.appCheck.ReCaptchaEnterpriseProvider) {
+        throw new Error("Le fournisseur Firebase App Check reCAPTCHA Enterprise n'est pas disponible.");
+      }
+      const appCheck = window.firebase.appCheck();
+      appCheck.activate(new window.firebase.appCheck.ReCaptchaEnterpriseProvider(appCheckSiteKey), true);
+      appCheckReady = true;
+    }
     window.WATFirebase = {
       ready: true,
       app: app,
       auth: window.firebase.auth(),
       db: window.firebase.firestore(),
       projectId: firebaseConfig.projectId,
-      environment: environment
+      environment: environment,
+      appCheckReady: appCheckReady
     };
   } catch (error) {
     console.error("Initialisation Firebase impossible :", error);
