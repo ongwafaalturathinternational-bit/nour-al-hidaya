@@ -96,7 +96,7 @@ $("memberForm").addEventListener("submit",async e=>{
   const fullName=$("fullName").value.trim();
   if(fullName.length<2){say("Le nom complet doit comporter au moins deux caractères.","error");return}
   const data={fullName,memberType:$("memberType").value,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid};
-  for(const key of ["position","email","phone"]){const value=$(key).value.trim();if(value)data[key]=value}
+  for(const key of ["position","email","phone"]){data[key]=$(key).value.trim()}
   const b=$("saveButton");b.disabled=true;
   try{
     if(editingMemberId){
