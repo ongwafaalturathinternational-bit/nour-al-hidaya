@@ -142,11 +142,21 @@ exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck:
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError("not-found", "Aucun accès d'équipe n'est associé à ce compte.");
 
-  await ref.update({
-    active,
-    updatedAt: FieldValue.serverTimestamp(),
-    updatedBy: actorUid
-  });
+  // Synchroniser Auth et Firestore sans laisser volontairement un état divergent.
+  // Si l'écriture Firestore échoue après le changement Auth, restaurer l'état Auth.
+  const previousDisabled = user.disabled === true;
   await auth.updateUser(uid, { disabled: !active });
+  try {
+    await ref.update({
+      active,
+      updatedAt: FieldValue.serverTimestamp(),
+      updatedBy: actorUid
+    });
+  } catch (error) {
+    await auth.updateUser(uid, { disabled: previousDisabled }).catch(() => {
+      console.error("Échec de restauration du statut Auth pour", uid);
+    });
+    throw new HttpsError("internal", "Le changement de statut n'a pas pu être enregistré. Vérifiez l'état du compte avant de réessayer.");
+  }
   return { uid, active };
 });
