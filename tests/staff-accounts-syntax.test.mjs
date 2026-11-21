@@ -19,6 +19,10 @@ test("l'interface des comptes d'équipe ne s'ouvre qu'avec le claim watAdmin et 
   assert.match(html, /callable\("updateStaffAccountAccess"/);
   assert.match(html, /Modifier les droits/);
   assert.match(html, /Enregistrer les droits/);
+  assert.match(html, /id="searchAccounts"/);
+  assert.match(html, /id="statusFilter"/);
+  assert.match(html, /toLocaleLowerCase\("fr"\)/);
+  assert.match(html, /Aucun compte ne correspond à ces filtres/);
 });
 
 test("les liens d'invitation ne sont affichés qu'à l'intérieur de l'espace administrateur", () => {
