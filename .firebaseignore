@@ -16,3 +16,4 @@ package-lock.json
 *.keystore
 *.jks
 .env*
+wrangler.staging.json
