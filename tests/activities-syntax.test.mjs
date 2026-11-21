@@ -116,3 +116,11 @@ test("le registre filtre les activités par projet uniquement avec le périmètr
   assert.match(html, /!\$\("projectFilter"\)\.value\|\|a\.projectId===\$\("projectFilter"\)\.value/);
   assert.match(html, /projectFilter"\)\.addEventListener\("change",render\)/);
 });
+
+test("modifier manuellement un participant dissocie la sélection préalable du Club Khuddam", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /function clearClubVolunteerSelection\(\)/);
+  assert.match(html, /\["participantLabel","participantRef"\]\.forEach\(id=>\$\(id\)\.addEventListener\("input",clearClubVolunteerSelection\)\)/);
+  assert.match(html, /participantType"\)\.addEventListener\("change",clearClubVolunteerSelection\)/);
+  assert.match(html, /\$\("clubVolunteer"\)\.addEventListener\("change"/);
+});
