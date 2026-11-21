@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const source = fs.readFileSync("firebase-init.js", "utf8");
 
-function createFirebaseHarness({ online = true, clearPersistence = async () => {}, page = "administration.html", hostname = "example.org" } = {}) {
+function createFirebaseHarness({ online = true, clearPersistence = async () => {}, page = "administration.html", hostname = "example.org", environment = undefined } = {}) {
   const calls = [];
   const auth = {
     signOut: async () => { calls.push("auth.signOut"); }
@@ -29,6 +29,7 @@ function createFirebaseHarness({ online = true, clearPersistence = async () => {
   };
   const window = {
     firebase,
+    ...(environment ? { WAT_FIREBASE_ENV: environment } : {}),
     location: {
       pathname: "/" + page,
       hostname,
@@ -110,4 +111,12 @@ test("les aperçus Cloudflare de la branche utilisent Firebase staging et non la
   await preview.wat.persistenceReady;
   assert.equal(preview.wat.projectId, "wat-connect-staging");
   assert.equal(preview.wat.environment, "staging");
+});
+
+
+test("un APK Android de test peut cibler Firebase staging sans changer la configuration de production", async () => {
+  const androidStaging = createFirebaseHarness({ hostname: "localhost", environment: "staging" });
+  await androidStaging.wat.persistenceReady;
+  assert.equal(androidStaging.wat.projectId, "wat-connect-staging");
+  assert.equal(androidStaging.wat.environment, "staging");
 });
