@@ -47,7 +47,7 @@ Il est encore dans la branche de travail de la PR 21, pas dans la branche par d�
 
 ## Sélection de l'environnement Firebase
 
-Le Worker `wat-connect-staging.ongwafaalturathinternational.workers.dev` sélectionne automatiquement le projet Firebase `wat-connect-staging`, même sans paramètre dans l'URL. Les autres domaines conservent la production par défaut ; le paramètre explicite `?wat-env=staging` reste disponible pour les tests sur un domaine de prévisualisation. La page de gestion des comptes n'active App Check qu'avec le projet Firebase staging.
+Le Worker `wat-connect-staging.ongwafaalturathinternational.workers.dev` et les aperçus de branche dont le nom se termine par `-nour-al-hidaya.ongwafaalturathinternational.workers.dev` sélectionnent automatiquement le projet Firebase `wat-connect-staging`. Les APK de test peuvent recevoir `WAT_FIREBASE_ENV=staging` au moment du build. Les domaines ordinaires et les APK normaux restent sur `wat-connect`. Aucun paramètre d'URL ne peut changer l'environnement. La page de gestion des comptes n'active App Check qu'avec le projet Firebase staging.
 
 ## Sécurité et état
 
