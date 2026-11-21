@@ -27,7 +27,8 @@
       "*.aab",
       "*.keystore",
       "*.jks",
-      ".env*"
+      ".env*",
+      "wrangler.staging.json"
     ]
   },
   "functions": {
