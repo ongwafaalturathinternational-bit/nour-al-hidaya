@@ -1,85 +1,80 @@
 # Registre sécurisé des comptes d'équipe
 
-## Objectif
+## Principe d'autorité
 
-Le registre `staffAccess/{uid}` devient la source d'autorité pour reconnaître un membre de l'équipe WAT. Il est séparé du profil apprenant `users/{uid}`. L'identifiant du document doit être exactement le Firebase Authentication UID du titulaire.
+Le registre `staffAccess/{uid}` est la source d'autorité pour reconnaître un membre de l'équipe WAT. Le document est identifié par le Firebase Authentication UID exact du titulaire. Il est distinct du profil apprenant `users/{uid}`.
 
-## Schéma de document
+Le rôle décrit la fonction institutionnelle. Les `scopes` définissent les opérations réellement autorisées. Un rôle seul n'ouvre aucun module. L'administration centrale `watAdmin` est un claim distinct, réservé au provisionnement des comptes et à la gestion du registre.
 
-Exemple de structure à créer manuellement dans Firebase Console pour un compte autorisé :
+## Schéma d'accès
 
 ```json
 {
   "displayName": "Nom confirmé du membre",
-  "email": "adresse-professionnelle-ou-personnelle-confirmee@example.org",
+  "email": "adresse-confirmee@example.org",
   "role": "formateur",
-  "active": true,
-  "scopes": ["nour-al-hidaya:p1"],
+  "scopes": ["programs.read", "activities.read"],
+  "active": false,
   "createdAt": "Firestore Timestamp",
-  "updatedAt": "Firestore Timestamp"
+  "createdBy": "UID administrateur",
+  "updatedAt": "Firestore Timestamp",
+  "updatedBy": "UID administrateur"
 }
 ```
 
-Règles de données :
-- `displayName` : nom validé par WAT.
-- `email` : doit correspondre à l'adresse du compte Firebase Authentication.
-- `role` : un seul rôle principal au démarrage; les délégations multiples seront modélisées explicitement plus tard.
-- `active` : booléen. Passer à `false` suspend l'accès métier sans supprimer l'historique.
-- `scopes` : liste de périmètres attribués, par exemple `nour-al-hidaya:p1`, `programme:ramadan` ou `organisation:administration`. Ne pas utiliser `*` ou `all` par facilité.
-- `createdAt` et `updatedAt` : horodatages Firestore.
+- `active` doit rester `false` jusqu'à la vérification de l'adresse et l'activation explicite.
+- Les rôles et périmètres sont validés par listes autorisées dans les fonctions serveur.
+- Les changements de fonction et de permissions sont horodatés et associés à l'UID de l'administrateur.
+- Aucun mot de passe, hash ou secret d'authentification ne doit être enregistré dans ce document.
 
-## Identifiants de rôles
+## Rôles institutionnels disponibles
 
-Rôles historiques du prototype pédagogique :
-- `agent`
-- `formateur`
-- `parrain`
-- `responsable`
-- `coordonnateur`
-- `bureau`
+`president`, `administrateur_systeme`, `responsable_administratif`, `responsable_financier`, `responsable_programme`, `coordonnateur`, `formateur`, `agent`, `commissaire_aux_comptes`, `bureau`.
 
-Rôles institutionnels à introduire progressivement, après définition des permissions de chaque module :
-- `president`
-- `responsable_administratif`
-- `responsable_financier`
-- `commissaire_aux_comptes`
-- `administrateur_systeme`
+## Périmètres actuellement acceptés par le serveur
 
-Un rôle institutionnel n'est pas automatiquement équivalent à un rôle pédagogique. Les permissions détaillées devront être vérifiées dans les règles Firestore, pas seulement masquées dans l'interface.
+- Annuaire : `members.read`, `members.manage`
+- Programmes : `programs.read`, `programs.manage`
+- Projets : `projects.read`, `projects.manage`
+- Activités : `activities.read`, `activities.manage`
+- Présences : `attendance.read`, `attendance.manage`
+- Bénévoles : `volunteers.read`, `volunteers.manage`
+- Finances : `finance.read`, `finance.manage`, `finance.validate`, `finance.budgets.manage`, `finance.accounts.manage`, `finance.periods.manage`
 
-## Procédure provisoire de provisionnement
+L'acceptation d'un périmètre par le formulaire ne signifie pas qu'il est déjà appliqué à chaque écran ou collection. Les règles Firestore correspondantes restent la barrière d'autorisation effective.
 
-Cette procédure est réservée au propriétaire ou à un administrateur de confiance du projet Firebase. Elle ne doit pas être proposée comme une fonction libre dans l'application.
+## Fonctions d'administration
 
-1. Vérifier l'identité du membre, sa fonction et son autorisation institutionnelle.
-2. Créer son compte Firebase Authentication avec son adresse e-mail exacte.
-3. Faire vérifier son adresse e-mail.
-4. Récupérer le Firebase UID du compte.
-5. Dans Firestore, créer `staffAccess/{UID}` avec les champs ci-dessus.
-6. Vérifier le rôle, le périmètre et l'état actif avant toute remise des accès.
-7. Pour suspendre l'accès, mettre `active: false`; ne pas supprimer le document ni les données historiques.
-8. Consigner hors de l'application qui a autorisé et réalisé le changement, jusqu'à ce qu'un journal d'audit serveur soit disponible.
+Les fonctions callable sont hébergées en région `us-central1` et exigent toutes App Check.
 
-Ne jamais demander au membre de créer lui-même son document `staffAccess`. Les règles interdisent volontairement toute écriture cliente dans cette collection.
+- `createStaffAccount` : crée un compte Firebase non vérifié et inactif, crée son document d'accès, puis génère les liens de vérification et de définition du mot de passe. En cas d'échec du provisionnement, elle tente de supprimer le compte partiel.
+- `listStaffAccounts` : fournit le registre à l'administration centrale, sans exposer de secret d'authentification.
+- `updateStaffAccountAccess` : modifie le rôle et les périmètres d'un compte existant, avec journalisation de l'auteur et de l'heure ; l'auto-modification des droits est refusée.
+- `setStaffAccountStatus` : exige une adresse vérifiée avant activation. En suspension, le droit Firestore est fermé avant la désactivation Firebase Authentication.
 
-## État technique actuel
+L'écran `staff-accounts.html` permet de créer, consulter, activer/suspendre et modifier les droits des comptes. Il est accessible uniquement à une session vérifiée portant le claim `watAdmin`.
 
-- Les règles de la branche de travail autorisent uniquement la lecture du document d'accès correspondant au UID connecté.
-- Les listes de documents sont interdites.
-- La création, la modification et la suppression par client sont interdites.
-- Les fonctions `activeStaff()` et `staffHasRole(role)` sont des primitives de sécurité préparatoires. Elles ne donnent encore aucun droit sur les collections métier.
-- Aucun écran d'administration de comptes d'équipe n'est activé.
-- Les identifiants et codes des acteurs de démonstration dans l'ancien prototype ne sont pas des comptes réels et ne doivent pas être utilisés en production.
+## Provisionnement initial de l'administration centrale
 
-## Contrôles obligatoires avant ouverture des modules
+Le script `scripts/bootstrap-wat-admin.js` est limité au projet Firebase `wat-connect-staging` et à l'adresse administrateur explicitement autorisée dans le script. Il refuse un compte désactivé ou dont l'adresse n'est pas vérifiée.
 
-1. Un apprenant ne peut pas lire le document d'accès d'un autre UID.
-2. Un membre d'équipe ne peut pas lire le document d'accès d'un autre UID.
-3. Un utilisateur ne peut ni créer ni modifier ni supprimer son propre document d'accès.
-4. Un utilisateur sans document d'accès est refusé.
-5. Un compte avec `active: false` est refusé.
-6. Un compte actif n'obtient que les permissions de son rôle et de ses périmètres.
-7. Un rôle inconnu ou un périmètre non attribué ne donne aucun accès.
-8. Les données pédagogiques privées d'un apprenant restent invisibles aux autres apprenants et aux rôles qui n'en ont pas besoin.
+Ce script n'a pas été exécuté dans le cadre de cette PR. Ne jamais élargir la liste des adresses ni exécuter le script sur un autre projet sans autorisation explicite et vérification préalable.
 
-**Important :** les règles préparatoires de cette branche ne sont pas déployées dans Firebase. Il faut les compiler et exécuter les tests positifs et négatifs avant toute publication. La connexion réelle des membres d'équipe et les présences synchronisées restent bloquées jusqu'à la livraison complète de cette étape.
+## Blocages avant activation réelle
+
+- La clé de site reCAPTCHA v3 d'App Check n'est pas encore renseignée dans la meta `wat-recaptcha-site-key` de `staff-accounts.html`. Ne pas contourner App Check.
+- Les fonctions Firebase ne sont pas déployées.
+- La validation CI actuelle comprend des contrôles de syntaxe, des tests source et la compilation des règles Firestore ; elle ne remplace pas un test d'intégration Firebase Emulator ni un test réel de bout en bout.
+- Les règles de cette branche ne sont pas publiées en production.
+- Toute activation nécessitant Firebase Blaze ou une ressource payante attend une décision explicite.
+
+## Contrôles obligatoires avant ouverture
+
+1. Un membre ne peut lire que son propre document `staffAccess`.
+2. Aucun client ne peut créer, modifier, supprimer ou lister les documents `staffAccess`.
+3. Un utilisateur sans document d'accès ou avec `active: false` est refusé.
+4. Une adresse non vérifiée ne peut pas être activée.
+5. Un rôle seul ne donne aucun droit sur les données métier.
+6. Un scope non attribué ne donne aucun accès.
+7. La suspension ferme d'abord l'accès Firestore, même si un ancien jeton Firebase est encore valide.
+8. Les données pédagogiques privées d'un apprenant restent protégées des autres apprenants et des rôles qui n'en ont pas besoin.
