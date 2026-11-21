@@ -6,3 +6,13 @@ docs/**
 SECURITE-ET-ROADMAP.md
 firestore.rules
 .firebaserc
+functions/**
+scripts/**
+package.json
+package-lock.json
+*.zip
+*.apk
+*.aab
+*.keystore
+*.jks
+.env*
