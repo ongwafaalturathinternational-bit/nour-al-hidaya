@@ -41,17 +41,34 @@
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
       return;
     }
-    const firebaseConfig = {
-      apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
-      authDomain: "wat-connect.firebaseapp.com",
-      projectId: "wat-connect",
-      storageBucket: "wat-connect.firebasestorage.app",
-      messagingSenderId: "595497756883",
-      appId: "1:595497756883:web:c95c93a3365a98aa44cc26"
+    // Le staging n'est sélectionné que sur son domaine dédié.
+    // Toute autre origine, y compris l'application Android, reste en production.
+    const isStagingHost = window.location.hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev";
+    const environment = isStagingHost ? "staging" : "production";
+    const configs = {
+      production: {
+        apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
+        authDomain: "wat-connect.firebaseapp.com",
+        projectId: "wat-connect",
+        storageBucket: "wat-connect.firebasestorage.app",
+        messagingSenderId: "595497756883",
+        appId: "1:595497756883:web:c95c93a3365a98aa44cc26"
+      },
+      staging: {
+        apiKey: "AIzaSyB1rJ45mhUjjlgVNYo_yy6M1zCm-gc5Rgs",
+        authDomain: "wat-connect-staging.firebaseapp.com",
+        projectId: "wat-connect-staging",
+        storageBucket: "wat-connect-staging.firebasestorage.app",
+        messagingSenderId: "180737630773",
+        appId: "1:180737630773:web:e5c94e044c3a6a7ce9477c"
+      }
     };
-    const app = window.firebase.apps.length
-      ? window.firebase.app()
-      : window.firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = configs[environment];
+    const existingApp = window.firebase.apps.length ? window.firebase.app() : null;
+    if (existingApp && existingApp.options?.projectId !== firebaseConfig.projectId) {
+      throw new Error("Firebase est déjà initialisé sur un autre projet.");
+    }
+    const app = existingApp || window.firebase.initializeApp(firebaseConfig);
     const db = window.firebase.firestore();
     const offlinePages = new Set(["", "index.html", "administration.html", "programmes.html", "activites.html", "projets.html", "club-khuddam.html"]);
     const pageName = window.location.pathname.split("/").pop();
@@ -72,6 +89,7 @@
       auth: window.firebase.auth(),
       db: db,
       projectId: firebaseConfig.projectId,
+      environment: environment,
       persistenceReady: persistenceReady,
       get persistenceEnabled() { return persistenceEnabled; },
       get persistenceStatus() { return persistenceStatus; },
