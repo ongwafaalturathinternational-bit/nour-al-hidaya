@@ -46,7 +46,10 @@
     const hostname = window.location.hostname;
     const isStagingHost = hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev"
       || hostname.endsWith("-nour-al-hidaya.ongwafaalturathinternational.workers.dev");
-    const environment = isStagingHost ? "staging" : "production";
+    // Les APK de test peuvent recevoir un environnement staging au moment du build.
+    // Aucun paramètre d'URL ne permet de basculer un site de production.
+    const requestedEnvironment = window.WAT_FIREBASE_ENV;
+    const environment = isStagingHost || requestedEnvironment === "staging" ? "staging" : "production";
     const configs = {
       production: {
         apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
