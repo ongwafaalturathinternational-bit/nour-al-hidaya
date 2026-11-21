@@ -27,3 +27,20 @@ Le script refuse tout projet autre que `wat-connect-staging`, vérifie l'adresse
 
 ## Limites actuelles
 Ces endpoints constituent la couche serveur ; l'interface d'administration doit encore les appeler avec App Check initialisé. Les fonctions ne sont pas déployées par ce changement.
+
+## Interface de gestion des comptes
+
+La page `staff-accounts.html` fournit le registre, la création et l'activation/suspension des comptes. Elle vérifie le claim `watAdmin` avant d'afficher les outils et appelle les fonctions dans `us-central1`.
+
+### Configuration App Check obligatoire avant utilisation
+
+1. Dans Firebase Console, ouvrir le projet **wat-connect-staging**.
+2. Aller dans **App Check**, enregistrer l'application Web WAT Connect avec le fournisseur **reCAPTCHA v3**.
+3. Ajouter le domaine de staging autorisé dans la configuration reCAPTCHA.
+4. Copier la clé de site publique reCAPTCHA v3 et la placer dans la balise meta `wat-recaptcha-site-key` de `staff-accounts.html`.
+5. Activer l'application Web dans App Check, puis tester le jeton App Check depuis le site staging.
+6. Déployer les fonctions uniquement sur staging et exécuter les tests de bout en bout avant toute utilisation réelle.
+
+Tant que la clé n'est pas configurée, la page affiche un message explicite et n'appelle pas les fonctions. Ne jamais désactiver `enforceAppCheck` pour contourner ce prérequis. La clé de site reCAPTCHA est publique ; aucun secret serveur ou jeton administrateur ne doit être placé dans le HTML.
+
+La page n'est pas reliée à un lien public de navigation. Elle est affichée dans l'espace membre uniquement au compte possédant le claim `watAdmin`.
