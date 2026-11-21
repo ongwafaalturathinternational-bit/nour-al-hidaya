@@ -82,3 +82,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 2. Continuer l'audit des transitions de projets, activités et affectations.
 3. Garder l'arbitrage de la vue Présences autonome séparé : le droit `attendance.read` seul n'ouvre pas encore l'écran commun Activités / Présences.
 4. Préparer les scénarios de recette avec comptes fictifs et vérifier les écarts documentaires.
+
+
+## Poursuite — 21 novembre 2026, contrôle complémentaire des dates
+
+- Les trois validations du commit `47e334fbfc35dc03632438705d6b6a689a92de3a` sont maintenant réussies : Workers, règles Firestore et APK Android debug.
+- Ajout d'un second test de sécurité : une période cohérente peut être modifiée, mais une mise à jour qui ferait passer la date de fin avant la date de début est refusée par Firestore.
+- Commit de ce test : `cfab95cc73960124cbc811496e769a8314e1198c`.
+- CI du nouveau commit en cours : [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908205955) · [APK Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908205939).
+- Le prochain contrôle reste l'audit des parcours hors connexion et des transitions d'état, sans essai réel sur appareil ni modification de production.
