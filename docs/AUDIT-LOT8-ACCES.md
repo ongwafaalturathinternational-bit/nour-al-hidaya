@@ -67,3 +67,13 @@ Les tests de règles vérifient aussi qu'une opération atomique qui désactive 
 L'inspection de `sw.js` confirme que le service worker met en cache un ensemble explicite de ressources statiques de l'application et trois SDK Firebase versionnés. Les requêtes autres que GET sont ignorées; les ressources externes non listées et les URL locales absentes de la liste ne sont pas interceptées par la stratégie de cache. Les appels Firestore/Auth ne figurent pas dans les ressources précachées.
 
 Un fichier de tests statiques `tests/service-worker-cache.test.mjs` a été ajouté pour verrouiller ces frontières : liste des ressources, liste blanche des SDK, refus des requêtes non-GET et absence de cache des URL métier non listées. Ce contrôle de code ne remplace pas un essai hors connexion réel sur Android ni une inspection des caches du navigateur.
+
+
+## 9. Matrice de lecture des affectations — contrôle négatif et positif
+
+Un test de règles supplémentaire verrouille les trois cas de lecture des sous-collections d'affectations :
+- projects.read + volunteers.read : lecture autorisée;
+- projects.read seul : lecture refusée;
+- volunteers.read seul : lecture refusée.
+
+Le test utilise des comptes fictifs et des documents de test. Il confirme que les noms de bénévoles présents dans les affectations ne sont pas révélés par un seul des deux périmètres. La règle Firestore existante reste inchangée; cette évolution renforce sa couverture de tests.
