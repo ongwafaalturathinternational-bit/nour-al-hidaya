@@ -43,7 +43,9 @@
     }
     // Le staging n'est sélectionné que sur son domaine dédié.
     // Toute autre origine, y compris l'application Android, reste en production.
-    const isStagingHost = window.location.hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev";
+    const hostname = window.location.hostname;
+    const isStagingHost = hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev"
+      || hostname.endsWith("-nour-al-hidaya.ongwafaalturathinternational.workers.dev");
     const environment = isStagingHost ? "staging" : "production";
     const configs = {
       production: {
