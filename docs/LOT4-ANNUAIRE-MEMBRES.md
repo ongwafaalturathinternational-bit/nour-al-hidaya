@@ -7,7 +7,7 @@ Le premier module métier de WAT Connect est l’annuaire des membres, fondateur
 ## Périmètres d’accès
 
 - `members.read` : consultation de l’annuaire en lecture seule.
-- `members.manage` : consultation, création et changement de statut des fiches.
+- `members.manage` : consultation, création, modification des fiches et changement de statut.
 
 Un compte doit également être présent dans `staffAccess` avec `active: true`. Le rôle seul ne donne aucun accès. Les permissions sont vérifiées par Firestore, pas uniquement par l’interface.
 
@@ -15,12 +15,12 @@ Un compte doit également être présent dans `staffAccess` avec `active: true`.
 
 Champs conservés : nom complet, catégorie (fondateur, membre, bénévole), fonction, e-mail et téléphone. Les champs de contact sont facultatifs. Aucune note personnelle ou donnée sensible n’est prévue dans ce premier annuaire.
 
-Les fiches ne sont pas supprimables depuis l’application : elles peuvent être désactivées ou réactivées afin de préserver l’historique. Les écritures enregistrent l’auteur et les horodatages.
+Les fiches peuvent être modifiées, désactivées ou réactivées, mais pas supprimées depuis l’application afin de préserver l’historique. Les modifications conservent les champs de création et actualisent l’auteur et l’horodatage de mise à jour. La recherche fonctionne sur le nom, la fonction et les contacts ; des filtres permettent de réduire la liste par catégorie et statut.
 
 ## Activation manuelle sécurisée
 
-Tant qu’un processus serveur d’administration n’est pas développé, un administrateur de confiance attribue les périmètres directement dans la console Firebase, dans le document `staffAccess/{uid}`. Il ajoute `members.read` ou `members.manage` au tableau `scopes` du compte déjà vérifié. Aucun formulaire public ne permet de s’accorder ces droits.
+L’administration centrale attribue les périmètres via l’écran sécurisé `staff-accounts.html`, après vérification de l’identité et de l’adresse e-mail. Les fonctions serveur exigent App Check et le claim `watAdmin`. Aucun formulaire public ne permet de s’accorder ces droits. La clé App Check doit toutefois être configurée avant l'activation réelle de cet écran.
 
 ## Tests
 
-Le lot ajoute des tests d’accès : gestionnaire, lecture seule, absence de périmètre, compte désactivé, interdiction de suppression et validation des champs. Aucun déploiement de règles n’est effectué dans ce lot.
+Les tests couvrent les accès Firestore (gestionnaire, lecture seule, absence de périmètre, compte désactivé, interdiction de suppression et validation des champs) ainsi que la syntaxe et les interactions du formulaire de gestion. Les contrôles CI récents compilent les règles et exécutent l’ensemble des tests Firestore. Aucun déploiement de règles en production n’est effectué.
