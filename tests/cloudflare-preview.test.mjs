@@ -12,7 +12,7 @@ test("Cloudflare Worker Previews have an explicit Wrangler configuration", () =>
 });
 
 test("Cloudflare static assets exclude repository and internal project files", () => {
-  for (const pattern of ["/.github/", "/docs/", "/tests/", "/functions/", "/scripts/", "firebase.json", "wrangler.json", "firestore.rules", "package.json", "package-lock.json", "*.md", "*.txt", "*.zip"]) {
+  for (const pattern of ["/.github/", "/.git/", "/node_modules/", "/docs/", "/tests/", "/functions/", "/scripts/", "/.firebaserc", "/.env*", "firebase.json", "wrangler.json", "firestore.rules", "package.json", "package-lock.json", "*.md", "*.txt", "*.zip", "*.log"]) {
     assert.ok(ignoredAssets.includes(pattern), `missing .assetsignore rule: ${pattern}`);
   }
 });
