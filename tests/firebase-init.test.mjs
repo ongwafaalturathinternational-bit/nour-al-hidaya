@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const source = fs.readFileSync("firebase-init.js", "utf8");
 
-function boot(search = "", existingProjectId = null, siteKey = "", hostname = "wat-connect.example.org") {
+function boot(search = "", existingProjectId = null, siteKey = "", hostname = "wat-connect.example.org", buildEnvironment = null) {
   const initialized = [];
   const calls = [];
   const appCheckActivations = [];
@@ -37,6 +37,7 @@ function boot(search = "", existingProjectId = null, siteKey = "", hostname = "w
   const window = {
     firebase,
     location: { search, hostname },
+    WAT_FIREBASE_ENV: buildEnvironment,
     addEventListener() {}
   };
   const document = {
@@ -69,16 +70,24 @@ test("production est sélectionné par défaut", () => {
   assert.equal(initialized[0].projectId, "wat-connect");
 });
 
-test("staging n'est sélectionné qu'avec le paramètre explicite", () => {
+test("un paramètre URL ne peut jamais basculer un domaine normal vers staging", () => {
   const { result, initialized } = boot("?wat-env=staging");
+  assert.equal(result.ready, true);
+  assert.equal(result.environment, "production");
+  assert.equal(result.projectId, "wat-connect");
+  assert.equal(initialized[0].projectId, "wat-connect");
+});
+
+test("le Worker staging sélectionne Firebase staging même sans paramètre URL", () => {
+  const { result, initialized } = boot("", null, "", "wat-connect-staging.ongwafaalturathinternational.workers.dev");
   assert.equal(result.ready, true);
   assert.equal(result.environment, "staging");
   assert.equal(result.projectId, "wat-connect-staging");
   assert.equal(initialized[0].projectId, "wat-connect-staging");
 });
 
-test("le Worker staging sélectionne Firebase staging même sans paramètre URL", () => {
-  const { result, initialized } = boot("", null, "", "wat-connect-staging.ongwafaalturathinternational.workers.dev");
+test("un aperçu de branche reconnu sélectionne staging sans paramètre URL", () => {
+  const { result, initialized } = boot("", null, "", "fix-lot8-club-onboarding-and-access-nour-al-hidaya.ongwafaalturathinternational.workers.dev");
   assert.equal(result.ready, true);
   assert.equal(result.environment, "staging");
   assert.equal(result.projectId, "wat-connect-staging");
@@ -102,7 +111,7 @@ test("une valeur inconnue conserve la production", () => {
 });
 
 test("une application Firebase déjà initialisée sur un autre projet est bloquée", () => {
-  const { result, initialized } = boot("?wat-env=staging", "wat-connect");
+  const { result, initialized } = boot("", "wat-connect", "", "wat-connect-staging.ongwafaalturathinternational.workers.dev");
   assert.equal(result.ready, false);
   assert.equal(result.reason, "initialization-error");
   assert.equal(initialized.length, 0);
@@ -116,7 +125,7 @@ test("une application déjà initialisée sur le bon projet est réutilisée", (
 });
 
 test("App Check Enterprise est activé avant Auth uniquement sur le projet staging", () => {
-  const { result, calls, appCheckActivations } = boot("?wat-env=staging", null, "public-site-key");
+  const { result, calls, appCheckActivations } = boot("", null, "public-site-key", "wat-connect.example.org", "staging");
   assert.equal(result.ready, true);
   assert.equal(result.appCheckReady, true);
   assert.deepEqual(calls, ["appCheck", "auth", "firestore"]);
@@ -131,4 +140,13 @@ test("une clé App Check n'est jamais activée sur le projet de production", () 
   assert.equal(result.reason, "initialization-error");
   assert.deepEqual(calls, []);
   assert.equal(appCheckActivations.length, 0);
+});
+
+
+test("un APK Android de test peut sélectionner staging via sa configuration de build", () => {
+  const { result, initialized } = boot("", null, "", "localhost", "staging");
+  assert.equal(result.ready, true);
+  assert.equal(result.environment, "staging");
+  assert.equal(result.projectId, "wat-connect-staging");
+  assert.equal(initialized[0].projectId, "wat-connect-staging");
 });
