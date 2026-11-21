@@ -103,5 +103,5 @@ test("un compte Présences seul conserve ses droits dédiés sans lire les activ
   }).firestore();
   await assertFails(getDoc(doc(db, "activities", "private-activity")));
   await assertSucceeds(getDoc(doc(db, "attendance", "attendance-only-record")));
-  await assertFails(setDoc(doc(db, "attendance", "new-record"), attendance("attendance-only")));
+  await assertSucceeds(setDoc(doc(db, "attendance", "new-record"), attendance("attendance-only", { activityId: "private-activity" })));
 });
