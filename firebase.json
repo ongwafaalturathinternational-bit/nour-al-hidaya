@@ -16,7 +16,12 @@
       "tests/**",
       ".github/**",
       "**/*.test.*",
-      "*.md"
+      "*.md",
+      "functions/**",
+      "scripts/**",
+      "package.json",
+      "package-lock.json",
+      "npm-shrinkwrap.json"
     ]
   },
   "functions": {
