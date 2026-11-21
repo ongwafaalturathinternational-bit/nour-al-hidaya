@@ -80,3 +80,11 @@ test("le registre limite les appels simultanés à Firebase Authentication", () 
   assert.match(source, /snapshot\.docs\.slice\(offset, offset \+ batchSize\)/);
   assert.match(source, /accounts\.push\(\.\.\.batch\)/);
 });
+
+test("les fonctions institutionnelles financières et de formation islamique sont autorisées sans supprimer le commissaire aux comptes", () => {
+  for (const role of [
+    '"controleur_financier"',
+    '"commissaire_aux_comptes"',
+    '"responsable_formation_islamique_orientations"'
+  ]) assert.ok(source.includes(role), "rôle autorisé manquant : " + role);
+});
