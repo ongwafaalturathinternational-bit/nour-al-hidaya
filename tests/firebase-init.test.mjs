@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const source = fs.readFileSync("firebase-init.js", "utf8");
 
-function boot(search = "", existingProjectId = null, siteKey = "") {
+function boot(search = "", existingProjectId = null, siteKey = "", hostname = "wat-connect.example.org") {
   const initialized = [];
   const calls = [];
   const appCheckActivations = [];
@@ -36,7 +36,7 @@ function boot(search = "", existingProjectId = null, siteKey = "") {
   };
   const window = {
     firebase,
-    location: { search },
+    location: { search, hostname },
     addEventListener() {}
   };
   const document = {
@@ -75,6 +75,22 @@ test("staging n'est sélectionné qu'avec le paramètre explicite", () => {
   assert.equal(result.environment, "staging");
   assert.equal(result.projectId, "wat-connect-staging");
   assert.equal(initialized[0].projectId, "wat-connect-staging");
+});
+
+test("le Worker staging sélectionne Firebase staging même sans paramètre URL", () => {
+  const { result, initialized } = boot("", null, "", "wat-connect-staging.ongwafaalturathinternational.workers.dev");
+  assert.equal(result.ready, true);
+  assert.equal(result.environment, "staging");
+  assert.equal(result.projectId, "wat-connect-staging");
+  assert.equal(initialized[0].projectId, "wat-connect-staging");
+});
+
+test("un autre sous-domaine workers.dev reste en production par défaut", () => {
+  const { result, initialized } = boot("", null, "", "nour-al-hidaya.ongwafaalturathinternational.workers.dev");
+  assert.equal(result.ready, true);
+  assert.equal(result.environment, "production");
+  assert.equal(result.projectId, "wat-connect");
+  assert.equal(initialized[0].projectId, "wat-connect");
 });
 
 test("une valeur inconnue conserve la production", () => {
