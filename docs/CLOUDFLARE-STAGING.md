@@ -45,6 +45,10 @@ Le workflow `.github/workflows/cloudflare-staging-preview.yml` est également pr
 
 Il est encore dans la branche de travail de la PR 21, pas dans la branche par défaut `main`. GitHub ne rend un workflow `workflow_dispatch` disponible que lorsque son fichier existe aussi sur la branche par défaut. Cette solution nécessite également les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` dans l'environnement GitHub `staging`.
 
+## Sélection de l'environnement Firebase
+
+Le portail conserve la production par défaut. Pour ouvrir l'environnement Firebase de staging depuis le Worker `wat-connect-staging`, l'URL doit inclure `?wat-env=staging`. Le lien vers `staff-accounts.html` conserve automatiquement ce paramètre. Sans ce paramètre, l'application se connecte volontairement au projet de production ; la page de gestion des comptes refuse alors de s'initialiser avec la clé App Check réservée au staging.
+
 ## Sécurité et état
 
 - Aucun déploiement sur le Worker actif `nour-al-hidaya` n'a été effectué par ce travail.
