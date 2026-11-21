@@ -64,3 +64,21 @@
 ## Limites d'autorisation
 
 Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou données Firebase de production, création de comptes réels, release Android ou publication de production sans autorisation explicite. Le Lot 9 Finances reste suspendu jusqu'à validation du Lot 8.
+
+
+## Mise à jour — 21 novembre 2026, poursuite du Lot 8
+
+- **Dernier commit de branche :** `8db3de6f53728ef5477ebb4c83b3c06185d2abc8`.
+- Les trois contrôles du commit précédent `d90e4b80b2ded9127612a30b7ec2e9e09b90265f` ont réussi : build Workers, build APK Android debug et règles Firestore.
+- Documentation Lot 7 corrigée : le modèle réellement utilisé est `attendance/{recordId}` avec `activityId`, et non une sous-collection sous `activities`. La documentation reflète aussi le CSV filtré et les limites réelles du cache hors connexion.
+- Nouveau contrôle d'intégrité des projets : si les deux dates sont renseignées, la date de fin ne peut pas précéder la date de début. La règle Firestore applique cette contrainte à la création et à la modification; le formulaire la vérifie avant l'envoi.
+- Test négatif ajouté pour garantir le rejet d'une période incohérente.
+- Contrôles CI du nouveau commit en cours au moment de cette mise à jour : [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44907917555) · [APK Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44907917643).
+- Aucun merge, déploiement, changement Firebase ou publication APK.
+
+### Suite du travail
+
+1. Vérifier les résultats CI du commit courant et corriger tout échec.
+2. Continuer l'audit des transitions de projets, activités et affectations.
+3. Garder l'arbitrage de la vue Présences autonome séparé : le droit `attendance.read` seul n'ouvre pas encore l'écran commun Activités / Présences.
+4. Préparer les scénarios de recette avec comptes fictifs et vérifier les écarts documentaires.
