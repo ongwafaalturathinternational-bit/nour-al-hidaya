@@ -77,3 +77,12 @@ Commit vérifié : `d37a8e5d6237c3dba07e6167bafa9e882c79ac6a`.
 **Limite de portée :** ces tests sont des simulations unitaires du comportement, pas une intégration réelle entre deux onglets de navigateur ni une recette sur appareil Android. Ces essais restent requis avant toute utilisation avec des données réelles. La persistance Firestore standard reste non chiffrée au niveau applicatif et ne remplace pas le coffre local protégé prévu pour l'inscription universelle.
 
 La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun déploiement de production n'a été effectué.
+
+
+## Addendum — périmètre Firebase des aperçus Cloudflare — 21 novembre 2026
+
+La vérification de la configuration de la branche montre que `firebase-init.js` initialise le projet Firebase `wat-connect`, également défini comme projet Firebase par défaut dans `.firebaserc`. Le build Cloudflare de prévisualisation ne remplace pas automatiquement cette configuration côté navigateur.
+
+Conséquence opérationnelle : une URL Cloudflare de prévisualisation peut charger l'interface de cette branche tout en se connectant au projet Firebase de production `wat-connect`. Tant qu'une configuration Firebase de staging explicitement injectée et vérifiée n'est pas disponible pour cette branche, ne pas utiliser l'aperçu Cloudflare pour créer, modifier ou tester des données réelles. Utiliser exclusivement des comptes et données fictifs et ne pas communiquer cette URL comme environnement de recette sécurisé.
+
+Aucun fichier de configuration Firebase, aucun projet Firebase et aucun paramètre Cloudflare n'a été modifié dans le cadre de cet audit. Cette séparation doit être traitée avant toute recette fonctionnelle connectée de l'aperçu.
