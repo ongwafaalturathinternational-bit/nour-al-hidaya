@@ -41,30 +41,79 @@ a{color:var(--navy);font-weight:650}.actions{display:flex;gap:9px;flex-wrap:wrap
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-let currentUser=null;
+let currentUser = null, authGeneration = 0;
 function say(text,type=""){const el=$("message");el.textContent=text;el.className="message "+type;el.hidden=false}
-function showAuth(){ $("authPanel").hidden=false;$("accountPanel").hidden=true; }
+function isCurrentSession(user,generation){
+ return generation === authGeneration && WATFirebase.auth.currentUser?.uid === user.uid;
+}
+function showAuth(){
+ authGeneration += 1;
+ currentUser = null;
+ $("authPanel").hidden = false;
+ $("accountPanel").hidden = true;
+ $("applicationBox").hidden = true;
+ $("emailLabel").textContent = "";
+ $("statusText").textContent = "";
+ $("details").textContent = "";
+ say("Connectez-vous pour consulter votre dossier.");
+}
 function statusLabel(value){return ({en_attente:"En attente d’examen",acceptee:"Candidature acceptée",refusee:"Candidature non retenue"})[value]||"État à confirmer";}
 async function loadAccount(user){
- currentUser=user;$("authPanel").hidden=true;$("accountPanel").hidden=false;$("welcome").textContent="Votre dossier Club Khuddam";$("emailLabel").textContent=user.email||"";
- $("verificationBox").hidden=!!user.emailVerified;$("applicationBox").hidden=true;
+ const generation = ++authGeneration;
+ if(WATFirebase.auth.currentUser?.uid !== user.uid)return;
+ currentUser = user;
+ $("authPanel").hidden = true;
+ $("accountPanel").hidden = false;
+ $("welcome").textContent = "Votre dossier Club Khuddam";
+ $("emailLabel").textContent = user.email || "";
+ $("verificationBox").hidden = !!user.emailVerified;
+ $("applicationBox").hidden = true;
+ $("details").textContent = "";
+ $("statusText").textContent = "";
  if(!user.emailVerified){say("Votre adresse e-mail doit être vérifiée pour consulter votre dossier.","error");return;}
- await user.getIdToken(true);
- const ref=WATFirebase.db.collection("volunteerApplications").doc(user.uid);
- const snap=await ref.get();
- if(!snap.exists){say("Aucune candidature n’est encore associée à ce compte. Vous pouvez utiliser le formulaire public pour déposer votre dossier.");return;}
- const data=snap.data(),status=data.status||"en_attente";
- $("applicationBox").hidden=false;$("status").textContent=statusLabel(status);
- $("status").className="status "+(status==="acceptee"?"ok":status==="refusee"?"no":"");
- $("statusText").textContent=status==="en_attente"?"Votre dossier a bien été reçu. L’équipe du Club l’examinera et vous contactera.":status==="acceptee"?"Votre candidature a été acceptée. L’équipe vous communiquera les prochaines étapes de votre engagement.":"Votre candidature n’a pas été retenue. Vous pouvez contacter l’ONG pour obtenir des informations.";
- const details=[];if(data.category)details.push("Type d’engagement : "+({occasionnel:"Occasionnel",engage:"Engagé",contributeur:"Contributeur"}[data.category]||data.category));if(data.createdAt&&data.createdAt.toDate)details.push("Dossier déposé le : "+data.createdAt.toDate().toLocaleDateString("fr-FR"));
- $("details").textContent=details.join(" · ");
- say("Votre dossier personnel a été chargé.","success");
+ try{
+  await user.getIdToken(true);
+  if(!isCurrentSession(user,generation))return;
+  const ref = WATFirebase.db.collection("volunteerApplications").doc(user.uid);
+  const snap = await ref.get();
+  if(!isCurrentSession(user,generation))return;
+  if(!snap.exists){say("Aucune candidature n’est encore associée à ce compte. Vous pouvez utiliser le formulaire public pour déposer votre dossier.");return;}
+  const data=snap.data(),status=data.status||"en_attente";
+  $("applicationBox").hidden=false;
+  $("status").textContent=statusLabel(status);
+  $("status").className="status "+(status==="acceptee"?"ok":status==="refusee"?"no":"");
+  $("statusText").textContent=status==="en_attente"?"Votre dossier a bien été reçu. L’équipe du Club l’examinera et vous contactera.":status==="acceptee"?"Votre candidature a été acceptée. L’équipe vous communiquera les prochaines étapes de votre engagement.":"Votre candidature n’a pas été retenue. Vous pouvez contacter l’ONG pour obtenir des informations.";
+  const details=[];if(data.category)details.push("Type d’engagement : "+({occasionnel:"Occasionnel",engage:"Engagé",contributeur:"Contributeur"}[data.category]||data.category));if(data.createdAt&&data.createdAt.toDate)details.push("Dossier déposé le : "+data.createdAt.toDate().toLocaleDateString("fr-FR"));
+  $("details").textContent=details.join(" · ");
+  say("Votre dossier personnel a été chargé.","success");
+ }catch(error){
+  if(!isCurrentSession(user,generation))return;
+  console.error(error);
+  say("Impossible de charger votre dossier. Vérifiez votre connexion puis réessayez.","error");
+ }
 }
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("loginButton");b.disabled=true;try{await WATFirebase.auth.signInWithEmailAndPassword($("email").value.trim().toLowerCase(),$("password").value);say("Connexion réussie.","success");}catch(err){console.error(err);say(err.code==="auth/invalid-credential"?"Adresse e-mail ou mot de passe incorrect.":"Connexion impossible. Vérifiez vos identifiants et votre connexion.","error");}finally{b.disabled=false;}});
 $("forgot").addEventListener("click",async()=>{const email=$("email").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){say("Saisissez d’abord votre adresse e-mail.","error");return;}try{await WATFirebase.auth.sendPasswordResetEmail(email);say("Si cette adresse possède un compte, un lien de réinitialisation a été envoyé.","success");}catch(e){say("Impossible d’envoyer le lien pour le moment.","error");}});
-$("resend").addEventListener("click",async()=>{try{await currentUser.sendEmailVerification();say("Lien de vérification renvoyé.","success");}catch(e){say("Impossible de renvoyer le lien. Réessayez plus tard.","error");}});
-$("refresh").addEventListener("click",async()=>{try{await currentUser.reload();const user=WATFirebase.auth.currentUser;if(user.emailVerified){await user.getIdToken(true);await loadAccount(user);}else say("L’adresse n’est pas encore marquée comme vérifiée. Ouvrez le lien reçu puis réessayez.","error");}catch(e){say("Actualisation impossible. Réessayez.","error");}});
+$("resend").addEventListener("click",async()=>{
+ const user=currentUser,generation=authGeneration;
+ if(!user)return;
+ try{await user.sendEmailVerification();if(isCurrentSession(user,generation))say("Lien de vérification renvoyé.","success");}
+ catch(e){if(isCurrentSession(user,generation))say("Impossible de renvoyer le lien. Réessayez plus tard.","error");}
+});
+$("refresh").addEventListener("click",async()=>{
+ const user=currentUser,generation=authGeneration;
+ if(!user)return;
+ try{
+  await user.reload();
+  if(!isCurrentSession(user,generation))return;
+  const refreshed=WATFirebase.auth.currentUser;
+  if(refreshed.emailVerified){
+   await refreshed.getIdToken(true);
+   if(!isCurrentSession(refreshed,generation))return;
+   await loadAccount(refreshed);
+  }else say("L’adresse n’est pas encore marquée comme vérifiée. Ouvrez le lien reçu puis réessayez.","error");
+ }catch(e){if(isCurrentSession(user,generation))say("Actualisation impossible. Réessayez.","error");}
+});
 $("logout").addEventListener("click",async()=>{try{await WATFirebase.signOutSafely();}catch(e){say(e.message||"Déconnexion impossible.","error");}});
-if(window.WATFirebase&&WATFirebase.ready){WATFirebase.auth.onAuthStateChanged(user=>{if(user)loadAccount(user).catch(e=>{console.error(e);say("Impossible de charger votre dossier. Vérifiez votre connexion puis réessayez.","error");});else showAuth();});}else say("Le service sécurisé est temporairement indisponible.","error");
+if(window.WATFirebase&&WATFirebase.ready){WATFirebase.auth.onAuthStateChanged(user=>{if(user)loadAccount(user);else showAuth();});}else say("Le service sécurisé est temporairement indisponible.","error");
 </script></body></html>
