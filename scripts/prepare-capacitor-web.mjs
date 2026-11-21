@@ -38,7 +38,7 @@ for (const file of files) {
 if (process.env.WAT_FIREBASE_ENV === "staging") {
   const firebaseInit = path.join(output, "firebase-init.js");
   const source = await fs.readFile(firebaseInit, "utf8");
-  await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\\n' + source);
+  await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\n' + source);
 }
 
 const vendor = path.join(output, "vendor");
