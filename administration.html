@@ -20,32 +20,100 @@ label{display:block;font-size:.82rem;font-weight:700;margin:12px 0 5px}input,sel
 <div class="top"><div><h1>Annuaire des membres</h1><div class="muted">Membres, fondateurs et bénévoles de l’ONG</div></div><button class="secondary" id="logout">Se déconnecter</button></div>
 <div id="message" class="message" role="status" aria-live="polite">Vérification de votre accès sécurisé…</div>
 <div id="app" class="layout" hidden>
-<section class="panel" id="formPanel" hidden><h2>Ajouter une fiche</h2><p class="muted">N’enregistrez que les informations nécessaires à la gestion de l’ONG.</p>
+<section class="panel" id="formPanel" hidden><h2 id="formTitle">Ajouter une fiche</h2><p class="muted">N’enregistrez que les informations nécessaires à la gestion de l’ONG.</p>
 <form id="memberForm">
 <label for="fullName">Nom complet *</label><input id="fullName" maxlength="120" required>
 <label for="memberType">Catégorie *</label><select id="memberType"><option value="membre">Membre</option><option value="fondateur">Fondateur</option><option value="benevole">Bénévole</option></select>
 <label for="position">Fonction au sein de WAT</label><input id="position" maxlength="100">
 <label for="email">E-mail</label><input id="email" type="email" maxlength="160">
 <label for="phone">Téléphone</label><input id="phone" maxlength="30">
-<button class="primary form-button" id="saveButton">Enregistrer la fiche</button>
+<button class="primary form-button" id="saveButton">Enregistrer la fiche</button><button class="secondary form-button" id="cancelEdit" type="button" hidden>Annuler la modification</button>
 </form>
 </section>
-<section class="panel"><h2>Répertoire</h2><div class="tools"><input id="search" placeholder="Rechercher un nom, une fonction…"></div><div class="count" id="count"></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie / fonction</th><th>Contact</th><th>Statut</th><th id="actionHead" hidden>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Aucune fiche ne correspond à la recherche.</div></section>
+<section class="panel"><h2>Répertoire</h2><div class="tools"><input id="search" placeholder="Rechercher un nom, une fonction ou un contact…" aria-label="Rechercher un membre"><select id="typeFilter" aria-label="Filtrer par catégorie"><option value="all">Toutes les catégories</option><option value="fondateur">Fondateurs</option><option value="membre">Membres</option><option value="benevole">Bénévoles</option></select><select id="memberStatusFilter" aria-label="Filtrer par statut"><option value="all">Tous les statuts</option><option value="actif">Actifs</option><option value="inactif">Inactifs</option><option value="suspendu">Suspendus</option></select></div><div class="count" id="count"></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie / fonction</th><th>Contact</th><th>Statut</th><th id="actionHead" hidden>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Aucune fiche ne correspond à la recherche.</div></section>
 </div>
 <div class="note">L’accès à cet annuaire est contrôlé côté serveur par les règles Firestore. Les fiches sont désactivées plutôt que supprimées afin de préserver l’historique.</div>
 </main>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script><script src="firebase-init.js"></script>
 <script>
 "use strict";
-const $=id=>document.getElementById(id);let currentUser=null,canManage=false,members=[];
+const $=id=>document.getElementById(id);let currentUser=null,canManage=false,members=[],editingMemberId=null;
 function say(text,type=""){const el=$("message");el.textContent=text;el.className="message "+type;el.hidden=false}
 function esc(value){return String(value||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function render(){const q=$("search").value.trim().toLocaleLowerCase();const filtered=members.filter(m=>[m.fullName,m.position,m.email,m.phone,m.memberType,m.status].join(" ").toLocaleLowerCase().includes(q));$("rows").replaceChildren();$("count").textContent=filtered.length+" fiche(s) affichée(s) · "+members.length+" au total";$("empty").hidden=filtered.length!==0;filtered.sort((a,b)=>(a.fullName||"").localeCompare(b.fullName||"","fr")).forEach(m=>{const tr=document.createElement("tr");const contact=[m.email,m.phone].filter(Boolean).join(" · ");const type=({fondateur:"Fondateur",membre:"Membre",benevole:"Bénévole"})[m.memberType]||"—";const status=({actif:"Actif",inactif:"Inactif",suspendu:"Suspendu"})[m.status]||"Inconnu";tr.innerHTML="<td><strong>"+esc(m.fullName)+"</strong></td><td>"+esc(type)+"<br><span class='muted'>"+esc(m.position||"")+"</span></td><td>"+esc(contact||"—")+"</td><td><span class='tag status "+(m.status==="actif"?"":"off")+"'>"+esc(status)+"</span></td>";if(canManage){const td=document.createElement("td");const btn=document.createElement("button");btn.className="secondary";btn.textContent=m.status==="actif"?"Désactiver":"Réactiver";btn.addEventListener("click",()=>changeStatus(m.id,m.status==="actif"?"inactif":"actif"));td.append(btn);tr.append(td)}$("rows").append(tr)})}
+function render(){
+  const q=$("search").value.trim().toLocaleLowerCase("fr");
+  const type=$("typeFilter").value;
+  const status=$("memberStatusFilter").value;
+  const filtered=members.filter(m=>{
+    const matchesText=[m.fullName,m.position,m.email,m.phone,m.memberType,m.status].join(" ").toLocaleLowerCase("fr").includes(q);
+    return matchesText&&(type==="all"||m.memberType===type)&&(status==="all"||m.status===status);
+  }).sort((a,b)=>(a.fullName||"").localeCompare(b.fullName||"","fr"));
+  $("rows").replaceChildren();
+  $("count").textContent=filtered.length+" fiche(s) affichée(s) · "+members.length+" au total";
+  $("empty").hidden=filtered.length!==0;
+  $("empty").textContent=members.length===0?"Aucune fiche n'est encore enregistrée.":"Aucune fiche ne correspond aux filtres.";
+  filtered.forEach(m=>{
+    const tr=document.createElement("tr");
+    const contact=[m.email,m.phone].filter(Boolean).join(" · ");
+    const typeLabel=({fondateur:"Fondateur",membre:"Membre",benevole:"Bénévole"})[m.memberType]||"—";
+    const statusLabel=({actif:"Actif",inactif:"Inactif",suspendu:"Suspendu"})[m.status]||"Inconnu";
+    tr.innerHTML="<td><strong>"+esc(m.fullName)+"</strong></td><td>"+esc(typeLabel)+"<br><span class='muted'>"+esc(m.position||"")+"</span></td><td>"+esc(contact||"—")+"</td><td><span class='tag status "+(m.status==="actif"?"":"off")+"'>"+esc(statusLabel)+"</span></td>";
+    if(canManage){
+      const td=document.createElement("td"),edit=document.createElement("button"),btn=document.createElement("button");
+      edit.className="secondary";edit.textContent="Modifier";edit.addEventListener("click",()=>editMember(m));
+      btn.className="secondary";btn.textContent=m.status==="actif"?"Désactiver":"Réactiver";
+      btn.addEventListener("click",()=>changeStatus(m.id,m.status==="actif"?"inactif":"actif"));
+      td.append(edit,btn);tr.append(td);
+    }
+    $("rows").append(tr);
+  });
+}
+function editMember(member){
+  editingMemberId=member.id;
+  $("fullName").value=member.fullName||"";
+  $("memberType").value=member.memberType||"membre";
+  $("position").value=member.position||"";
+  $("email").value=member.email||"";
+  $("phone").value=member.phone||"";
+  $("formTitle").textContent="Modifier une fiche";
+  $("saveButton").textContent="Enregistrer les modifications";
+  $("cancelEdit").hidden=false;
+  $("formPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  $("fullName").focus();
+}
+function resetMemberForm(){
+  editingMemberId=null;
+  $("memberForm").reset();
+  $("formTitle").textContent="Ajouter une fiche";
+  $("saveButton").textContent="Enregistrer la fiche";
+  $("cancelEdit").hidden=true;
+}
 async function loadMembers(){const snap=await WATFirebase.db.collection("members").get();members=snap.docs.map(d=>({id:d.id,...d.data()}));render()}
 async function changeStatus(id,status){try{await WATFirebase.db.collection("members").doc(id).update({status,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid});await loadMembers();say("Statut de la fiche mis à jour.","success")}catch(e){console.error(e);say("Mise à jour refusée ou indisponible. Vérifiez votre droit members.manage.","error")}}
 async function init(user){if(!user){say("Connectez-vous avec votre compte WAT depuis le portail.");return}if(!user.emailVerified){say("Votre adresse e-mail doit être vérifiée.","error");return}const snap=await WATFirebase.db.collection("staffAccess").doc(user.uid).get();const staff=snap.exists?snap.data():null;if(!staff||staff.active!==true){say("Votre compte ne dispose pas d’un accès équipe actif.","error");return}const scopes=Array.isArray(staff.scopes)?staff.scopes:[];const canRead=scopes.includes("members.read")||scopes.includes("members.manage");canManage=scopes.includes("members.manage");if(!canRead){say("Votre compte n’a pas le périmètre members.read. Contactez l’administration.","error");return}currentUser=user;$("app").hidden=false;$("formPanel").hidden=!canManage;$("actionHead").hidden=!canManage;await loadMembers();say(canManage?"Accès gestionnaire : lecture et mise à jour autorisées.":"Accès consultation : lecture seule.","success")}
-$("memberForm").addEventListener("submit",async e=>{e.preventDefault();if(!canManage||!currentUser)return;const fullName=$("fullName").value.trim();if(fullName.length<2){say("Le nom complet doit comporter au moins deux caractères.","error");return}const data={fullName,memberType:$("memberType").value,status:"actif",createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid};for(const key of ["position","email","phone"]){const value=$(key).value.trim();if(value)data[key]=value}const b=$("saveButton");b.disabled=true;try{await WATFirebase.db.collection("members").add(data);$("memberForm").reset();await loadMembers();say("Fiche ajoutée à l’annuaire.","success")}catch(err){console.error(err);say("Enregistrement refusé. Vérifiez les droits members.manage et votre connexion.","error")}finally{b.disabled=false}});
+$("memberForm").addEventListener("submit",async e=>{
+  e.preventDefault();if(!canManage||!currentUser)return;
+  const fullName=$("fullName").value.trim();
+  if(fullName.length<2){say("Le nom complet doit comporter au moins deux caractères.","error");return}
+  const data={fullName,memberType:$("memberType").value,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser.uid};
+  for(const key of ["position","email","phone"]){const value=$(key).value.trim();if(value)data[key]=value}
+  const b=$("saveButton");b.disabled=true;
+  try{
+    if(editingMemberId){
+      await WATFirebase.db.collection("members").doc(editingMemberId).update(data);
+      say("Fiche membre mise à jour.","success");
+    }else{
+      await WATFirebase.db.collection("members").add({...data,status:"actif",createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:currentUser.uid});
+      say("Fiche ajoutée à l’annuaire.","success");
+    }
+    resetMemberForm();await loadMembers();
+  }catch(err){console.error(err);say("Enregistrement refusé. Vérifiez les droits members.manage et votre connexion.","error")}
+  finally{b.disabled=false}
+});
+$("cancelEdit").addEventListener("click",resetMemberForm);
 $("search").addEventListener("input",render);
+$("typeFilter").addEventListener("change",render);
+$("memberStatusFilter").addEventListener("change",render);
 $("logout").addEventListener("click",async()=>{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut();location.href="index.html"});
 if(window.WATFirebase&&WATFirebase.ready){WATFirebase.auth.onAuthStateChanged(user=>{init(user).catch(e=>{console.error(e);say("Impossible de charger l’annuaire. Vérifiez vos accès et votre connexion.","error")})})}else say("Le service sécurisé est indisponible. Réessayez plus tard.","error");
 </script></body></html>
