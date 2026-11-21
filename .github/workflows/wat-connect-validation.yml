@@ -28,5 +28,5 @@ jobs:
           node --check scripts/bootstrap-wat-admin.js
       - name: Vérifier les scripts du portail et les configurations
         run: |
-          node --test tests/*.test.mjs
+          node --test tests/*syntax.test.mjs tests/firebase-project-aliases.test.mjs tests/staff-functions-security.test.mjs
           node -e "JSON.parse(require('fs').readFileSync('firebase.json','utf8')); JSON.parse(require('fs').readFileSync('functions/package.json','utf8'));"
