@@ -12,11 +12,13 @@ test("toutes les fonctions callable exigent App Check", () => {
   }
 });
 
-test("les opérations sensibles exigent une session vérifiée et le claim watAdmin", () => {
-  assert.match(source, /request\.auth\.token\.email_verified !== true/);
-  assert.match(source, /request\.auth\.token\.watAdmin !== true/);
-  assert.match(source, /function requireWatAdmin\(request\)/);
-  assert.match(source, /requireWatAdmin\(request\)/);
+test("les opérations sensibles revalident le compte administrateur côté Admin SDK", () => {
+  assert.match(source, /async function requireWatAdmin\(request\)/);
+  assert.match(source, /await auth\.getUser\(request\.auth\.uid\)/);
+  assert.match(source, /user\.disabled/);
+  assert.match(source, /user\.emailVerified !== true/);
+  assert.match(source, /user\.customClaims\?\.watAdmin !== true/);
+  assert.match(source, /await requireWatAdmin\(request\)/);
 });
 
 test("un nouveau compte d'équipe est créé inactif et ses permissions sont en liste autorisée", () => {
