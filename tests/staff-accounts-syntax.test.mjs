@@ -25,6 +25,10 @@ test("l'interface des comptes d'équipe ne s'ouvre qu'avec le claim watAdmin et 
   assert.match(html, /callable\("createStaffAccount"/);
   assert.match(html, /callable\("setStaffAccountStatus"/);
   assert.match(html, /callable\("updateStaffAccountAccess"/);
+  for (const role of ["controleur_financier", "commissaire_aux_comptes", "responsable_formation_islamique_orientations"]) {
+    assert.ok(html.includes('value="' + role + '"'), "fonction absente du formulaire : " + role);
+    assert.ok(html.includes(role + ":"), "libellé de fonction absent : " + role);
+  }
   assert.match(html, /Modifier les droits/);
   assert.match(html, /Enregistrer les droits/);
   assert.match(html, /id="searchAccounts"/);
