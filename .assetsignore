@@ -18,3 +18,4 @@ npm-shrinkwrap.json
 /.firebaserc
 /.env*
 *.log
+wrangler.staging.json
