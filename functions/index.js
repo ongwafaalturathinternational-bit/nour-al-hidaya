@@ -147,20 +147,25 @@ exports.updateStaffAccountAccess = onCall({ region: "us-central1", enforceAppChe
 exports.listStaffAccounts = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
   requireWatAdmin(request);
   const snapshot = await db.collection("staffAccess").limit(500).get();
-  const accounts = await Promise.all(snapshot.docs.map(async doc => {
-    const data = doc.data();
-    const user = await auth.getUser(doc.id).catch(() => null);
-    return {
-      uid: doc.id,
-      email: typeof data.email === "string" ? data.email : (user?.email || ""),
-      displayName: typeof data.displayName === "string" ? data.displayName : (user?.displayName || ""),
-      role: typeof data.role === "string" ? data.role : "",
-      scopes: Array.isArray(data.scopes) ? data.scopes : [],
-      active: data.active === true,
-      emailVerified: user?.emailVerified === true,
-      authDisabled: user?.disabled !== false
-    };
-  }));
+  const accounts = [];
+  const batchSize = 25;
+  for (let offset = 0; offset < snapshot.docs.length; offset += batchSize) {
+    const batch = await Promise.all(snapshot.docs.slice(offset, offset + batchSize).map(async doc => {
+      const data = doc.data();
+      const user = await auth.getUser(doc.id).catch(() => null);
+      return {
+        uid: doc.id,
+        email: typeof data.email === "string" ? data.email : (user?.email || ""),
+        displayName: typeof data.displayName === "string" ? data.displayName : (user?.displayName || ""),
+        role: typeof data.role === "string" ? data.role : "",
+        scopes: Array.isArray(data.scopes) ? data.scopes : [],
+        active: data.active === true,
+        emailVerified: user?.emailVerified === true,
+        authDisabled: user?.disabled !== false
+      };
+    }));
+    accounts.push(...batch);
+  }
   accounts.sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
   return { accounts, truncated: snapshot.size === 500 };
 });
