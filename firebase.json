@@ -18,5 +18,9 @@
       "**/*.test.*",
       "*.md"
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
   }
 }
