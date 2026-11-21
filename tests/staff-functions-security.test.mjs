@@ -74,3 +74,9 @@ test("un administrateur ne peut pas modifier ses propres permissions par cette f
   assert.match(source, /if \(!snap\.exists\)/);
   assert.match(source, /auth\.getUser\(uid\)/);
 });
+
+test("le registre limite les appels simultanés à Firebase Authentication", () => {
+  assert.match(source, /const batchSize = 25/);
+  assert.match(source, /snapshot\.docs\.slice\(offset, offset \+ batchSize\)/);
+  assert.match(source, /accounts\.push\(\.\.\.batch\)/);
+});
