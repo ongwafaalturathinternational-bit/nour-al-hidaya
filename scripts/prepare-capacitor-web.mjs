@@ -34,6 +34,13 @@ for (const file of files) {
   await fs.copyFile(source, target);
 }
 
+// Le build APK de test peut forcer staging sans modifier les sources de production.
+if (process.env.WAT_FIREBASE_ENV === "staging") {
+  const firebaseInit = path.join(output, "firebase-init.js");
+  const source = await fs.readFile(firebaseInit, "utf8");
+  await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\\n' + source);
+}
+
 const vendor = path.join(output, "vendor");
 await fs.mkdir(vendor, { recursive: true });
 const sdkFiles = [
