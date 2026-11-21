@@ -1,0 +1,32 @@
+name: WAT Connect validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - security/staging-email-verification-flow
+  push:
+    branches:
+      - security/staff-account-provisioning
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Vérifier la syntaxe des fonctions et scripts
+        run: |
+          node --check functions/index.js
+          node --check scripts/bootstrap-wat-admin.js
+      - name: Vérifier les scripts du portail et les configurations
+        run: |
+          node --test tests/*syntax.test.mjs tests/firebase-project-aliases.test.mjs
+          node -e "JSON.parse(require('fs').readFileSync('firebase.json','utf8')); JSON.parse(require('fs').readFileSync('functions/package.json','utf8'));"
