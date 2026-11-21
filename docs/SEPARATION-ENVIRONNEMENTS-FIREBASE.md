@@ -3,7 +3,7 @@
 ## Règle de sécurité
 
 - L'application Android et tous les domaines ordinaires utilisent le projet Firebase de production `wat-connect`.
-- Seul le domaine exact `wat-connect-staging.ongwafaalturathinternational.workers.dev` sélectionne le projet Firebase `wat-connect-staging`.
+- Le domaine dédié `wat-connect-staging.ongwafaalturathinternational.workers.dev` et les sous-domaines d'aperçu Cloudflare suffixés par `-nour-al-hidaya.ongwafaalturathinternational.workers.dev` sélectionnent le projet Firebase `wat-connect-staging`.
 - Aucun paramètre d'URL ne permet de basculer un site de production vers staging.
 - Si Firebase est déjà initialisé sur un projet différent de celui attendu, l'initialisation est bloquée.
 
@@ -19,7 +19,7 @@ Le workflow n'est pas lancé par ce commit. Sa disponibilité pour une exécutio
 
 Les tests de `firebase-init.js` vérifient que :
 - Android et un domaine ordinaire utilisent `wat-connect` ;
-- le domaine staging exact utilise `wat-connect-staging` ;
+- le domaine staging dédié et un aperçu Cloudflare de branche utilisent `wat-connect-staging` ;
 - l'application ne mélange pas les projets Firebase lorsqu'une instance existe déjà.
 
 ## Limites
