@@ -169,3 +169,30 @@ test("une affectation conserve l'identité du bénévole mais autorise la mise �
   await assertFails(updateDoc(ref, { volunteerId: "another-volunteer", updatedAt: serverTimestamp(), updatedBy: "assignment-identity-manager" }));
   await assertSucceeds(updateDoc(ref, { assignmentRole: "Coordination terrain", status: "confirme", updatedAt: serverTimestamp(), updatedBy: "assignment-identity-manager" }));
 });
+
+test("une affectation ne peut pas être réactivée après désactivation du bénévole", async () => {
+  await seed("assignment-inactive-transition", ["projects.manage", "volunteers.read"]);
+  await env.withSecurityRulesDisabled(async c => {
+    const db = c.firestore();
+    await setDoc(doc(db, "projects", "inactive-transition-project"), project("system"));
+    await setDoc(doc(db, "volunteers", "vol-001"), volunteer("system"));
+    await setDoc(
+      doc(db, "projects", "inactive-transition-project", "volunteers", "vol-001"),
+      assignment("system")
+    );
+    await updateDoc(doc(db, "volunteers", "vol-001"), { status: "inactif" });
+  });
+  const db = env.authenticatedContext("assignment-inactive-transition", {
+    email: "assignment-inactive-transition@example.org", email_verified: true
+  }).firestore();
+  const ref = doc(db, "projects", "inactive-transition-project", "volunteers", "vol-001");
+  await assertFails(updateDoc(ref, {
+    status: "confirme", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  }));
+  await assertFails(updateDoc(ref, {
+    status: "propose", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  }));
+  await assertSucceeds(updateDoc(ref, {
+    status: "retire", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  }));
+});

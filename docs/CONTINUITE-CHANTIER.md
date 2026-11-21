@@ -47,3 +47,7 @@
 ## Limites d'autorisation
 
 Aucun merge, déploiement Cloudflare/Firebase, changement de règles ou données de production, création de comptes réels ou publication Android n'est autorisé. Les PR #10, #11 et #12 restent inchangées; le Lot 9 Finances reste suspendu jusqu'à validation explicite du Lot 8.
+
+## Complément d'audit — affectations et statut bénévole
+
+Une affectation existante pouvait être remise à l'état « proposée » ou « confirmée » après le passage du bénévole à l'état inactif. La règle Firestore et l'interface sont en cours de correction : l'état « retirée » reste autorisé pour préserver et clôturer l'historique; les états actifs sont refusés si le dossier bénévole n'est plus actif. Le test de non-régression est ajouté au lot de validation en cours.

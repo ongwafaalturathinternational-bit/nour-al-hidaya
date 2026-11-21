@@ -117,3 +117,10 @@ test("la recherche du Club inclut les disponibilités des bénévoles", () => {
   assert.match(html, /v\.availability\]\s*\.join\(" "\)/);
   assert.match(html, /disponibilité/);
 });
+
+test("une affectation d'un bénévole inactif ne peut être réactivée depuis l'interface", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /const assignedVolunteer=volunteers\.find\(v=>v\.id===d\.id\),isActive=assignedVolunteer\?\.status==="actif"/);
+  assert.match(html, /if\(!isActive&&value!=="retire"\)option\.disabled=true/);
+  assert.match(html, /status!=="retire"&&assignedVolunteer\?\.status!=="actif"/);
+});

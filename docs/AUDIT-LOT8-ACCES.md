@@ -56,3 +56,11 @@ La future inscription universelle devra remplacer progressivement cette saisie l
 3. Vérifier les parcours d'erreur réseau et de synchronisation des modules opérationnels.
 4. Confronter l'architecture d'inscription universelle au cahier des charges initial avant toute implémentation.
 5. Exécuter la recette sur Android avec des comptes fictifs aux scopes distincts, sans données réelles de bénéficiaires.
+
+## 7. Affectations après désactivation d'un bénévole
+
+L'audit a relevé qu'une affectation créée pour un bénévole actif pouvait ensuite être repassée à « proposée » ou « confirmée » après que la fiche du bénévole était devenue inactive. La création vérifiait bien le statut actif, mais la règle de mise à jour ne le revalidait pas.
+
+Le correctif ajoute une vérification côté Firestore de l'état final du document bénévole avec existsAfter/getAfter. Une affectation d'un bénévole absent ou inactif peut être clôturée (« retirée »), mais ne peut plus être réactivée. L'interface désactive les choix incompatibles et explique la raison; la règle serveur reste décisive si le statut change après le chargement de la page.
+
+Un test de règles vérifie le refus des états « proposée » et « confirmée » après désactivation, puis l'autorisation de clôture. Un test d'interface vérifie la disponibilité de la seule action de clôture.
