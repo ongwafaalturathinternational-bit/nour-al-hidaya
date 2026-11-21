@@ -16,3 +16,10 @@ test("Cloudflare static assets exclude repository and internal project files", (
     assert.ok(ignoredAssets.includes(pattern), `missing .assetsignore rule: ${pattern}`);
   }
 });
+
+test("Firebase Hosting excludes backend code and administrative bootstrap scripts", () => {
+  const firebase = JSON.parse(readFileSync(new URL("../firebase.json", import.meta.url), "utf8"));
+  for (const pattern of ["functions/**", "scripts/**", "package.json", "package-lock.json"]) {
+    assert.ok(firebase.hosting.ignore.includes(pattern), `missing Firebase Hosting ignore rule: ${pattern}`);
+  }
+});
