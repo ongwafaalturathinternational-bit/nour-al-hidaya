@@ -238,3 +238,37 @@ test("une affectation ne peut pas être réactivée après désactivation du bé
     status: "retire", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
   }));
 });
+
+
+test("la lecture des affectations exige simultanément un scope projet et un scope Club", async () => {
+  await seed("assignment-reader-both", ["projects.read", "volunteers.read"]);
+  await seed("assignment-reader-project-only", ["projects.read"]);
+  await seed("assignment-reader-club-only", ["volunteers.read"]);
+  await env.withSecurityRulesDisabled(async c => {
+    const db = c.firestore();
+    await setDoc(doc(db, "projects", "scope-matrix-project"), project("system"));
+    await setDoc(doc(db, "volunteers", "scope-matrix-volunteer"), volunteer("system"));
+    await setDoc(
+      doc(db, "projects", "scope-matrix-project", "volunteers", "scope-matrix-volunteer"),
+      assignment("system", {
+        volunteerId: "scope-matrix-volunteer",
+        volunteerName: "Benevole Test"
+      })
+    );
+  });
+
+  const both = env.authenticatedContext("assignment-reader-both", {
+    email: "assignment-reader-both@example.org", email_verified: true
+  }).firestore();
+  const projectOnly = env.authenticatedContext("assignment-reader-project-only", {
+    email: "assignment-reader-project-only@example.org", email_verified: true
+  }).firestore();
+  const clubOnly = env.authenticatedContext("assignment-reader-club-only", {
+    email: "assignment-reader-club-only@example.org", email_verified: true
+  }).firestore();
+
+  const assignmentPath = ["projects", "scope-matrix-project", "volunteers", "scope-matrix-volunteer"];
+  await assertSucceeds(getDoc(doc(both, ...assignmentPath)));
+  await assertFails(getDoc(doc(projectOnly, ...assignmentPath)));
+  await assertFails(getDoc(doc(clubOnly, ...assignmentPath)));
+});
