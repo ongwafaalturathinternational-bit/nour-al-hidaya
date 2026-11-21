@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102746">
+<title>Mon espace candidat — Club Khuddam Al-Turath</title>
+<style>
+:root{--navy:#102746;--gold:#c9972b;--paper:#f4f6fa;--ink:#17243a;--muted:#657187;--line:#dce2eb;--green:#176b49;--red:#a83232}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold)}.head{max-width:780px;margin:auto;padding:18px 20px}.brand{font:700 1.2rem Georgia,serif}.brand small{display:block;font:normal .82rem system-ui;opacity:.8}
+main{max-width:780px;margin:28px auto;padding:0 16px 50px}.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:22px;margin-bottom:16px}
+h1{font:700 1.8rem Georgia,serif;margin:0 0 7px}h2{font:700 1.15rem Georgia,serif;margin:0 0 10px}.muted{color:var(--muted)}
+label{display:block;font-size:.84rem;font-weight:700;margin:12px 0 5px}input{width:100%;padding:11px;border:1px solid #cbd3df;border-radius:9px;font:inherit}
+button{font:inherit;cursor:pointer}.primary{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:11px 16px;font-weight:700}.secondary{background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:9px;padding:9px 13px;font-weight:650}.full{width:100%;margin-top:14px}
+.message{padding:12px;border-radius:9px;background:#edf2f8;margin:14px 0}.error{background:#fbe9e8;color:var(--red)}.success{background:#e7f4ec;color:var(--green)}
+.status{display:inline-block;border-radius:999px;padding:5px 11px;background:#f8f0dc;color:#76520c;font-weight:700;font-size:.82rem}.status.ok{background:#e7f4ec;color:var(--green)}.status.no{background:#fbe9e8;color:var(--red)}
+a{color:var(--navy);font-weight:650}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}[hidden]{display:none!important}
+@media(max-width:600px){main{margin:16px auto}.panel{padding:17px}h1{font-size:1.5rem}}
+</style>  <link rel="stylesheet" href="wat-brand.css">
+</head>
+<body>
+<header><div class="head"><div class="brand">ONG Wafa Al-Turath<small>Club Khuddam Al-Turath · Espace personnel</small></div></div></header>
+<main>
+<section class="panel"><h1>Mon espace candidat</h1><p class="muted">Suivez l’état de votre candidature au Club Khuddam Al-Turath. Cet espace personnel est distinct du registre interne réservé aux responsables autorisés.</p><div id="message" class="message" role="status" aria-live="polite">Initialisation du service sécurisé…</div></section>
+<section class="panel" id="authPanel" hidden>
+<h2>Connexion</h2><form id="loginForm"><label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" required><button class="primary full" id="loginButton">Me connecter</button></form>
+<div class="actions"><button class="secondary" id="forgot">Mot de passe oublié</button><a href="club-khuddam-inscription.html">Créer un compte / déposer une candidature</a></div>
+</section>
+<section class="panel" id="accountPanel" hidden>
+<h2 id="welcome">Votre dossier</h2><p id="emailLabel" class="muted"></p>
+<div id="verificationBox" hidden><p>Votre adresse e-mail n’est pas encore vérifiée. Consultez votre boîte de réception puis actualisez votre vérification ici.</p><div class="actions"><button class="secondary" id="resend">Renvoyer le lien</button><button class="primary" id="refresh">J’ai vérifié mon adresse</button></div></div>
+<div id="applicationBox" hidden><p>État de votre candidature : <span id="status" class="status">En attente</span></p><p id="statusText"></p><div id="details"></div><p class="muted">La validation de votre adresse e-mail confirme votre adresse, mais ne vaut pas acceptation de votre candidature. Seul un responsable habilité peut prendre cette décision.</p></div>
+<div class="actions"><button class="secondary" id="logout">Se déconnecter</button><a href="index.html">Retour à WAT Connect</a></div>
+</section>
+<section class="panel"><a href="club-khuddam-inscription.html">Retour au formulaire du Club Khuddam Al-Turath</a></section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
+<script src="firebase-init.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+let currentUser = null, authGeneration = 0;
+function say(text,type=""){const el=$("message");el.textContent=text;el.className="message "+type;el.hidden=false}
+function isCurrentSession(user,generation){
+ return generation === authGeneration && WATFirebase.auth.currentUser?.uid === user.uid;
+}
+function showAuth(){
+ authGeneration += 1;
+ currentUser = null;
+ $("authPanel").hidden = false;
+ $("accountPanel").hidden = true;
+ $("applicationBox").hidden = true;
+ $("emailLabel").textContent = "";
+ $("statusText").textContent = "";
+ $("details").textContent = "";
+ say("Connectez-vous pour consulter votre dossier.");
+}
+function statusLabel(value){return ({en_attente:"En attente d’examen",acceptee:"Candidature acceptée",refusee:"Candidature non retenue"})[value]||"État à confirmer";}
+async function loadAccount(user){
+ if(WATFirebase.auth.currentUser?.uid !== user.uid)return;
+ const generation = ++authGeneration;
+ currentUser = user;
+ $("authPanel").hidden = true;
+ $("accountPanel").hidden = false;
+ $("welcome").textContent = "Votre dossier Club Khuddam";
+ $("emailLabel").textContent = user.email || "";
+ $("verificationBox").hidden = !!user.emailVerified;
+ $("applicationBox").hidden = true;
+ $("details").textContent = "";
+ $("statusText").textContent = "";
+ if(!user.emailVerified){say("Votre adresse e-mail doit être vérifiée pour consulter votre dossier.","error");return;}
+ try{
+  await user.getIdToken(true);
+  if(!isCurrentSession(user,generation))return;
+  const ref = WATFirebase.db.collection("volunteerApplications").doc(user.uid);
+  const snap = await ref.get();
+  if(!isCurrentSession(user,generation))return;
+  if(!snap.exists){say("Aucune candidature n’est encore associée à ce compte. Vous pouvez utiliser le formulaire public pour déposer votre dossier.");return;}
+  const data=snap.data(),status=data.status||"en_attente";
+  $("applicationBox").hidden=false;
+  $("status").textContent=statusLabel(status);
+  $("status").className="status "+(status==="acceptee"?"ok":status==="refusee"?"no":"");
+  $("statusText").textContent=status==="en_attente"?"Votre dossier a bien été reçu. L’équipe du Club l’examinera et vous contactera.":status==="acceptee"?"Votre candidature a été acceptée. L’équipe vous communiquera les prochaines étapes de votre engagement.":"Votre candidature n’a pas été retenue. Vous pouvez contacter l’ONG pour obtenir des informations.";
+  const details=[];if(data.category)details.push("Type d’engagement : "+({occasionnel:"Occasionnel",engage:"Engagé",contributeur:"Contributeur"}[data.category]||data.category));if(data.createdAt&&data.createdAt.toDate)details.push("Dossier déposé le : "+data.createdAt.toDate().toLocaleDateString("fr-FR"));
+  $("details").textContent=details.join(" · ");
+  say("Votre dossier personnel a été chargé.","success");
+ }catch(error){
+  if(!isCurrentSession(user,generation))return;
+  console.error(error);
+  say("Impossible de charger votre dossier. Vérifiez votre connexion puis réessayez.","error");
+ }
+}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("loginButton");b.disabled=true;try{await WATFirebase.auth.signInWithEmailAndPassword($("email").value.trim().toLowerCase(),$("password").value);say("Connexion réussie.","success");}catch(err){console.error(err);say(err.code==="auth/invalid-credential"?"Adresse e-mail ou mot de passe incorrect.":"Connexion impossible. Vérifiez vos identifiants et votre connexion.","error");}finally{b.disabled=false;}});
+$("forgot").addEventListener("click",async()=>{const email=$("email").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){say("Saisissez d’abord votre adresse e-mail.","error");return;}try{await WATFirebase.auth.sendPasswordResetEmail(email);say("Si cette adresse possède un compte, un lien de réinitialisation a été envoyé.","success");}catch(e){say("Impossible d’envoyer le lien pour le moment.","error");}});
+$("resend").addEventListener("click",async()=>{
+ const user=currentUser,generation=authGeneration;
+ if(!user)return;
+ try{await user.sendEmailVerification();if(isCurrentSession(user,generation))say("Lien de vérification renvoyé.","success");}
+ catch(e){if(isCurrentSession(user,generation))say("Impossible de renvoyer le lien. Réessayez plus tard.","error");}
+});
+$("refresh").addEventListener("click",async()=>{
+ const user=currentUser,generation=authGeneration;
+ if(!user)return;
+ try{
+  await user.reload();
+  if(!isCurrentSession(user,generation))return;
+  const refreshed=WATFirebase.auth.currentUser;
+  if(refreshed.emailVerified){
+   await refreshed.getIdToken(true);
+   if(!isCurrentSession(refreshed,generation))return;
+   await loadAccount(refreshed);
+  }else say("L’adresse n’est pas encore marquée comme vérifiée. Ouvrez le lien reçu puis réessayez.","error");
+ }catch(e){if(isCurrentSession(user,generation))say("Actualisation impossible. Réessayez.","error");}
+});
+$("logout").addEventListener("click",async()=>{try{await WATFirebase.signOutSafely();}catch(e){say(e.message||"Déconnexion impossible.","error");}});
+if(window.WATFirebase&&WATFirebase.ready){WATFirebase.auth.onAuthStateChanged(user=>{if(user)loadAccount(user);else showAuth();});}else say("Le service sécurisé est temporairement indisponible.","error");
+</script></body></html>

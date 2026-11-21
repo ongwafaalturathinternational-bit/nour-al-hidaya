@@ -17,6 +17,7 @@ service cloud.firestore {
 
     function activeStaff() {
       return request.auth != null
+        && request.auth.token.email_verified == true
         && staffAccessExists(request.auth.uid)
         && staffAccessData(request.auth.uid).active == true;
     }
@@ -38,6 +39,7 @@ service cloud.firestore {
     // Accès par périmètre : un rôle seul ne suffit jamais à ouvrir une collection.
     function staffHasScope(scope) {
       return request.auth != null
+        && request.auth.token.email_verified == true
         && staffAccessExists(request.auth.uid)
         && staffAccessData(request.auth.uid).active == true
         && staffAccessData(request.auth.uid).scopes is list
@@ -275,8 +277,11 @@ service cloud.firestore {
       allow delete: if false;
 
       match /volunteers/{assignmentId} {
-        allow read: if staffHasScope("projects.read") || staffHasScope("projects.manage");
+        // Les affectations exposent des noms de bénévoles : un droit projet seul ne suffit pas.
+        allow read: if (staffHasScope("projects.read") || staffHasScope("projects.manage"))
+          && (staffHasScope("volunteers.read") || staffHasScope("volunteers.manage"));
         allow create: if staffHasScope("projects.manage")
+          && (staffHasScope("volunteers.read") || staffHasScope("volunteers.manage"))
           && exists(/databases/$(database)/documents/projects/$(projectId))
           && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
@@ -292,6 +297,7 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
           && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
         allow update: if staffHasScope("projects.manage")
+          && (staffHasScope("volunteers.read") || staffHasScope("volunteers.manage"))
           && request.resource.data.keys().hasOnly(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.keys().hasAll(["volunteerId", "volunteerName", "assignmentRole", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
           && request.resource.data.volunteerId == resource.data.volunteerId
@@ -300,6 +306,13 @@ service cloud.firestore {
           && request.resource.data.volunteerName is string && request.resource.data.volunteerName.size() >= 2 && request.resource.data.volunteerName.size() <= 120
           && request.resource.data.assignmentRole is string && request.resource.data.assignmentRole.size() <= 100
           && request.resource.data.status in ["propose", "confirme", "retire"]
+          && (
+            request.resource.data.status == "retire"
+            || (
+              existsAfter(/databases/$(database)/documents/volunteers/$(assignmentId))
+              && getAfter(/databases/$(database)/documents/volunteers/$(assignmentId)).data.status == "actif"
+            )
+          )
           && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
           && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
         allow delete: if false;
@@ -341,7 +354,8 @@ service cloud.firestore {
     // Candidatures au Club : dépôt par le titulaire d'un compte vérifié.
     // L'approbation reste une action explicite d'un gestionnaire autorisé.
     match /volunteerApplications/{applicationId} {
-      allow get: if (request.auth != null && request.auth.uid == applicationId)
+      allow get: if (request.auth != null && request.auth.uid == applicationId
+          && request.auth.token.email_verified == true)
         || staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow list: if staffHasScope("volunteers.read") || staffHasScope("volunteers.manage");
       allow create: if request.auth != null

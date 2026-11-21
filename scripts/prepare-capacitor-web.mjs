@@ -5,6 +5,7 @@ const root = process.cwd();
 const output = path.join(root, "web-dist");
 const files = [
   "index.html",
+  "site-institutionnel.html",
   "nour-al-hidaya.html",
   "administration.html",
   "programmes.html",
@@ -12,8 +13,11 @@ const files = [
   "projets.html",
   "club-khuddam.html",
   "club-khuddam-inscription.html",
+  "club-khuddam-espace.html",
   "portail.html",
   "firebase-init.js",
+  "wat-brand.css",
+  "wat-brand-nour.css",
   "sw.js",
   "manifest.json",
   "manifest-nour.json",

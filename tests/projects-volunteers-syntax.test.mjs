@@ -105,7 +105,8 @@ test("la fiche du Club synthétise les participations et les affectations sans c
   assert.match(html, /Présences confirmées/);
   assert.match(html, /Projets confirmés/);
   assert.match(html, /if\(canAttendanceRead\)tasks\.push/);
-  assert.match(html, /if\(canProjectsRead\)tasks\.push/);
+  assert.match(html, /canAssignmentsRead=canProjectsRead&&canRead/);
+  assert.match(html, /if\(canAssignmentsRead\)tasks\.push/);
   assert.match(html, /if\(canActivitiesRead\)/);
   assert.match(html, /where\("participantRef","==",v\.id\)/);
   assert.match(html, /where\("volunteerId","==",v\.id\)/);
@@ -115,4 +116,11 @@ test("la recherche du Club inclut les disponibilités des bénévoles", () => {
   const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
   assert.match(html, /v\.availability\]\s*\.join\(" "\)/);
   assert.match(html, /disponibilité/);
+});
+
+test("une affectation d'un bénévole inactif ne peut être réactivée depuis l'interface", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /const assignedVolunteer=volunteers\.find\(v=>v\.id===d\.id\),isActive=assignedVolunteer\?\.status==="actif"/);
+  assert.match(html, /if\(!isActive&&value!=="retire"\)option\.disabled=true/);
+  assert.match(html, /status!=="retire"&&assignedVolunteer\?\.status!=="actif"/);
 });

@@ -29,6 +29,28 @@ test("un compte vérifié peut déposer sa candidature uniquement sous son UID",
   await assertSucceeds(getDoc(ref));
   await assertFails(setDoc(doc(db, "volunteerApplications", "someone-else"), application("applicant-1", "candidate@example.org")));
 });
+test("un compte dont l'adresse n'est plus vérifiée ne peut pas relire son dossier candidat", async () => {
+  await env.withSecurityRulesDisabled(async c => setDoc(
+    doc(c.firestore(), "volunteerApplications", "applicant-unverified-read"),
+    application("applicant-unverified-read", "candidate@example.org")
+  ));
+  const db = env.authenticatedContext("applicant-unverified-read", {
+    email: "candidate@example.org", email_verified: false
+  }).firestore();
+  await assertFails(getDoc(doc(db, "volunteerApplications", "applicant-unverified-read")));
+});
+
+test("un candidat vérifié ne peut consulter que son propre dossier", async () => {
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "volunteerApplications", "other-candidate"), application("other-candidate", "other@example.org"));
+  });
+  const db = env.authenticatedContext("applicant-self-only", {
+    email: "self-only@example.org", email_verified: true
+  }).firestore();
+  await assertFails(getDoc(doc(db, "volunteerApplications", "other-candidate")));
+  await assertFails(getDocs(collection(db, "volunteerApplications")));
+});
+
 test("un compte non vérifié ne peut pas déposer une candidature", async () => {
   const db = env.authenticatedContext("applicant-2", { email: "unverified@example.org", email_verified: false }).firestore();
   await assertFails(setDoc(doc(db, "volunteerApplications", "applicant-2"), application("applicant-2", "unverified@example.org")));
@@ -40,7 +62,7 @@ test("la candidature ne peut pas être auto-approuvée ou modifiée par le candi
 test("volunteers.read consulte une candidature et volunteers.manage peut la traiter", async () => {
   await seed("reviewer", ["volunteers.read", "volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate"), application("candidate", "candidate@example.org")));
-  const db = env.authenticatedContext("reviewer").firestore();
+  const db = env.authenticatedContext("reviewer", { email: "reviewer@example.org", email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate");
   await assertSucceeds(getDoc(ref));
   await assertSucceeds(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer", updatedAt: serverTimestamp(), updatedBy: "reviewer" }));
@@ -48,7 +70,7 @@ test("volunteers.read consulte une candidature et volunteers.manage peut la trai
 test("volunteers.read peut consulter mais pas traiter une candidature", async () => {
   await seed("reader", ["volunteers.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate2"), application("candidate2", "candidate2@example.org")));
-  const db = env.authenticatedContext("reader").firestore();
+  const db = env.authenticatedContext("reader", { email: "reader@example.org", email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate2");
   await assertSucceeds(getDoc(ref));
   await assertSucceeds(getDocs(collection(db, "volunteerApplications")));
@@ -68,7 +90,7 @@ test("le candidat ne peut ni lister les candidatures ni modifier son dossier apr
 test("un responsable ne peut pas modifier les données personnelles d'une candidature", async () => {
   await seed("reviewer-pii", ["volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate-pii"), application("candidate-pii", "candidate-pii@example.org")));
-  const db = env.authenticatedContext("reviewer-pii").firestore();
+  const db = env.authenticatedContext("reviewer-pii", { email: "reviewer-pii@example.org", email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate-pii");
   await assertFails(updateDoc(ref, { fullName: "Nom remplacé", status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
   await assertSucceeds(updateDoc(ref, { status: "refusee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-pii", updatedAt: serverTimestamp(), updatedBy: "reviewer-pii" }));
@@ -77,7 +99,7 @@ test("un responsable ne peut pas modifier les données personnelles d'une candid
 test("un membre de l'équipe sans périmètre Club ne peut pas lire les candidatures", async () => {
   await seed("staff-without-club", ["activities.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "private-candidate"), application("private-candidate", "private@example.org")));
-  const db = env.authenticatedContext("staff-without-club").firestore();
+  const db = env.authenticatedContext("staff-without-club", { email: "staff-without-club@example.org", email_verified: true }).firestore();
   await assertFails(getDoc(doc(db, "volunteerApplications", "private-candidate")));
   await assertFails(getDocs(collection(db, "volunteerApplications")));
 });
@@ -85,7 +107,7 @@ test("un membre de l'équipe sans périmètre Club ne peut pas lire les candidat
 test("une candidature déjà traitée ne peut pas recevoir une seconde décision", async () => {
   await seed("reviewer-once", ["volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "already-reviewed"), application("candidate", "candidate@example.org", { status: "acceptee" })));
-  const db = env.authenticatedContext("reviewer-once").firestore();
+  const db = env.authenticatedContext("reviewer-once", { email: "reviewer-once@example.org", email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "already-reviewed");
   await assertFails(updateDoc(ref, { status: "refusee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-once", updatedAt: serverTimestamp(), updatedBy: "reviewer-once" }));
 });

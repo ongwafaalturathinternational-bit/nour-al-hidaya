@@ -22,3 +22,31 @@ test("les manifestes installables ouvrent chacun le bon espace", () => {
   assert.equal(nour.name, "Nour Al-Hidaya");
   assert.equal(nour.start_url, "./nour-al-hidaya.html");
 });
+
+test("le parcours candidat possède un espace de suivi personnel et l'APK l'embarque", () => {
+  const signup = read("../club-khuddam-inscription.html");
+  const candidate = read("../club-khuddam-espace.html");
+  const worker = read("../sw.js");
+  const build = read("../scripts/prepare-capacitor-web.mjs");
+  assert.match(signup, /club-khuddam-espace\.html/);
+  assert.match(candidate, /volunteerApplications/);
+  assert.match(candidate, /emailVerified/);
+  assert.match(candidate, /En attente d’examen/);
+  assert.match(worker, /\.\/club-khuddam-espace\.html/);
+  assert.match(build, /"club-khuddam-espace\.html"/);
+});
+
+test("un candidat vérifié retrouve son espace depuis la connexion centrale sans devenir membre de l'équipe", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /collection\("volunteerApplications"\)\.doc\(user\.uid\)/);
+  assert.match(portal, /Candidat au Club Khuddam Al-Turath/);
+  assert.match(portal, /club-khuddam-espace\.html/);
+  assert.match(portal, /staffAccess/);
+});
+
+test("le portail masque son contenu public après authentification sans référence DOM absente", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /<div id="public">/);
+  assert.match(portal, /\$\("public"\)\.hidden=true/);
+  assert.match(portal, /<section id="workspace"/);
+});
