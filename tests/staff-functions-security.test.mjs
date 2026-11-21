@@ -58,3 +58,19 @@ test("la modification des rôles et permissions exige l'administration centrale 
   assert.match(source, /updatedBy: actorUid/);
   assert.match(source, /updatedAt: FieldValue\.serverTimestamp\(\)/);
 });
+
+test("la validation des e-mails accepte les adresses normales et rejette les formats invalides", () => {
+  const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  assert.equal(emailPattern.test("equipe@wafa-al-turath.org"), true);
+  assert.equal(emailPattern.test("nom avec espace@example.org"), false);
+  assert.equal(emailPattern.test("adresse-incomplete"), false);
+  assert.ok(source.includes(String.raw`/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/`));
+});
+
+test("un administrateur ne peut pas modifier ses propres permissions par cette fonction", () => {
+  assert.match(source, /uid === actorUid/);
+  assert.match(source, /modification de son propre compte interdite/);
+  assert.match(source, /requireWatAdmin\(request\)/);
+  assert.match(source, /if \(!snap\.exists\)/);
+  assert.match(source, /auth\.getUser\(uid\)/);
+});
