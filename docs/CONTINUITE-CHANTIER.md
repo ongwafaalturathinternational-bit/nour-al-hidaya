@@ -121,3 +121,11 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Commit applicatif/test : 59e3ef11e48997b3a9ec122a87fa56cc3dc58efe. Documentation d'audit ajoutée ensuite : 3d1c716dfc123d87077dd2fc7e11921d72d96db3.
 - Les validations CI du nouveau commit sont à contrôler avant de considérer ce point terminé.
 - PR #20 reste ouverte en brouillon; aucune fusion, aucun déploiement ni publication.
+
+
+## Audit de sécurité des aperçus Cloudflare — 21 novembre 2026
+
+- Vérification de `firebase-init.js` et `.firebaserc` : la branche PR #20 pointe toujours vers le projet Firebase `wat-connect` (production).
+- Un aperçu Cloudflare de cette branche peut donc charger le code de la PR tout en utilisant Firebase production. La prévisualisation Cloudflare n'est pas à considérer comme un environnement Firebase staging.
+- Consigne documentée dans `docs/AUDIT-HORS-CONNEXION-ET-DONNEES-SENSIBLES.md` : aucun test connecté avec des données réelles sur cette URL; uniquement comptes et données fictifs jusqu'à séparation Firebase staging vérifiée.
+- Aucun réglage Cloudflare, projet Firebase ou configuration d'application n'a été modifié. Le correctif de séparation doit être préparé et validé avant recette connectée.
