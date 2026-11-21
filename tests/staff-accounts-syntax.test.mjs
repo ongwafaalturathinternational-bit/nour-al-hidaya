@@ -13,9 +13,9 @@ test("l'interface des comptes d'équipe ne s'ouvre qu'avec le claim watAdmin et 
   scripts.forEach(source => assert.doesNotThrow(() => new vm.Script(source)));
   assert.match(html, /token\.claims\.watAdmin!==true/);
   assert.match(html, /ReCaptchaV3Provider/);
-  assert.match(html, /httpsCallable\("listStaffAccounts"\)/);
-  assert.match(html, /httpsCallable\("createStaffAccount"\)/);
-  assert.match(html, /httpsCallable\("setStaffAccountStatus"\)/);
+  assert.match(html, /callable\("listStaffAccounts"/);
+  assert.match(html, /callable\("createStaffAccount"/);
+  assert.match(html, /callable\("setStaffAccountStatus"/);
 });
 
 test("les liens d'invitation ne sont affichés qu'à l'intérieur de l'espace administrateur", () => {
