@@ -129,3 +129,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Un aperçu Cloudflare de cette branche peut donc charger le code de la PR tout en utilisant Firebase production. La prévisualisation Cloudflare n'est pas à considérer comme un environnement Firebase staging.
 - Consigne documentée dans `docs/AUDIT-HORS-CONNEXION-ET-DONNEES-SENSIBLES.md` : aucun test connecté avec des données réelles sur cette URL; uniquement comptes et données fictifs jusqu'à séparation Firebase staging vérifiée.
 - Aucun réglage Cloudflare, projet Firebase ou configuration d'application n'a été modifié. Le correctif de séparation doit être préparé et validé avant recette connectée.
+
+## Poursuite — séparation effective des environnements — 21 novembre 2026
+
+- Firebase staging vérifié à partir de la configuration déjà utilisée dans la PR #21 : `projectId: wat-connect-staging`. Les paramètres publics de staging correspondent au projet existant.
+- Les aperçus Cloudflare de la branche sont routés vers Firebase staging par leur suffixe de domaine; les domaines ordinaires et l'application Android en configuration normale restent sur Firebase production.
+- Correction importante pour les essais Android : le workflow APK debug injecte `WAT_FIREBASE_ENV=staging` uniquement dans la copie générée sous `web-dist`. Les sources de production ne sont pas basculées.
+- Le workflow vérifie maintenant la syntaxe du fichier Firebase généré et confirme que le marqueur staging est bien embarqué avant de compiler l'APK.
+- Configuration distincte `wrangler.staging.json` et workflow manuel de staging ajoutés. Le déploiement staging n'a pas été lancé; le workflow ne sera déclenchable qu'une fois présent sur la branche par défaut et les secrets de l'environnement staging configurés.
+- Validation du commit `d8e69f541103cf0292a93be6a6da1c98d9a73d94` : [126 tests Firestore réussis](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44913155480) et [APK Android staging construit avec succès](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44913155562). Artefact : `wat-connect-android-staging-debug-apk`, disponible jusqu'au 5 décembre 2026.
+- PR #20 reste ouverte en brouillon. Aucun merge, aucun déploiement staging ou production, aucune publication publique. La production Firebase et son Worker n'ont pas été modifiés.
