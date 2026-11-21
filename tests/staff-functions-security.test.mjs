@@ -30,7 +30,10 @@ test("un nouveau compte d'équipe est créé inactif et ses permissions sont en 
 test("l'activation exige la vérification de l'adresse et la suspension désactive le compte Auth", () => {
   assert.match(source, /if \(active && user\.emailVerified !== true\)/);
   assert.match(source, /auth\.updateUser\(uid, \{ disabled: !active \}\)/);
+  assert.match(source, /const previousActive = snap\.data\(\)\.active === true/);
   assert.match(source, /ref\.update\(\{\s*active,/);
+  assert.ok(source.indexOf("await ref.update({\n    active,") < source.indexOf("await auth.updateUser(uid, { disabled: !active })"),
+    "Firestore doit fermer ou ouvrir le périmètre avant la synchronisation Auth");
 });
 
 test("le registre renvoie uniquement les champs d'administration nécessaires", () => {
