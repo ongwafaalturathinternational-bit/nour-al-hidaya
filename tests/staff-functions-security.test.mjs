@@ -42,3 +42,12 @@ test("le registre renvoie uniquement les champs d'administration nécessaires", 
   assert.match(source, /emailVerified: user\?\.emailVerified === true/);
   assert.doesNotMatch(source, /passwordHash|passwordSalt/);
 });
+
+test("le bootstrap administrateur est strictement limité au staging et refuse un compte désactivé", () => {
+  const bootstrap = readFileSync(new URL("../scripts/bootstrap-wat-admin.js", import.meta.url), "utf8");
+  assert.match(bootstrap, /projectId !== "wat-connect-staging"/);
+  assert.match(bootstrap, /expectedEmail = "ongwafaalturathinternational@gmail.com"/);
+  assert.match(bootstrap, /user\.disabled === true/);
+  assert.match(bootstrap, /user\.emailVerified !== true/);
+  assert.match(bootstrap, /setCustomUserClaims\(uid, \{ \.\.\.\(user\.customClaims \|\| \{\}\), watAdmin: true \}\)/);
+});
