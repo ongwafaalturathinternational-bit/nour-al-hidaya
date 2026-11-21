@@ -29,7 +29,7 @@ Le rôle décrit la fonction institutionnelle. Les `scopes` définissent les op�
 
 ## Rôles institutionnels disponibles
 
-`president`, `administrateur_systeme`, `responsable_administratif`, `responsable_financier`, `responsable_programme`, `coordonnateur`, `formateur`, `agent`, `commissaire_aux_comptes`, `bureau`.
+`president`, `administrateur_systeme`, `responsable_administratif`, `responsable_financier`, `controleur_financier`, `responsable_formation_islamique_orientations`, `responsable_programme`, `coordonnateur`, `formateur`, `agent`, `commissaire_aux_comptes`, `bureau`.
 
 ## Périmètres actuellement acceptés par le serveur
 
@@ -62,7 +62,7 @@ Ce script n'a pas été exécuté dans le cadre de cette PR. Ne jamais élargir 
 
 ## Blocages avant activation réelle
 
-- La clé de site reCAPTCHA v3 d'App Check n'est pas encore renseignée dans la meta `wat-recaptcha-site-key` de `staff-accounts.html`. Ne pas contourner App Check.
+- La clé de site publique reCAPTCHA Enterprise dédiée au staging est intégrée dans `staff-accounts.html`. Il reste à enregistrer l'application Web de staging dans Firebase App Check et à vérifier l'activation du fournisseur. Ne pas contourner App Check.
 - Les fonctions Firebase ne sont pas déployées.
 - La validation CI actuelle comprend des contrôles de syntaxe, des tests source et la compilation des règles Firestore ; elle ne remplace pas un test d'intégration Firebase Emulator ni un test réel de bout en bout.
 - Les règles de cette branche ne sont pas publiées en production.
