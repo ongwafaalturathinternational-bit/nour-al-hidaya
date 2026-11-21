@@ -27,7 +27,11 @@ async function main() {
     throw new Error("L'UID fourni ne correspond pas à l'adresse administrateur autorisée.");
   }
   if (user.emailVerified !== true) {
-    throw new Error("L'adresse administrateur doit d'abord être vérifiée dans Firebase Authentication.");
+    const verificationLink = await auth.generateEmailVerificationLink(expectedEmail);
+    console.log("L'adresse administrateur n'est pas encore vérifiée.");
+    console.log("Ouvrir ce lien depuis le navigateur, confirmer l'adresse, puis relancer exactement la même commande :");
+    console.log(verificationLink);
+    return;
   }
   await auth.setCustomUserClaims(uid, { ...(user.customClaims || {}), watAdmin: true });
   console.log("Droit watAdmin attribué au compte administrateur de staging.");
