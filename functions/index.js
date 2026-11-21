@@ -61,7 +61,7 @@ function validateStaffPermissions(role, scopes) {
 function validateStaffInput(data) {
   const email = typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
   const displayName = typeof data.displayName === "string" ? data.displayName.trim() : "";
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new HttpsError("invalid-argument", "Adresse e-mail invalide.");
   }
   if (displayName.length < 2 || displayName.length > 120) {
@@ -128,7 +128,7 @@ exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: tr
 exports.updateStaffAccountAccess = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
   const actorUid = requireWatAdmin(request);
   const uid = typeof request.data?.uid === "string" ? request.data.uid.trim() : "";
-  if (!uid) throw new HttpsError("invalid-argument", "Identifiant de compte invalide.");
+  if (!uid || uid === actorUid) throw new HttpsError("invalid-argument", "Identifiant de compte invalide ou modification de son propre compte interdite.");
   const { role, scopes } = validateStaffPermissions(request.data?.role, request.data?.scopes);
   const ref = db.collection("staffAccess").doc(uid);
   const snap = await ref.get();
@@ -187,7 +187,6 @@ exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck:
   // même si le compte possède encore un jeton Firebase Authentication valide.
   // En cas d'échec Auth, restaurer l'état Firestore précédent.
   const previousActive = snap.data().active === true;
-  const previousDisabled = user.disabled === true;
   await ref.update({
     active,
     updatedAt: FieldValue.serverTimestamp(),
