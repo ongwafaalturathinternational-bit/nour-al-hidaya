@@ -35,6 +35,6 @@ test("les modules métier partagent une navigation cohérente incluant les finan
   for (const path of ["../administration.html", "../programmes.html", "../projets.html", "../activites.html", "../club-khuddam.html", "../finance.html"]) {
     const html = read(path);
     assert.match(html, /href="index\.html">Portail/);
-    assert.match(html, /href="finance\.html">Finances/);
+    assert.match(html, /href="finance\.html"[^>]*>Finances/);
   }
 });
