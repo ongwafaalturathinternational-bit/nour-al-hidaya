@@ -42,6 +42,10 @@ on:
       - "tests/portal-routing.test.mjs"
       - "tests/app-syntax.test.mjs"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
