@@ -81,12 +81,13 @@ service cloud.firestore {
         && request.resource.data.status in ["planifie", "actif", "suspendu", "termine"]
         && (!("startDate" in request.resource.data) || (
           request.resource.data.startDate is string
-          && request.resource.data.startDate.size() == 10
+          && validFinanceDate(request.resource.data.startDate)
         ))
         && (!("endDate" in request.resource.data) || (
           request.resource.data.endDate is string
-          && request.resource.data.endDate.size() == 10
+          && validFinanceDate(request.resource.data.endDate)
         ))
+        && (!("startDate" in request.resource.data) || !("endDate" in request.resource.data) || request.resource.data.startDate <= request.resource.data.endDate)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid
@@ -113,11 +114,11 @@ service cloud.firestore {
         && request.resource.data.status in ["planifie", "actif", "suspendu", "termine"]
         && (!("startDate" in request.resource.data) || (
           request.resource.data.startDate is string
-          && request.resource.data.startDate.size() == 10
+          && validFinanceDate(request.resource.data.startDate)
         ))
         && (!("endDate" in request.resource.data) || (
           request.resource.data.endDate is string
-          && request.resource.data.endDate.size() == 10
+          && validFinanceDate(request.resource.data.endDate)
         ))
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.createdBy == resource.data.createdBy
@@ -136,7 +137,7 @@ service cloud.firestore {
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
-        && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
+        && request.resource.data.activityDate is string && validFinanceDate(request.resource.data.activityDate)
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
         && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
@@ -148,7 +149,7 @@ service cloud.firestore {
         && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 140
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.category in ["formation", "humanitaire", "social", "reunion", "sensibilisation", "autre"]
-        && request.resource.data.activityDate is string && request.resource.data.activityDate.size() == 10
+        && request.resource.data.activityDate is string && validFinanceDate(request.resource.data.activityDate)
         && request.resource.data.location is string && request.resource.data.location.size() <= 180
         && request.resource.data.status in ["planifiee", "realisee", "annulee"]
         && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() >= 1 && request.resource.data.projectId.size() <= 100 && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))))
@@ -266,8 +267,9 @@ service cloud.firestore {
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
         && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() <= 100))
-        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
-        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && validFinanceDate(request.resource.data.startDate)))
+        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && validFinanceDate(request.resource.data.endDate)))
+        && (!("startDate" in request.resource.data) || !("endDate" in request.resource.data) || request.resource.data.startDate <= request.resource.data.endDate)
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("projects.manage")
@@ -278,8 +280,9 @@ service cloud.firestore {
         && request.resource.data.description is string && request.resource.data.description.size() <= 2000
         && request.resource.data.status in ["planifie", "en_cours", "suspendu", "termine"]
         && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() <= 100))
-        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
-        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && validFinanceDate(request.resource.data.startDate)))
+        && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && validFinanceDate(request.resource.data.endDate)))
+        && (!("startDate" in request.resource.data) || !("endDate" in request.resource.data) || request.resource.data.startDate <= request.resource.data.endDate)
         && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if false;
