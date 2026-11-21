@@ -59,8 +59,8 @@ function showAuth(){
 }
 function statusLabel(value){return ({en_attente:"En attente d’examen",acceptee:"Candidature acceptée",refusee:"Candidature non retenue"})[value]||"État à confirmer";}
 async function loadAccount(user){
- const generation = ++authGeneration;
  if(WATFirebase.auth.currentUser?.uid !== user.uid)return;
+ const generation = ++authGeneration;
  currentUser = user;
  $("authPanel").hidden = true;
  $("accountPanel").hidden = false;

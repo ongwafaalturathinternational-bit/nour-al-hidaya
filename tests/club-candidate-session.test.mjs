@@ -19,6 +19,8 @@ test("un changement de session invalide les chargements asynchrones du dossier c
   assert.match(html, /function isCurrentSession\(user,generation\)/);
   assert.match(html, /authGeneration \+= 1/);
   assert.match(html, /WATFirebase\.auth\.currentUser\?\.uid !== user\.uid/);
+  const loader = html.slice(html.indexOf("async function loadAccount"), html.indexOf('$("loginForm")'));
+  assert.ok(loader.indexOf("if(WATFirebase.auth.currentUser?.uid !== user.uid)return;") < loader.indexOf("const generation = ++authGeneration;"));
   assert.ok((html.match(/if\(!isCurrentSession\(user,generation\)\)return;/g) || []).length >= 2);
   assert.match(html, /\$\("details"\)\.textContent = ""/);
 });
