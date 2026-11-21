@@ -67,6 +67,11 @@ jobs:
           WAT_FIREBASE_ENV: staging
         run: npm run build:android:web
 
+      - name: Vérifier le routage Firebase staging de l'APK
+        run: |
+          node --check web-dist/firebase-init.js
+          grep -Fq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
+
       - name: Générer le projet Android
         run: npx cap add android
 
