@@ -5,9 +5,6 @@ on:
     branches:
       - main
       - security/staging-email-verification-flow
-  push:
-    branches:
-      - security/staff-account-provisioning
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
