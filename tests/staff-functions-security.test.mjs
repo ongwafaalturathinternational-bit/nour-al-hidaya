@@ -60,11 +60,11 @@ test("la modification des rôles et permissions exige l'administration centrale 
 });
 
 test("la validation des e-mails accepte les adresses normales et rejette les formats invalides", () => {
-  const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   assert.equal(emailPattern.test("equipe@wafa-al-turath.org"), true);
   assert.equal(emailPattern.test("nom avec espace@example.org"), false);
   assert.equal(emailPattern.test("adresse-incomplete"), false);
-  assert.ok(source.includes(String.raw`/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/`));
+  assert.ok(source.includes(String.raw\`/^[^\s@]+@[^\s@]+\.[^\s@]+$/\`));
 });
 
 test("un administrateur ne peut pas modifier ses propres permissions par cette fonction", () => {
