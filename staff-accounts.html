@@ -55,8 +55,58 @@ function setupScopes(){for(const [value,label] of Object.entries(scopeLabels)){c
 function selectedScopes(){return [...$("scopeChecks").querySelectorAll("input:checked")].map(x=>x.value)}
 function initAppCheck(){const key=document.querySelector('meta[name="wat-recaptcha-site-key"]').content.trim();if(!key)throw new Error("App Check n'est pas encore configuré : la clé de site reCAPTCHA v3 doit être ajoutée après sa création dans Firebase App Check.");if(!firebase.appCheck)throw new Error("Le SDK Firebase App Check n'a pas été chargé.");const appCheck=firebase.appCheck();appCheck.activate(key,true);return appCheck}
 async function callable(name,data){return await functionsApi.httpsCallable(name)(data)}
-function render(){const body=$("rows");body.replaceChildren();$("count").textContent=accountRows.length+" compte(s) d'équipe";$("empty").hidden=accountRows.length!==0;for(const a of accountRows){const tr=document.createElement("tr");const person=document.createElement("td"),name=document.createElement("strong"),email=document.createElement("div");name.textContent=a.displayName||"Nom non renseigné";email.className="muted";email.textContent=a.email;person.append(name,email);const role=document.createElement("td");role.textContent=roleLabels[a.role]||a.role||"Rôle non défini";const verified=document.createElement("td");verified.textContent=a.emailVerified?"Vérifiée":"Non vérifiée";const access=document.createElement("td"),pill=document.createElement("span");pill.className="pill"+(a.active&& !a.authDisabled?"":" off");pill.textContent=a.active&&!a.authDisabled?"Actif":"Suspendu / inactif";access.append(pill);const actions=document.createElement("td"),wrap=document.createElement("div");wrap.className="actions";const btn=document.createElement("button");btn.className="secondary";btn.textContent=a.active?"Suspendre":"Activer";btn.disabled=!a.emailVerified&&!a.active;btn.addEventListener("click",()=>changeStatus(a.uid,!a.active,btn));wrap.append(btn);actions.append(wrap);tr.append(person,role,verified,access,actions);body.append(tr)}}
+function render(){
+  const body=$("rows");body.replaceChildren();
+  $("count").textContent=accountRows.length+" compte(s) d'équipe";
+  $("empty").hidden=accountRows.length!==0;
+  for(const a of accountRows){
+    const tr=document.createElement("tr");
+    const person=document.createElement("td"),name=document.createElement("strong"),email=document.createElement("div");
+    name.textContent=a.displayName||"Nom non renseigné";email.className="muted";email.textContent=a.email;person.append(name,email);
+    const role=document.createElement("td");role.textContent=roleLabels[a.role]||a.role||"Rôle non défini";
+    const scopeCount=document.createElement("div");scopeCount.className="muted";scopeCount.textContent=(a.scopes||[]).length+" permission(s)";role.append(scopeCount);
+    const verified=document.createElement("td");verified.textContent=a.emailVerified?"Vérifiée":"Non vérifiée";
+    const access=document.createElement("td"),pill=document.createElement("span");
+    pill.className="pill"+(a.active&&!a.authDisabled?"":" off");pill.textContent=a.active&&!a.authDisabled?"Actif":"Suspendu / inactif";access.append(pill);
+    const actions=document.createElement("td"),wrap=document.createElement("div");wrap.className="actions";
+    const btn=document.createElement("button");btn.className="secondary";btn.textContent=a.active?"Suspendre":"Activer";
+    btn.disabled=!a.emailVerified&&!a.active;btn.addEventListener("click",()=>changeStatus(a.uid,!a.active,btn));wrap.append(btn);
+    const details=document.createElement("details");details.className="access-editor";
+    const summary=document.createElement("summary");summary.textContent="Modifier les droits";details.append(summary);
+    const form=document.createElement("form"),roleLabel=document.createElement("label"),roleSelect=document.createElement("select");
+    roleLabel.textContent="Fonction";roleSelect.required=true;
+    for(const [value,label] of Object.entries(roleLabels)){const option=document.createElement("option");option.value=value;option.textContent=label;roleSelect.append(option)}
+    roleSelect.value=a.role;roleLabel.append(roleSelect);form.append(roleLabel);
+    const scopeTitle=document.createElement("label");scopeTitle.textContent="Permissions";form.append(scopeTitle);
+    const checks=document.createElement("div");checks.className="checks";
+    for(const [value,label] of Object.entries(scopeLabels)){
+      const l=document.createElement("label"),input=document.createElement("input"),span=document.createElement("span");
+      input.type="checkbox";input.value=value;input.checked=(a.scopes||[]).includes(value);span.textContent=label;l.append(input,span);checks.append(l);
+    }
+    form.append(checks);
+    const save=document.createElement("button");save.className="primary";save.type="submit";save.textContent="Enregistrer les droits";form.append(save);
+    form.addEventListener("submit",event=>{
+      event.preventDefault();
+      const scopes=[...checks.querySelectorAll("input:checked")].map(input=>input.value);
+      changeAccess(a.uid,roleSelect.value,scopes,save);
+    });
+    details.append(form);wrap.append(details);actions.append(wrap);tr.append(person,role,verified,access,actions);body.append(tr);
+  }
+}
 async function loadAccounts(){const result=await callable("listStaffAccounts",{});accountRows=result.data.accounts||[];render();if(result.data.truncated)say("Les 500 premiers comptes sont affichés. Contactez l'administrateur technique pour un registre plus volumineux.","")}
+async function changeAccess(uid,role,scopes,button){
+  button.disabled=true;
+  try{
+    await callable("updateStaffAccountAccess",{uid,role,scopes});
+    await loadAccounts();
+    say("Fonction et permissions mises à jour.","success");
+  }catch(e){
+    console.error(e);
+    say(e.message||"Impossible de modifier les permissions.","error");
+  }finally{
+    button.disabled=false;
+  }
+}
 async function changeStatus(uid,active,button){button.disabled=true;try{await callable("setStaffAccountStatus",{uid,active});await loadAccounts();say(active?"Compte activé.":"Compte suspendu.","success")}catch(e){console.error(e);say(e.message||"Impossible de modifier le statut du compte.","error")}finally{button.disabled=false}}
 function showInvite(data){const box=$("inviteResult");box.replaceChildren();box.hidden=false;const title=document.createElement("strong");title.textContent="Compte créé, mais encore inactif.";const p=document.createElement("p");p.textContent="UID : "+data.uid+" · "+data.email;box.append(title,p);for(const [label,url] of [["Vérifier l'adresse e-mail",data.verificationLink],["Définir le mot de passe",data.passwordSetupLink]]){const line=document.createElement("div"),a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=label+" — ouvrir le lien";line.append(a);box.append(line)}const note=document.createElement("p");note.textContent="Transmettez ces deux liens en privé au titulaire. Après vérification de son adresse, revenez ici pour activer son accès.";box.append(note)}
 $("createForm").addEventListener("submit",async e=>{e.preventDefault();const button=$("createButton");button.disabled=true;button.textContent="Création…";$("inviteResult").hidden=true;try{const result=await callable("createStaffAccount",{displayName:$("displayName").value.trim(),email:$("email").value.trim(),role:$("role").value,scopes:selectedScopes()});showInvite(result.data);$("createForm").reset();await loadAccounts();say("Compte créé avec succès. Il reste inactif jusqu'à vérification et activation.","success")}catch(error){console.error(error);say(error.message||"La création du compte a échoué.","error")}finally{button.disabled=false;button.textContent="Créer le compte et générer les liens"}});
