@@ -12,7 +12,15 @@ test("l'interface des comptes d'équipe ne s'ouvre qu'avec le claim watAdmin et 
   assert.ok(scripts.length > 0);
   scripts.forEach(source => assert.doesNotThrow(() => new vm.Script(source)));
   assert.match(html, /token\.claims\.watAdmin!==true/);
-  assert.match(html, /appCheck\.activate\(key,true\)/);
+  assert.match(html, /wat-recaptcha-site-key/);
+  assert.match(html, /WATFirebase\?\.environment!=="staging"/);
+  assert.match(html, /WATFirebase\?\.appCheckReady!==true/);
+  const init = readFileSync(new URL("../firebase-init.js", import.meta.url), "utf8");
+  assert.match(init, /ReCaptchaEnterpriseProvider/);
+  assert.match(init, /projectId !== "wat-connect-staging"/);
+  assert.ok(init.indexOf("appCheck.activate") < init.indexOf("auth: window.firebase.auth()"));
+  const portal = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(portal, /staff-accounts\.html"\+\(window\.WATFirebase\.environment==="staging"\?"\?wat-env=staging":""\)/);
   assert.match(html, /callable\("listStaffAccounts"/);
   assert.match(html, /callable\("createStaffAccount"/);
   assert.match(html, /callable\("setStaffAccountStatus"/);
