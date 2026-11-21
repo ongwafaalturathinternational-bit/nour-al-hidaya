@@ -67,7 +67,9 @@
     // App Check est initialisé avant Auth/Firestore lorsqu'une page le requiert.
     // La clé Enterprise de l'écran d'administration n'est valable que sur le projet staging.
     let appCheckReady = false;
-    const appCheckMeta = document.querySelector('meta[name="wat-recaptcha-site-key"]');
+    const appCheckMeta = typeof document.querySelector === "function"
+      ? document.querySelector('meta[name="wat-recaptcha-site-key"]')
+      : null;
     const appCheckSiteKey = appCheckMeta ? appCheckMeta.content.trim() : "";
     if (appCheckSiteKey) {
       if (environment !== "staging" || firebaseConfig.projectId !== "wat-connect-staging") {
