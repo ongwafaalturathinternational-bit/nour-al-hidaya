@@ -46,18 +46,7 @@ function requireWatAdmin(request) {
   return request.auth.uid;
 }
 
-function validateStaffInput(data) {
-  const email = typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
-  const displayName = typeof data.displayName === "string" ? data.displayName.trim() : "";
-  const role = data.role;
-  const scopes = data.scopes;
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new HttpsError("invalid-argument", "Adresse e-mail invalide.");
-  }
-  if (displayName.length < 2 || displayName.length > 120) {
-    throw new HttpsError("invalid-argument", "Le nom doit contenir entre 2 et 120 caractères.");
-  }
+function validateStaffPermissions(role, scopes) {
   if (!ALLOWED_ROLES.has(role)) {
     throw new HttpsError("invalid-argument", "Rôle non autorisé.");
   }
@@ -66,7 +55,19 @@ function validateStaffInput(data) {
       new Set(scopes).size !== scopes.length) {
     throw new HttpsError("invalid-argument", "La liste des permissions est invalide.");
   }
-  return { email, displayName, role, scopes };
+  return { role, scopes };
+}
+
+function validateStaffInput(data) {
+  const email = typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
+  const displayName = typeof data.displayName === "string" ? data.displayName.trim() : "";
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "Adresse e-mail invalide.");
+  }
+  if (displayName.length < 2 || displayName.length > 120) {
+    throw new HttpsError("invalid-argument", "Le nom doit contenir entre 2 et 120 caractères.");
+  }
+  return { email, displayName, ...validateStaffPermissions(data.role, data.scopes) };
 }
 
 exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
@@ -122,6 +123,25 @@ exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: tr
     if (error instanceof HttpsError) throw error;
     throw new HttpsError("internal", "Le provisionnement a échoué ; le compte partiel a été annulé.");
   }
+});
+
+exports.updateStaffAccountAccess = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
+  const actorUid = requireWatAdmin(request);
+  const uid = typeof request.data?.uid === "string" ? request.data.uid.trim() : "";
+  if (!uid) throw new HttpsError("invalid-argument", "Identifiant de compte invalide.");
+  const { role, scopes } = validateStaffPermissions(request.data?.role, request.data?.scopes);
+  const ref = db.collection("staffAccess").doc(uid);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError("not-found", "Aucun accès d'équipe n'est associé à ce compte.");
+  const user = await auth.getUser(uid).catch(() => null);
+  if (!user) throw new HttpsError("not-found", "Compte Firebase introuvable.");
+  await ref.update({
+    role,
+    scopes,
+    updatedAt: FieldValue.serverTimestamp(),
+    updatedBy: actorUid
+  });
+  return { uid, role, scopes };
 });
 
 exports.listStaffAccounts = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
