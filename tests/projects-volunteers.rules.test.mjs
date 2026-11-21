@@ -171,7 +171,7 @@ test("une affectation conserve l'identité du bénévole mais autorise la mise �
 });
 
 test("une affectation ne peut pas être réactivée après désactivation du bénévole", async () => {
-  await seed("assignment-inactive-transition", ["projects.manage", "volunteers.read"]);
+  await seed("assignment-inactive-transition", ["projects.manage", "volunteers.read", "volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => {
     const db = c.firestore();
     await setDoc(doc(db, "projects", "inactive-transition-project"), project("system"));
@@ -180,7 +180,6 @@ test("une affectation ne peut pas être réactivée après désactivation du bé
       doc(db, "projects", "inactive-transition-project", "volunteers", "vol-001"),
       assignment("system")
     );
-    await updateDoc(doc(db, "volunteers", "vol-001"), { status: "inactif" });
   });
   const db = env.authenticatedContext("assignment-inactive-transition", {
     email: "assignment-inactive-transition@example.org", email_verified: true
