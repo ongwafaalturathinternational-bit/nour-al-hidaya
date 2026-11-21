@@ -260,6 +260,7 @@ service cloud.firestore {
         && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
         && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
         && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && (!("startDate" in request.resource.data) || !("endDate" in request.resource.data) || request.resource.data.startDate <= request.resource.data.endDate)
         && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.updatedBy == request.auth.uid;
       allow update: if staffHasScope("projects.manage")
@@ -272,6 +273,7 @@ service cloud.firestore {
         && (!("programId" in request.resource.data) || (request.resource.data.programId is string && request.resource.data.programId.size() >= 1 && request.resource.data.programId.size() <= 100 && exists(/databases/$(database)/documents/programs/$(request.resource.data.programId))))
         && (!("startDate" in request.resource.data) || (request.resource.data.startDate is string && request.resource.data.startDate.size() == 10))
         && (!("endDate" in request.resource.data) || (request.resource.data.endDate is string && request.resource.data.endDate.size() == 10))
+        && (!("startDate" in request.resource.data) || !("endDate" in request.resource.data) || request.resource.data.startDate <= request.resource.data.endDate)
         && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if false;
