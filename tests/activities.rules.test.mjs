@@ -90,3 +90,18 @@ test("les activités refusent les statuts invalides et la suppression", async ()
   await assertFails(deleteDoc(doc(db, "activities", "keep")));
   await assertFails(setDoc(doc(db, "activities", "bad"), activity("activity-owner", { status: "inconnue" })));
 });
+
+
+test("un compte Présences seul conserve ses droits dédiés sans lire les activités", async () => {
+  await seed("attendance-only", ["attendance.read", "attendance.manage"]);
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "activities", "private-activity"), activity("system"));
+    await setDoc(doc(c.firestore(), "attendance", "attendance-only-record"), attendance("system"));
+  });
+  const db = env.authenticatedContext("attendance-only", {
+    email: "attendance-only@example.org", email_verified: true
+  }).firestore();
+  await assertFails(getDoc(doc(db, "activities", "private-activity")));
+  await assertSucceeds(getDoc(doc(db, "attendance", "attendance-only-record")));
+  await assertFails(setDoc(doc(db, "attendance", "new-record"), attendance("attendance-only")));
+});
