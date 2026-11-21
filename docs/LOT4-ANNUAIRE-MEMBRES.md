@@ -19,7 +19,7 @@ Les fiches peuvent être modifiées, désactivées ou réactivées, mais pas sup
 
 ## Activation manuelle sécurisée
 
-L’administration centrale attribue les périmètres via l’écran sécurisé `staff-accounts.html`, après vérification de l’identité et de l’adresse e-mail. Les fonctions serveur exigent App Check et le claim `watAdmin`. Aucun formulaire public ne permet de s’accorder ces droits. La clé App Check doit toutefois être configurée avant l'activation réelle de cet écran.
+L’administration centrale attribue les périmètres via l’écran sécurisé `staff-accounts.html`, après vérification de l’identité et de l’adresse e-mail. Les fonctions serveur exigent App Check et le claim `watAdmin`. Aucun formulaire public ne permet de s’accorder ces droits. L'écran `staff-accounts.html` utilise une clé de site reCAPTCHA Enterprise (Fraud Defense) dédiée au projet `wat-connect-staging`. Le SDK App Check est initialisé avant Auth et Firestore ; l'écran refuse de fonctionner si le projet courant n'est pas le staging ou si App Check n'a pas été initialisé. La clé de site est publique et ne remplace jamais une clé secrète. L'application Enforcement reste désactivée jusqu'à validation des tests et observation des métriques.
 
 ## Tests
 
