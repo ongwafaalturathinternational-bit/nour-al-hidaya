@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#103047">
-<meta name="wat-recaptcha-site-key" content="">
+<meta name="wat-recaptcha-site-key" content="6LfLziouAAAAAPiLIT0cr4ybQJmvq5NSCkLyqElR">
 <title>Comptes d'équipe — WAT Connect</title>
 <style>
 :root{--navy:#103047;--teal:#1d788f;--gold:#d2b75f;--paper:#f4f6f8;--ink:#202d38;--muted:#667580;--line:#dce3e8;--red:#a83232;--green:#176b49}
@@ -53,7 +53,7 @@ let functionsApi=null,accountRows=[];
 function say(text,type=""){const el=$("status");el.textContent=text;el.className="message "+type}
 function setupScopes(){for(const [value,label] of Object.entries(scopeLabels)){const l=document.createElement("label"),i=document.createElement("input"),s=document.createElement("span");i.type="checkbox";i.value=value;s.textContent=label;l.append(i,s);$("scopeChecks").append(l)}}
 function selectedScopes(){return [...$("scopeChecks").querySelectorAll("input:checked")].map(x=>x.value)}
-function initAppCheck(){const key=document.querySelector('meta[name="wat-recaptcha-site-key"]').content.trim();if(!key)throw new Error("App Check n'est pas encore configuré : la clé de site reCAPTCHA v3 doit être ajoutée après sa création dans Firebase App Check.");if(!firebase.appCheck)throw new Error("Le SDK Firebase App Check n'a pas été chargé.");const appCheck=firebase.appCheck();appCheck.activate(key,true);return appCheck}
+function initAppCheck(){if(window.WATFirebase?.environment!=="staging"||window.WATFirebase?.projectId!=="wat-connect-staging")throw new Error("Cette administration est réservée à WAT Connect staging.");if(window.WATFirebase?.appCheckReady!==true)throw new Error("App Check reCAPTCHA Enterprise n'a pas été initialisé. Vérifiez la configuration staging.");return true}
 async function callable(name,data){return await functionsApi.httpsCallable(name)(data)}
 function render(){
   const body=$("rows");body.replaceChildren();
