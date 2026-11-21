@@ -52,6 +52,16 @@ test("projects.manage autorise la création et la lecture d’un projet", async 
   await assertSucceeds(setDoc(doc(db, "projects", "ramadan"), project("project-manager")));
   await assertSucceeds(getDoc(doc(db, "projects", "ramadan")));
 });
+test("un projet refuse une période dont la date de fin précède la date de début", async () => {
+  await seed("project-invalid-period", ["projects.manage"]);
+  const db = env.authenticatedContext("project-invalid-period", {
+    email: "project-invalid-period@example.org", email_verified: true
+  }).firestore();
+  await assertFails(setDoc(doc(db, "projects", "invalid-period"), project("project-invalid-period", {
+    startDate: "2027-03-31", endDate: "2027-02-01"
+  })));
+});
+
 test("projects.read autorise la lecture mais pas l’écriture", async () => {
   await seed("project-reader", ["projects.read"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "seed"), project("system")));
