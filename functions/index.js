@@ -124,6 +124,27 @@ exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: tr
   }
 });
 
+exports.listStaffAccounts = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
+  requireWatAdmin(request);
+  const snapshot = await db.collection("staffAccess").limit(500).get();
+  const accounts = await Promise.all(snapshot.docs.map(async doc => {
+    const data = doc.data();
+    const user = await auth.getUser(doc.id).catch(() => null);
+    return {
+      uid: doc.id,
+      email: typeof data.email === "string" ? data.email : (user?.email || ""),
+      displayName: typeof data.displayName === "string" ? data.displayName : (user?.displayName || ""),
+      role: typeof data.role === "string" ? data.role : "",
+      scopes: Array.isArray(data.scopes) ? data.scopes : [],
+      active: data.active === true,
+      emailVerified: user?.emailVerified === true,
+      authDisabled: user?.disabled !== false
+    };
+  }));
+  accounts.sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
+  return { accounts, truncated: snapshot.size === 500 };
+});
+
 exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
   const actorUid = requireWatAdmin(request);
   const uid = typeof request.data?.uid === "string" ? request.data.uid.trim() : "";
