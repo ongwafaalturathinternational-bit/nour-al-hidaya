@@ -13,3 +13,8 @@ firestore.rules
 package.json
 package-lock.json
 npm-shrinkwrap.json
+/node_modules/
+/.git/
+/.firebaserc
+/.env*
+*.log
