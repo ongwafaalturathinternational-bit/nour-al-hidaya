@@ -101,3 +101,13 @@ test("le domaine staging utilise exclusivement le projet Firebase de test", asyn
   assert.equal(staging.wat.environment, "staging");
   assert.equal(staging.wat.app.options.projectId, "wat-connect-staging");
 });
+
+
+test("les aperçus Cloudflare de la branche utilisent Firebase staging et non la production", async () => {
+  const preview = createFirebaseHarness({
+    hostname: "fix-lot8-club-onboarding-and-access-nour-al-hidaya.ongwafaalturathinternational.workers.dev"
+  });
+  await preview.wat.persistenceReady;
+  assert.equal(preview.wat.projectId, "wat-connect-staging");
+  assert.equal(preview.wat.environment, "staging");
+});
