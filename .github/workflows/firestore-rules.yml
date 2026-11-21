@@ -29,6 +29,7 @@ on:
       - "tests/pwa-shell.test.mjs"
       - "tests/offline-sync.test.mjs"
       - "tests/android-build.test.mjs"
+      - "scripts/prepare-capacitor-web.mjs"
       - "index.html"
       - "nour-al-hidaya.html"
       - "manifest.json"
