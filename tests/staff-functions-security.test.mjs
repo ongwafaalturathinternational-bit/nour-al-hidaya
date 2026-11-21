@@ -18,7 +18,7 @@ test("les opérations sensibles revalident le compte administrateur côté Admin
   assert.match(source, /user\.disabled/);
   assert.match(source, /user\.emailVerified !== true/);
   assert.match(source, /user\.customClaims\?\.watAdmin !== true/);
-  assert.match(source, /await requireWatAdmin\(request\)/);
+  assert.equal((source.match(/await requireWatAdmin\(request\)/g) || []).length, 4, "chaque fonction callable doit attendre la revalidation administrateur");
 });
 
 test("un nouveau compte d'équipe est créé inactif et ses permissions sont en liste autorisée", () => {
