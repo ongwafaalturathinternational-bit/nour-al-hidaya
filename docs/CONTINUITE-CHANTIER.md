@@ -112,3 +112,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Dernier commit de branche au moment de cette mise à jour : `cc705649b05b2f4b98131055d81081c14aa8b33e`.
 - Validations CI déclenchées sur ce SHA : [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44911642880) · [APK Android debug](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44911642899). Elles étaient en cours à la dernière vérification.
 - Aucune règle de production modifiée, aucun déploiement, aucune fusion et aucune publication Android.
+
+
+## Poursuite — matrice des habilitations Club / Projets — 21 novembre 2026
+
+- Ajout d'un test positif et négatifs pour la lecture des affectations : les scopes projects.read ET volunteers.read sont nécessaires; chacun pris isolément est insuffisant.
+- Aucun changement des règles Firestore ni des données. Les scénarios utilisent uniquement des comptes et documents fictifs dans l'émulateur.
+- Commit applicatif/test : 59e3ef11e48997b3a9ec122a87fa56cc3dc58efe. Documentation d'audit ajoutée ensuite : 3d1c716dfc123d87077dd2fc7e11921d72d96db3.
+- Les validations CI du nouveau commit sont à contrôler avant de considérer ce point terminé.
+- PR #20 reste ouverte en brouillon; aucune fusion, aucun déploiement ni publication.
