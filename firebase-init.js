@@ -34,10 +34,12 @@
       window.WATFirebase = { ready: false, reason: "sdk-unavailable" };
       return;
     }
-    // Production reste l'environnement par défaut. Le staging doit être demandé
-    // explicitement avec ?wat-env=staging afin d'éviter toute bascule accidentelle.
+    // Le Worker staging sélectionne toujours son propre projet Firebase,
+    // même si l'utilisateur ouvre directement son URL sans paramètre.
+    // Sur les autres domaines, le staging reste une sélection explicite.
     const requestedEnvironment = new URLSearchParams(window.location.search).get("wat-env");
-    const environment = requestedEnvironment === "staging" ? "staging" : "production";
+    const isStagingHost = window.location.hostname === "wat-connect-staging.ongwafaalturathinternational.workers.dev";
+    const environment = requestedEnvironment === "staging" || isStagingHost ? "staging" : "production";
     const configs = {
       production: {
         apiKey: "AIzaSyAe_jeqGoLp4wXmKZEfF2uDrAb_qnWNi8I",
