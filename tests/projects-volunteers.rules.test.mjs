@@ -2,7 +2,7 @@ import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
@@ -186,6 +186,19 @@ test("une affectation ne peut pas être réactivée après désactivation du bé
     email: "assignment-inactive-transition@example.org", email_verified: true
   }).firestore();
   const ref = doc(db, "projects", "inactive-transition-project", "volunteers", "vol-001");
+  const volunteerRef = doc(db, "volunteers", "vol-001");
+  const atomicBatch = writeBatch(db);
+  atomicBatch.update(volunteerRef, {
+    status: "inactif", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  });
+  atomicBatch.update(ref, {
+    status: "confirme", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  });
+  await assertFails(atomicBatch.commit());
+
+  await updateDoc(volunteerRef, {
+    status: "inactif", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
+  });
   await assertFails(updateDoc(ref, {
     status: "confirme", updatedAt: serverTimestamp(), updatedBy: "assignment-inactive-transition"
   }));

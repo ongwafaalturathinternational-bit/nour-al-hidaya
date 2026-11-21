@@ -63,4 +63,4 @@ L'audit a relevé qu'une affectation créée pour un bénévole actif pouvait en
 
 Le correctif ajoute une vérification côté Firestore de l'état final du document bénévole avec existsAfter/getAfter. Une affectation d'un bénévole absent ou inactif peut être clôturée (« retirée »), mais ne peut plus être réactivée. L'interface désactive les choix incompatibles et explique la raison; la règle serveur reste décisive si le statut change après le chargement de la page.
 
-Un test de règles vérifie le refus des états « proposée » et « confirmée » après désactivation, puis l'autorisation de clôture. Un test d'interface vérifie la disponibilité de la seule action de clôture.
+Les tests de règles vérifient aussi qu'une opération atomique qui désactive le bénévole tout en confirmant son affectation est refusée (contrôle de l'état final via existsAfter/getAfter), puis que les états « proposée » et « confirmée » restent refusés après désactivation tandis que la clôture est autorisée. Un test d'interface vérifie la disponibilité de la seule action de clôture.

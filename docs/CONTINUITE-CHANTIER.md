@@ -50,4 +50,4 @@ Aucun merge, déploiement Cloudflare/Firebase, changement de règles ou données
 
 ## Complément d'audit — affectations et statut bénévole
 
-Une affectation existante pouvait être remise à l'état « proposée » ou « confirmée » après le passage du bénévole à l'état inactif. La règle Firestore et l'interface sont en cours de correction : l'état « retirée » reste autorisé pour préserver et clôturer l'historique; les états actifs sont refusés si le dossier bénévole n'est plus actif. Le test de non-régression est ajouté au lot de validation en cours.
+Une affectation existante pouvait être remise à l'état « proposée » ou « confirmée » après le passage du bénévole à l'état inactif. La règle Firestore et l'interface sont en cours de correction : l'état « retirée » reste autorisé pour préserver et clôturer l'historique; les états actifs sont refusés si le dossier bénévole n'est plus actif. Les tests de non-régression couvrent la désactivation préalable et une tentative de désactivation + confirmation dans la même écriture atomique; le lot de validation CI doit confirmer ce comportement.
