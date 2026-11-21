@@ -45,7 +45,7 @@ L'acceptation d'un périmètre par le formulaire ne signifie pas qu'il est déj�
 
 ## Fonctions d'administration
 
-Les fonctions callable sont hébergées en région `us-central1` et exigent toutes App Check.
+Les fonctions callable sont hébergées en région `us-central1` et exigent toutes App Check. À chaque appel, le serveur relit aussi le compte dans Firebase Authentication : il vérifie qu'il n'est pas désactivé, que l'adresse est vérifiée et que le claim `watAdmin` est toujours présent. Un ancien jeton client ne suffit donc pas après suspension ou retrait du claim.
 
 - `createStaffAccount` : crée un compte Firebase non vérifié et inactif, crée son document d'accès, puis génère les liens de vérification et de définition du mot de passe. En cas d'échec du provisionnement, elle tente de supprimer le compte partiel.
 - `listStaffAccounts` : fournit le registre à l'administration centrale, sans exposer de secret d'authentification.
