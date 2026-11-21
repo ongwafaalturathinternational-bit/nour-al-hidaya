@@ -139,7 +139,7 @@ exports.createStaffAccount = onCall({ region: "us-central1", enforceAppCheck: tr
 });
 
 exports.updateStaffAccountAccess = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
-  const actorUid = requireWatAdmin(request);
+  const actorUid = await requireWatAdmin(request);
   const uid = typeof request.data?.uid === "string" ? request.data.uid.trim() : "";
   if (!uid || uid === actorUid) throw new HttpsError("invalid-argument", "Identifiant de compte invalide ou modification de son propre compte interdite.");
   const { role, scopes } = validateStaffPermissions(request.data?.role, request.data?.scopes);
@@ -184,7 +184,7 @@ exports.listStaffAccounts = onCall({ region: "us-central1", enforceAppCheck: tru
 });
 
 exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck: true }, async request => {
-  const actorUid = requireWatAdmin(request);
+  const actorUid = await requireWatAdmin(request);
   const uid = typeof request.data?.uid === "string" ? request.data.uid.trim() : "";
   const active = request.data?.active;
   if (!uid || typeof active !== "boolean" || uid === actorUid && active === false) {
