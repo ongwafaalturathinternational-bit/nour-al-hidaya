@@ -6,7 +6,7 @@ const source = readFileSync(new URL("../functions/index.js", import.meta.url), "
 
 test("toutes les fonctions callable exigent App Check", () => {
   const declarations = [...source.matchAll(/exports\.(\w+)\s*=\s*onCall\((\{[^}]+\})/g)];
-  assert.equal(declarations.length, 3);
+  assert.equal(declarations.length, 4);
   for (const [, name, options] of declarations) {
     assert.match(options, /enforceAppCheck:\s*true/, name + " doit exiger App Check");
   }
@@ -50,4 +50,11 @@ test("le bootstrap administrateur est strictement limité au staging et refuse u
   assert.match(bootstrap, /user\.disabled === true/);
   assert.match(bootstrap, /user\.emailVerified !== true/);
   assert.match(bootstrap, /setCustomUserClaims\(uid, \{ \.\.\.\(user\.customClaims \|\| \{\}\), watAdmin: true \}\)/);
+});
+
+test("la modification des rôles et permissions exige l'administration centrale et valide chaque scope", () => {
+  assert.match(source, /exports\.updateStaffAccountAccess = onCall/);
+  assert.match(source, /validateStaffPermissions\(request\.data\?\.role, request\.data\?\.scopes\)/);
+  assert.match(source, /updatedBy: actorUid/);
+  assert.match(source, /updatedAt: FieldValue\.serverTimestamp\(\)/);
 });
