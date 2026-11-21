@@ -35,3 +35,16 @@ test("the staging Worker has its own isolated Wrangler target", () => {
   const firebaseIgnore = readFileSync(new URL("../.firebaseignore", import.meta.url), "utf8");
   assert.ok(firebaseIgnore.includes("wrangler.staging.json"));
 });
+
+
+test("le workflow manuel ne peut publier que sur le Worker de staging", () => {
+  const workflow = readFileSync(new URL("../.github/workflows/cloudflare-staging-preview.yml", import.meta.url), "utf8");
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.doesNotMatch(workflow, /^\s*(push|pull_request):/m);
+  assert.match(workflow, /if: github\.ref == 'refs\/heads\/security\/staff-account-provisioning'/);
+  assert.match(workflow, /environment: staging/);
+  assert.match(workflow, /wrangler@4 deploy --config wrangler\.staging\.json --name wat-connect-staging/);
+  assert.doesNotMatch(workflow, /wrangler@4 deploy(?! --config wrangler\.staging\.json --name wat-connect-staging)/);
+  assert.match(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
+  assert.match(workflow, /secrets\.CLOUDFLARE_ACCOUNT_ID/);
+});
