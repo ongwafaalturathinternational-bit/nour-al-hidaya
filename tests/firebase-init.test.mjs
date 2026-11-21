@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const source = fs.readFileSync("firebase-init.js", "utf8");
 
-function createFirebaseHarness({ online = true, clearPersistence = async () => {}, page = "administration.html" } = {}) {
+function createFirebaseHarness({ online = true, clearPersistence = async () => {}, page = "administration.html", hostname = "example.org" } = {}) {
   const calls = [];
   const auth = {
     signOut: async () => { calls.push("auth.signOut"); }
@@ -18,8 +18,12 @@ function createFirebaseHarness({ online = true, clearPersistence = async () => {
   };
   const firebase = {
     apps: [],
-    initializeApp: () => ({}),
-    app: () => ({}),
+    initializeApp: (options) => {
+      const app = { options };
+      firebase.apps.push(app);
+      return app;
+    },
+    app: () => firebase.apps[0],
     auth: () => auth,
     firestore: () => db
   };
@@ -27,6 +31,7 @@ function createFirebaseHarness({ online = true, clearPersistence = async () => {
     firebase,
     location: {
       pathname: "/" + page,
+      hostname,
       assign: (url) => calls.push("navigate:" + url)
     }
   };
@@ -72,4 +77,27 @@ test("hors connexion, la déconnexion refuse de purger un cache avec persistance
   await assert.rejects(harness.wat.signOutSafely(), /Reconnectez-vous/);
   assert.deepEqual(harness.calls, ["enablePersistence"]);
   assert.equal(harness.calls.includes("auth.signOut"), false);
+});
+
+
+test("l'application Android et les domaines ordinaires utilisent uniquement Firebase production", async () => {
+  const android = createFirebaseHarness({ hostname: "localhost" });
+  await android.wat.persistenceReady;
+  assert.equal(android.wat.projectId, "wat-connect");
+  assert.equal(android.wat.environment, "production");
+
+  const website = createFirebaseHarness({ hostname: "wafaalturath.org" });
+  await website.wat.persistenceReady;
+  assert.equal(website.wat.projectId, "wat-connect");
+  assert.equal(website.wat.environment, "production");
+});
+
+test("le domaine staging utilise exclusivement le projet Firebase de test", async () => {
+  const staging = createFirebaseHarness({
+    hostname: "wat-connect-staging.ongwafaalturathinternational.workers.dev"
+  });
+  await staging.wat.persistenceReady;
+  assert.equal(staging.wat.projectId, "wat-connect-staging");
+  assert.equal(staging.wat.environment, "staging");
+  assert.equal(staging.wat.app.options.projectId, "wat-connect-staging");
 });
