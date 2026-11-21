@@ -26,6 +26,8 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - "wrangler.json"
+      - "wrangler.staging.json"
+      - ".firebaseignore"
       - ".assetsignore"
       - "tests/cloudflare-preview.test.mjs"
       - "sw.js"
