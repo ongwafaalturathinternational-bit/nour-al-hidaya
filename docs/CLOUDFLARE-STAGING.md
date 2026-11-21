@@ -1,30 +1,53 @@
 # Aperçu Cloudflare de WAT Connect
 
-## Fonctionnement
+## Cible de staging isolée
 
-Le workflow `.github/workflows/cloudflare-staging-preview.yml` prépare une publication manuelle du dépôt sur le Worker **wat-connect-staging**. Il est actuellement présent dans la branche de travail de la PR 21, pas encore dans la branche par défaut `main`. GitHub ne rend un workflow `workflow_dispatch` déclenchable que lorsque son fichier existe aussi sur la branche par défaut. Il ne sera donc disponible dans l'onglet Actions qu'après une intégration explicite de ce fichier à `main` (ou une autre solution de déclenchement validée).
+Le dépôt contient maintenant `wrangler.staging.json`, une configuration distincte qui cible exclusivement le Worker **wat-connect-staging**. Elle partage les mêmes fichiers statiques WAT Connect, mais ne modifie pas la configuration du Worker `nour-al-hidaya`.
 
-- Déclenchement : manuel uniquement depuis la branche `security/staff-account-provisioning`.
-- Cible : Worker de prévisualisation `wat-connect-staging`.
-- Aucun déploiement sur `nour-al-hidaya` ni sur la production.
-- Aucun déploiement automatique à chaque commit.
-- Le contrôle `wrangler deploy --dry-run` reste exécuté séparément dans le workflow de validation.
+Les fichiers internes et les artefacts sensibles sont exclus des assets Cloudflare et Firebase : fonctions backend, scripts d'administration, dépendances, fichiers de configuration, archives, paquets Android et clés de signature.
 
-## Configuration requise une seule fois
+La validation GitHub exécute une simulation Wrangler sur cette configuration dédiée. Cette simulation ne publie rien.
 
-Dans GitHub, ouvrir le dépôt puis **Settings → Secrets and variables → Actions → Environments** et créer/ouvrir l'environnement `staging`. Ajouter ces secrets à l'environnement :
+## État réel observé dans Cloudflare
 
-- `CLOUDFLARE_API_TOKEN` : jeton API Cloudflare limité au compte WAT et aux permissions nécessaires au déploiement des Workers (Workers Scripts: Edit ; Account Settings: Read si demandé par Wrangler).
-- `CLOUDFLARE_ACCOUNT_ID` : identifiant du compte Cloudflare WAT.
+Le compte contient déjà une connexion Workers Builds au dépôt GitHub, mais elle est attachée au Worker **nour-al-hidaya**, pas au Worker de staging.
 
-Ne jamais mettre le jeton dans le dépôt, dans un fichier de configuration ou dans une conversation. Ne pas utiliser un jeton global ou des droits administrateur complets.
+Configuration actuelle de ce Worker :
+- branche surveillée : `security/staff-account-provisioning` ;
+- builds automatiques activés ;
+- builds Preview désactivés ;
+- commande de build : `bun run build:android:web` ;
+- commande de déploiement : `bun run preview:cloudflare`.
 
-## Déclenchement
+Le journal Cloudflare du 21 novembre 2026 confirme l'échec de la commande de build : le script `build:android:web` n'existe pas. Le dépôt ne contient pas de `package.json` à la racine définissant ces scripts. La commande de déploiement configurée n'existe pas non plus dans le dépôt.
 
-Après intégration explicite du fichier de workflow à la branche par défaut, dans GitHub : **Actions → Cloudflare staging preview → Run workflow**, choisir la branche `security/staff-account-provisioning`, puis lancer. Tant que le fichier n'est pas sur `main`, ce déclenchement n'est pas encore disponible dans l'interface GitHub.
+**Précaution importante :** comme les Preview builds sont désactivés, la branche surveillée est traitée comme la branche de production de ce Worker. Il ne faut pas remplacer simplement la commande par `wrangler deploy` : cela pourrait publier la branche de travail sur le Worker actif `nour-al-hidaya`. Cette configuration de production n'a pas été modifiée.
 
-Le workflow refuse toute autre branche et échoue explicitement si l'un des deux secrets manque. La publication réelle ne se produit qu'après ce déclenchement manuel.
+Le Worker **wat-connect-staging** existe, mais n'a actuellement aucune configuration Workers Builds associée.
 
-## État actuel
+## Mise en place proposée pour staging
 
-Le Worker de staging existe et la simulation Wrangler a réussi. Le workflow est préparé, mais aucun secret GitHub n'est créé ou consulté par ce dépôt depuis cette automatisation. Aucun déploiement réel n'a été lancé.
+La configuration sûre à créer sur le Worker `wat-connect-staging` est :
+
+- branche de production de ce Worker : `main` ;
+- commandes de production : déploiement uniquement vers `wat-connect-staging`, jamais vers `nour-al-hidaya` ;
+- Preview builds activés pour les branches non principales ;
+- commande Preview : `wrangler preview` avec `wrangler.staging.json` ;
+- jeton de build Cloudflare existant réutilisable.
+
+Cela permettrait à la branche `security/staff-account-provisioning` de produire une URL de prévisualisation isolée, sans toucher à la production.
+
+La création de cette configuration Cloudflare n'a pas encore été effectuée : elle active les builds automatiques du Worker de staging. J'attends l'autorisation explicite avant de l'activer.
+
+## Workflow GitHub manuel de secours
+
+Le workflow `.github/workflows/cloudflare-staging-preview.yml` est également préparé. Il publie uniquement sur `wat-connect-staging` après déclenchement manuel.
+
+Il est encore dans la branche de travail de la PR 21, pas dans la branche par défaut `main`. GitHub ne rend un workflow `workflow_dispatch` disponible que lorsque son fichier existe aussi sur la branche par défaut. Cette solution nécessite également les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` dans l'environnement GitHub `staging`.
+
+## Sécurité et état
+
+- Aucun déploiement sur le Worker actif `nour-al-hidaya` n'a été effectué par ce travail.
+- Aucun déploiement de production n'a été effectué.
+- La simulation Wrangler de la configuration staging est automatisée dans GitHub Actions.
+- Les fonctions Firebase restent non déployées ; App Check et la décision de facturation Firebase devront être validés avant leur activation.
