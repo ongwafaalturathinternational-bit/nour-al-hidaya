@@ -32,4 +32,4 @@ jobs:
           node --test tests/*syntax.test.mjs tests/firebase-project-aliases.test.mjs tests/staff-functions-security.test.mjs
           node -e "JSON.parse(require('fs').readFileSync('firebase.json','utf8')); JSON.parse(require('fs').readFileSync('functions/package.json','utf8')); JSON.parse(require('fs').readFileSync('wrangler.json','utf8'));"
       - name: Valider le Worker Cloudflare sans déploiement
-        run: npx --yes wrangler@4 deploy --dry-run --outdir /tmp/wat-connect-worker-dry-run --name wat-connect-staging
+        run: npx --yes wrangler@4 deploy --dry-run --config wrangler.staging.json --outdir /tmp/wat-connect-staging-dry-run
