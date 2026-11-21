@@ -26,6 +26,9 @@ async function main() {
   if ((user.email || "").toLowerCase() !== expectedEmail) {
     throw new Error("L'UID fourni ne correspond pas à l'adresse administrateur autorisée.");
   }
+  if (user.disabled === true) {
+    throw new Error("Le compte administrateur est désactivé. Réactivez-le explicitement dans Firebase Authentication avant l'initialisation.");
+  }
   if (user.emailVerified !== true) {
     const verificationLink = await auth.generateEmailVerificationLink(expectedEmail);
     console.log("L'adresse administrateur n'est pas encore vérifiée.");
