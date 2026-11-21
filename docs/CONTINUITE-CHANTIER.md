@@ -91,3 +91,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Commit de ce test : `cfab95cc73960124cbc811496e769a8314e1198c`.
 - CI du nouveau commit en cours : [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908205955) · [APK Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908205939).
 - Le prochain contrôle reste l'audit des parcours hors connexion et des transitions d'état, sans essai réel sur appareil ni modification de production.
+
+
+## Poursuite — audit PWA et cache local
+
+- Ajout de `tests/service-worker-cache.test.mjs` : tests de régression statiques sur les ressources précachées, la liste blanche des SDK Firebase, les requêtes non-GET et l'absence de mise en cache des URL métier non listées.
+- Vérification de la liste de précache sur l'arbre GitHub : 17 ressources explicitement listées existent; l'entrée `./` représente la racine de l'application.
+- L'audit confirme que le service worker ne précache pas les réponses Firestore/Auth. Ce contrôle statique ne remplace pas la recette hors connexion sur téléphone.
+- CI déclenchée pour le commit applicatif `9397c0e5ed612bacc53ef7f6699301c48bd5eefb` : [APK Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908287789) et [règles Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44908287825). À la dernière lecture, la compilation APK était en cours et l'installation des outils de test Firestore se poursuivait.
+- Le commit `cfab95cc73960124cbc811496e769a8314e1198c` a déjà obtenu la réussite du workflow Firestore, incluant le nouveau test de mise à jour des dates de projet.
