@@ -22,17 +22,13 @@ Un test de régression vérifie la syntaxe du script, l'invalidation des ancienn
 
 Ces constats décrivent les règles présentes dans la branche; ils ne prouvent pas que les mêmes règles sont actuellement publiées dans Firebase production.
 
-## 3. Incohérence d'interface à arbitrer — lecture des présences
+## 3. Politique d'accès confirmée — écran commun Activités / Présences
 
-Les règles Firestore distinguent `activities.read` / `activities.manage` et `attendance.read` / `attendance.manage`. Le test des règles confirme qu'un scope Activités seul ne donne pas accès aux présences.
+Les règles Firestore distinguent `activities.read` / `activities.manage` et `attendance.read` / `attendance.manage`. L'écran actuel reste volontairement un écran commun : son ouverture exige `activities.read` ou `activities.manage`, et l'affichage des feuilles exige en plus `attendance.read` ou `attendance.manage`.
 
-Cependant, `activites.html` refuse actuellement l'ouverture du module si le compte ne possède pas `activities.read` ou `activities.manage`, même lorsque `attendance.read` ou `attendance.manage` est présent. Le sélecteur de présence est alimenté par la collection des activités, que ces règles n'autorisent pas à lire à un compte « présences seulement ».
+**Décision retenue pour le Lot 8 :** les responsables qui utilisent cet écran commun doivent recevoir les deux périmètres nécessaires. Un compte disposant uniquement d'un scope Présences conserve son accès Firestore à la collection `attendance`, mais ne peut pas lire les activités ni ouvrir cet écran commun. L'interface indique explicitement le scope manquant. Aucun droit supplémentaire n'est accordé automatiquement.
 
-**Conséquence :** le droit de lecture des présences existe côté règles, mais ne suffit pas à utiliser l'écran actuel. Il faut choisir entre :
-1. déclarer explicitement que l'écran Présences requiert aussi `activities.read` et attribuer les deux scopes ensemble aux personnes concernées ; ou
-2. construire une vue Présences autonome, qui n'expose pas le registre complet des activités et utilise une référence d'activité autorisée.
-
-Aucune règle n'a été élargie dans cette session. Cette décision n'est pas tranchée automatiquement, car elle touche au périmètre de confidentialité des activités.
+Une vue Présences autonome reste une évolution fonctionnelle ultérieure, à concevoir séparément si l'ONG souhaite déléguer le pointage sans donner accès au registre des activités.
 
 ## 4. Intégrité des références de présence
 
