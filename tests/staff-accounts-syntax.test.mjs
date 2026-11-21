@@ -12,7 +12,7 @@ test("l'interface des comptes d'équipe ne s'ouvre qu'avec le claim watAdmin et 
   assert.ok(scripts.length > 0);
   scripts.forEach(source => assert.doesNotThrow(() => new vm.Script(source)));
   assert.match(html, /token\.claims\.watAdmin!==true/);
-  assert.match(html, /ReCaptchaV3Provider/);
+  assert.match(html, /appCheck\.activate\(key,true\)/);
   assert.match(html, /callable\("listStaffAccounts"/);
   assert.match(html, /callable\("createStaffAccount"/);
   assert.match(html, /callable\("setStaffAccountStatus"/);
