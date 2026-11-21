@@ -26,7 +26,7 @@ Le script refuse tout projet autre que `wat-connect-staging`, vérifie l'adresse
 `setStaffAccountStatus` permet à l'administrateur de confiance d'activer ou suspendre un accès. L'activation exige un e-mail vérifié. La suspension désactive également le compte Firebase Authentication.
 
 ## Limites actuelles
-Ces endpoints constituent la couche serveur ; l'interface d'administration doit encore les appeler avec App Check initialisé. Les fonctions ne sont pas déployées par ce changement.
+La page `staff-accounts.html` est intégrée et initialise App Check côté client lorsque sa clé reCAPTCHA est renseignée. Les fonctions ne sont pas déployées par ce changement.
 
 ## Interface de gestion des comptes
 
