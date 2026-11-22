@@ -216,3 +216,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 - Nour Al-Hidaya : Firestore Emulator **133/133** (run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472)); Android staging APK réussi (run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484)). Le build Android est un artefact de test, pas une publication.
 - Le correctif concerne uniquement la sémantique accessible de la navigation; aucun parcours métier ou rôle n'a changé.
+
+
+
+## Mise à jour des validations UI/UX — 22 novembre 2026
+
+- PR #25 après amélioration de la navigation active : Firestore **134/134** (run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302)) et Android staging réussi (run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206)).
+- PR #26 après ajout du lien d'évitement clavier au portail : Firestore **134/134** (run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614)); Android staging run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643) encore en cours au dernier contrôle.
+- PR #27 : Firestore **133/133** (run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323)); Android staging réussi (run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344)).
