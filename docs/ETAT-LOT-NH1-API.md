@@ -98,3 +98,13 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - **Non raccordé :** le Worker continue de répondre 503 sur les routes d'inscription. Aucun endpoint n'utilise encore cette fonction ; aucune règle Firestore ni aucun compte réel n'a été modifié. Les tests doivent être exécutés par la CI avant de considérer le code validé.
 
 - Ajustement après revue du helper composé : le même client Firestore de confiance est désormais transmis au contrôle `staffAccess` et à la lecture `learningStaffAssignments`. Un test de non-régression vérifie les deux lectures successives avec ce client partagé.
+
+## Résolution serveur des ressources et journal d'audit — 22 novembre 2026
+
+- Le contrôle d'accès a été renforcé : l'appelant transmet désormais uniquement un identifiant de groupe. Le Worker lit lui-même `learningGroups/{groupId}` dans Firestore et récupère les identifiants de site, mosquée et programme depuis ce document ; les identifiants de périmètre envoyés par le navigateur ne sont pas utilisés.
+- La politique compare ensuite les quatre dimensions (groupe, site, mosquée, programme) aux listes explicitement attribuées à l'agent. Ressource absente, liens incomplets/mal formés, registre d'affectations indisponible ou discordance : refus fermé.
+- **Hypothèse de schéma à confirmer :** cette lecture attend les champs texte `siteId`, `mosqueId` et `programId` sur `learningGroups`. Le modèle de données NH n'est pas encore approuvé et aucun document réel n'a été lu ; ne pas activer ce helper avant confirmation de ces champs et des relations canoniques.
+- Ajout de `learning-audit.js` : écriture d'événements minimaux côté serveur dans `learningAuditLogs`, avec acteur, action autorisée, cible opaque, scope exact, résultat, horodatage serveur et périmètre. Les noms, téléphones, coordonnées et contenus de dossiers ne sont pas recopiés.
+- Tests ajoutés pour la résolution de ressource, les accès inter-sites, le refus des données privées sans grant, la traçabilité minimale et l'échec fermé si le journal est indisponible.
+- **Limite transactionnelle :** l'adaptateur Firestore actuel ne fournit pas encore de transaction combinant écriture métier et audit. Le helper d'audit n'est pas encore raccordé aux routes. Avant d'activer les décisions ou modifications sensibles, il faudra garantir l'écriture d'audit avant l'action et mettre en place une transaction/outbox cohérente pour éviter une opération validée sans trace finale.
+- Aucun endpoint n'a été activé ; les routes demeurent en 503. Aucun compte, affectation, document réel, règle distante, secret ou déploiement n'a été modifié.
