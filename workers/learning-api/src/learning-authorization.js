@@ -101,20 +101,32 @@ export function authorizeLearningBeneficiary(request, config, scope, beneficiary
   );
 }
 
-/** Private beneficiary fields require a distinct explicit scope grant. */
-export function authorizeLearningBeneficiaryPrivate(request, config, beneficiaryId, enrollmentId, options = {}) {
+/** Private beneficiary fields are fetched only after the distinct scope and perimeter pass. */
+export async function authorizeLearningBeneficiaryPrivate(request, config, beneficiaryId, enrollmentId, options = {}) {
   const scope = "learning.beneficiaries.private.read";
-  return authorizeResolvedResource(
+  const authorized = await authorizeResolvedResource(
     request, config, scope, enrollmentId, options,
     async (firestore, id) => {
-      const resolved = await (options.resolveBeneficiaryPrivate ?? resolveLearningBeneficiaryPrivate)(
-        firestore, beneficiaryId, id,
-      );
-      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId ||
-          resolved.privateRecordId !== beneficiaryId) {
-        throw new Error("beneficiary_private_resource_mismatch");
+      const resolved = await (options.resolveBeneficiary ?? resolveLearningBeneficiary)(firestore, beneficiaryId, id);
+      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId) {
+        throw new Error("beneficiary_resource_mismatch");
       }
       return resolved;
     }, "beneficiary-private",
   );
+  if (!authorized.ok) return authorized;
+
+  try {
+    const privateResource = await (options.resolveBeneficiaryPrivate ?? resolveLearningBeneficiaryPrivate)(
+      options.firestore, beneficiaryId, enrollmentId,
+    );
+    if (privateResource.beneficiaryId !== beneficiaryId ||
+        privateResource.enrollmentId !== enrollmentId ||
+        privateResource.privateRecordId !== beneficiaryId) {
+      return { ok: false, status: 404, error: "learning_resource_unavailable" };
+    }
+    return { ...authorized, resource: privateResource };
+  } catch {
+    return { ok: false, status: 404, error: "learning_resource_unavailable" };
+  }
 }
