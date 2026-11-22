@@ -1,5 +1,5 @@
 const DIMENSIONS = Object.freeze(["siteIds", "structureIds", "groupIds", "programIds"]);
-const SCOPE_PATTERN = /^learning\.[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){0,3}$/;
+const SCOPE_PATTERN = /^learning\\.[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){0,3}$/;
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 function validIdList(value) {
@@ -10,26 +10,19 @@ function validIdList(value) {
 
 function validTimestamp(value) {
   if (value === null) return true;
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(value)) return false;
+  if (typeof value !== "string" || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$/.test(value)) return false;
   return Number.isFinite(Date.parse(value));
 }
 
-/**
- * Pure fail-closed policy check for one explicitly scoped NH assignment.
- * This is a policy primitive only; it is not yet wired to HTTP routes.
- */
+/** Pure fail-closed policy check. The resource must come from trusted server-side resolution. */
 export function evaluateLearningAssignment({ assignment, scope, resource, now = new Date() }) {
   if (!assignment || typeof assignment !== "object" || Array.isArray(assignment)) {
     return { allowed: false, reason: "assignment_missing" };
   }
-  if (!ID_PATTERN.test(assignment.assignmentId ?? "")) {
-    return { allowed: false, reason: "assignment_id_invalid" };
-  }
+  if (!ID_PATTERN.test(assignment.assignmentId ?? "")) return { allowed: false, reason: "assignment_id_invalid" };
   if (assignment.active !== true) return { allowed: false, reason: "assignment_inactive" };
-  if (typeof scope !== "string" || !SCOPE_PATTERN.test(scope)) {
-    return { allowed: false, reason: "scope_invalid" };
-  }
-  if (!Array.isArray(assignment.scopeGrants) ||
+  if (typeof scope !== "string" || !SCOPE_PATTERN.test(scope)) return { allowed: false, reason: "scope_invalid" };
+  if (!Array.isArray(assignment.scopeGrants) || !assignment.scopeGrants.length ||
       assignment.scopeGrants.some((item) => typeof item !== "string" || !SCOPE_PATTERN.test(item)) ||
       new Set(assignment.scopeGrants).size !== assignment.scopeGrants.length ||
       !assignment.scopeGrants.includes(scope)) {
@@ -52,18 +45,24 @@ export function evaluateLearningAssignment({ assignment, scope, resource, now = 
 
   let matchedDimensions = 0;
   for (const dimension of DIMENSIONS) {
-    const resourceId = resource[dimension.slice(0, -1)];
+    const resourceKey = dimension.slice(0, -1);
+    const resourceId = resource[resourceKey];
     const assignedIds = assignment[dimension];
-    if (resourceId === undefined || resourceId === null) continue;
+    const resourceHasDimension = resourceId !== undefined && resourceId !== null;
+    const assignmentHasDimension = assignedIds !== undefined && assignedIds !== null;
+
+    // Both sides must describe exactly the dimensions relevant to this resource.
+    // An assignment cannot silently widen access by adding an unresolvable dimension.
+    if (resourceHasDimension !== assignmentHasDimension) {
+      return { allowed: false, reason: "resource_perimeter_incomplete" };
+    }
+    if (!resourceHasDimension) continue;
     if (typeof resourceId !== "string" || !ID_PATTERN.test(resourceId) || !validIdList(assignedIds)) {
       return { allowed: false, reason: "resource_perimeter_invalid" };
     }
-    if (!assignedIds.includes(resourceId)) {
-      return { allowed: false, reason: "resource_outside_assignment" };
-    }
+    if (!assignedIds.includes(resourceId)) return { allowed: false, reason: "resource_outside_assignment" };
     matchedDimensions += 1;
   }
   if (matchedDimensions === 0) return { allowed: false, reason: "resource_perimeter_missing" };
-
   return { allowed: true, reason: "assignment_scope_and_perimeter_match" };
 }
