@@ -22,6 +22,9 @@ export function evaluateLearningAssignment({ assignment, scope, resource, now = 
   if (!assignment || typeof assignment !== "object" || Array.isArray(assignment)) {
     return { allowed: false, reason: "assignment_missing" };
   }
+  if (!ID_PATTERN.test(assignment.assignmentId ?? "")) {
+    return { allowed: false, reason: "assignment_id_invalid" };
+  }
   if (assignment.active !== true) return { allowed: false, reason: "assignment_inactive" };
   if (typeof scope !== "string" || !SCOPE_PATTERN.test(scope)) {
     return { allowed: false, reason: "scope_invalid" };
@@ -49,7 +52,7 @@ export function evaluateLearningAssignment({ assignment, scope, resource, now = 
 
   let matchedDimensions = 0;
   for (const dimension of DIMENSIONS) {
-    const resourceId = resource[dimension.slice(0, -1)]; // siteId, mosqueId, groupId, programId
+    const resourceId = resource[dimension.slice(0, -1)];
     const assignedIds = assignment[dimension];
     if (resourceId === undefined || resourceId === null) continue;
     if (typeof resourceId !== "string" || !ID_PATTERN.test(resourceId) || !validIdList(assignedIds)) {
