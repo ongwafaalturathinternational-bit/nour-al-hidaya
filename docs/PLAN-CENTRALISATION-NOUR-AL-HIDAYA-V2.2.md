@@ -65,7 +65,7 @@ Les collections sont des propositions à harmoniser avec les règles Firestore e
 - `learningBeneficiaryAccess/{beneficiaryId}` : liaison serveur facultative vers un compte Auth vérifié, sans faire de l'UID l'identifiant primaire.
 - `learningProfiles/{beneficiaryId}` : paramètres pédagogiques et progression autorisée.
 - `learningGroups/{groupId}` : groupe, site, niveau, période et responsable.
-- `learningStaffAssignments/{assignmentId}` : affectations limitées dans le temps et dans le périmètre.
+- `learningStaffAssignments/{uid}` : registre des affectations de l'agent, avec une liste `assignments[]` ; chaque élément porte son propre `assignmentId`, ses scopes, ses périmètres et ses dates de validité. Ce choix permet une lecture directe par UID dans le service serveur. Il reste à confirmer avec le modèle final et les règles Firestore.
 - `learningSessions/{sessionId}` et `learningAttendance/{recordId}` : séances et présences.
 - `learningAssessments/{assessmentId}` et `learningResults/{resultId}` : évaluations et résultats.
 - `learningAuditLogs/{eventId}` : journal append-only écrit côté serveur pour les actions sensibles.
