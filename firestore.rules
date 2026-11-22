@@ -35,6 +35,41 @@ service cloud.firestore {
         && (!("startDate" in data) || !("endDate" in data) || data.startDate <= data.endDate);
     }
 
+    // Les tableaux saisis dans le formulaire restent des listes de textes bornées
+    // même si un client modifié contourne les limites HTML.
+    function validApplicationTextListItem(values, index) {
+      return values.size() <= index
+        || (values[index] is string
+          && values[index].size() >= 1
+          && values[index].size() <= 120);
+    }
+
+    function validApplicationTextList(values) {
+      return values is list
+        && values.size() <= 20
+        && validApplicationTextListItem(values, 0)
+        && validApplicationTextListItem(values, 1)
+        && validApplicationTextListItem(values, 2)
+        && validApplicationTextListItem(values, 3)
+        && validApplicationTextListItem(values, 4)
+        && validApplicationTextListItem(values, 5)
+        && validApplicationTextListItem(values, 6)
+        && validApplicationTextListItem(values, 7)
+        && validApplicationTextListItem(values, 8)
+        && validApplicationTextListItem(values, 9)
+        && validApplicationTextListItem(values, 10)
+        && validApplicationTextListItem(values, 11)
+        && validApplicationTextListItem(values, 12)
+        && validApplicationTextListItem(values, 13)
+        && validApplicationTextListItem(values, 14)
+        && validApplicationTextListItem(values, 15)
+        && validApplicationTextListItem(values, 16)
+        && validApplicationTextListItem(values, 17)
+        && validApplicationTextListItem(values, 18)
+        && validApplicationTextListItem(values, 19)
+        && values.join(",").size() <= 500;
+    }
+
     function activeStaff() {
       return request.auth != null
         && request.auth.token.email_verified == true
@@ -331,8 +366,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
-        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
-        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && validApplicationTextList(request.resource.data.skills)
+        && validApplicationTextList(request.resource.data.interests)
         && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
         && request.resource.data.status in ["en_attente", "actif", "inactif", "suspendu", "rejete"]
         && (!("email" in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 160))
