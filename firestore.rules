@@ -366,8 +366,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
-        && validApplicationTextList(request.resource.data.skills)
-        && validApplicationTextList(request.resource.data.interests)
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
         && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
         && request.resource.data.status in ["en_attente", "actif", "inactif", "suspendu", "rejete"]
         && (!("email" in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 160))
@@ -379,8 +379,8 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(["fullName", "category", "skills", "interests", "availability", "status", "createdAt", "createdBy", "updatedAt", "updatedBy"])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
-        && validApplicationTextList(request.resource.data.skills)
-        && validApplicationTextList(request.resource.data.interests)
+        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
+        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
         && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
         && request.resource.data.status in ["en_attente", "actif", "inactif", "suspendu", "rejete"]
         && (!("email" in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 160))
