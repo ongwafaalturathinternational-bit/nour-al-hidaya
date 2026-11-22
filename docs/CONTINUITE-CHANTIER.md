@@ -442,3 +442,12 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Le test a été corrigé avec des assertions textuelles simples, vérifiant que le module Nour Al-Hidaya est conditionné par le rôle apprenant et n'apparaît qu'une fois dans la branche équipe.
 - Correctif test : `3ce43c0037b530ba49d400ff66a18fc3ea0d7d1c`. Le workflow Firestore précédent avait échoué à cause de cette syntaxe de test; le workflow APK staging avait réussi.
 - Nouvelle validation CI déclenchée sur le test corrigé. Ne pas considérer la suite validée avant son résultat.
+
+
+## Nettoyage du mot de passe dans WAT Connect — 22 novembre 2026
+
+- Le formulaire de connexion central efface maintenant le mot de passe après toute tentative, réussie ou échouée, tout en réactivant le bouton de connexion.
+- Test de régression ajouté dans `tests/portal-routing.test.mjs`.
+- Commits : portail `54e40f1c985c593e2c26330386d090a6bc28a9c1`, test `563bd85bae8d5b757fdd6ca64f10da2ad65ca13a`.
+- La validation CI du correctif précédent a été relancée après correction de la syntaxe du test de visibilité. Les nouveaux contrôles pour le nettoyage du mot de passe sont également déclenchés sur le dernier HEAD.
+- Aucune donnée réelle, aucun compte ni configuration de production touchés.
