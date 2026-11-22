@@ -31,7 +31,7 @@ label{display:block;font-size:.82rem;font-weight:700;margin:12px 0 5px}input,sel
 <button class="primary form-button" id="saveButton">Enregistrer la fiche</button>
 </form>
 </section>
-<section class="panel"><h2>Répertoire</h2><div class="tools"><input id="search" placeholder="Rechercher un nom, une fonction…"></div><div class="count" id="count"></div><div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie / fonction</th><th>Contact</th><th>Statut</th><th id="actionHead" hidden>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Aucune fiche ne correspond à la recherche.</div></section>
+<section class="panel"><h2>Répertoire</h2><div class="tools"><input id="search" placeholder="Rechercher un nom, une fonction…"></div><div class="count" id="count"></div><div class="table-wrap" role="region" aria-label="Répertoire des membres — défilement horizontal" tabindex="0"><table><thead><tr><th>Nom</th><th>Catégorie / fonction</th><th>Contact</th><th>Statut</th><th id="actionHead" hidden>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Aucune fiche ne correspond à la recherche.</div></section>
 </div>
 <div class="note">L’accès à cet annuaire est contrôlé côté serveur par les règles Firestore. Les fiches sont désactivées plutôt que supprimées afin de préserver l’historique.</div>
 </main>
