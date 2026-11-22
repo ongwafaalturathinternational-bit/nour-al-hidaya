@@ -142,3 +142,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Test statique ajouté : `tests/responsive-tables-a11y.test.mjs`, qui vérifie le nombre de zones, leur nom accessible, le focus clavier et le style de focus.
 - Validation CI à attendre sur la PR dédiée; aucun résultat de test n'est revendiqué avant lecture des workflows.
 - Aucun compte/dossier réel, configuration Firebase réelle, route métier, fusion, déploiement ou changement production n'a été touché.
+
+
+## Validation CI — PR #25 — 22 novembre 2026
+
+- Commit applicatif testé : `97b8ffc4d9632d30752e1beb68b3d1a315e59072`.
+- Workflow Firestore security rules : run [45043255230](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255230), terminé avec succès. La suite compte **133 tests réussis, 0 échec, 0 ignoré**; les deux tests ajoutés sur l'accessibilité clavier et le focus visible sont présents dans les logs.
+- Workflow Android staging APK : run [45043255227](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227), terminé avec succès. Artefact debug staging `wat-connect-android-staging-debug-apk`, ID `14762631201`, 4 372 494 octets, conservation 14 jours — [artefact GitHub Actions](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227/artifacts/14762631201).
+- Les logs contiennent des refus `PERMISSION_DENIED` attendus dans les tests négatifs Firestore; tous les sous-tests sont réussis. Les avertissements de dépréciation Node ne font pas échouer les workflows.
+- PR #25 vérifiée ouverte, brouillon, non fusionnée, `mergeable=true`; elle reste empilée sur PR #22. L'APK est un artefact de test staging, pas un déploiement ni une version de production.
+- Aucun compte/dossier réel, route métier, secret, IAM ou configuration de production touché.
