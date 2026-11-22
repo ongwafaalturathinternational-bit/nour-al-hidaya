@@ -73,6 +73,7 @@ test("Firestore encoder rejects invalid field names, unsupported values and non-
   });
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { "__bad": "x" }), /field_name_invalid/);
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { amount: Number.NaN }), /number_invalid/);
+  await assert.rejects(() => client.createDocument("beneficiaries", "x", { amount: Number.MAX_SAFE_INTEGER + 1 }), /integer_unsafe/);
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { date: new Date() }), /value_type_invalid/);
 });
 
