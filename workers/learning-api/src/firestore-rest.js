@@ -31,8 +31,13 @@ function toFirestoreValue(value, depth = 0) {
   if (value === null) return { nullValue: null };
   if (typeof value === "string") return { stringValue: value };
   if (typeof value === "boolean") return { booleanValue: value };
+  if (value instanceof Date) {
+    if (!Number.isFinite(value.getTime())) throw new Error("firestore_timestamp_invalid");
+    return { timestampValue: value.toISOString() };
+  }
   if (typeof value === "number") {
     if (!Number.isFinite(value)) throw new Error("firestore_number_invalid");
+    if (Number.isInteger(value) && !Number.isSafeInteger(value)) throw new Error("firestore_integer_unsafe");
     return Number.isInteger(value)
       ? { integerValue: String(value) }
       : { doubleValue: value };
