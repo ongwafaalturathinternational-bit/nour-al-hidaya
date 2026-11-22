@@ -19,10 +19,12 @@ const COLLECTIONS = new Set([
   "staffDevices",
   "syncReceipts",
   "learningAuditLogs",
-]);
+ ]);
+const WRITABLE_COLLECTIONS = new Set([...COLLECTIONS].filter((name) => name !== "staffAccess"));
+const UPDATABLE_COLLECTIONS = new Set([...WRITABLE_COLLECTIONS].filter((name) => name !== "learningAuditLogs"));
 
-function assertDocumentTarget(collection, documentId, readOnly = false) {
-  if (!(COLLECTIONS.has(collection) || (readOnly && READ_ONLY_COLLECTIONS.has(collection)))) throw new Error("firestore_collection_not_allowed");
+function assertDocumentTarget(collection, documentId, allowedCollections = COLLECTIONS) {
+  if (!(allowedCollections.has(collection) || (allowedCollections === COLLECTIONS && READ_ONLY_COLLECTIONS.has(collection)))) throw new Error("firestore_collection_not_allowed");
   if (typeof documentId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(documentId)) {
     throw new Error("firestore_document_id_invalid");
   }
@@ -118,7 +120,7 @@ export function createFirestoreRestClient(config, options = {}) {
     },
 
     async createDocument(collection, id, fields) {
-      assertDocumentTarget(collection, id);
+      assertDocumentTarget(collection, id, WRITABLE_COLLECTIONS);
       const encodedFields = encodeFields(fields);
       const url = API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents/" +
         encodeURIComponent(collection) + "?documentId=" + encodeURIComponent(id);
@@ -130,6 +132,7 @@ export function createFirestoreRestClient(config, options = {}) {
     },
 
     async updateDocument(collection, id, fields) {
+      assertDocumentTarget(collection, id, UPDATABLE_COLLECTIONS);
       const encodedFields = encodeFields(fields);
       const url = documentUrl(collection, id) + "?" +
         Object.keys(encodedFields).map((key) => "updateMask.fieldPaths=" + encodeURIComponent(key)).join("&") +
