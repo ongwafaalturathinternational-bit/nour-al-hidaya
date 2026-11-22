@@ -93,6 +93,13 @@ test("les programmes exigent des dates ISO et une période cohérente à la cré
     startDate: "2028-02-29",
     endDate: "2028-02-29"
   })));
+  await assertSucceeds(setDoc(doc(db, "programs", "leap-century"), program(uid, {
+    startDate: "2000-02-29",
+    endDate: "2000-02-29"
+  })));
+  await assertFails(setDoc(doc(db, "programs", "common-century"), program(uid, {
+    startDate: "1900-02-29"
+  })));
   await assertFails(setDoc(doc(db, "programs", "invalid-calendar-date"), program(uid, {
     startDate: "2027-02-29"
   })));
