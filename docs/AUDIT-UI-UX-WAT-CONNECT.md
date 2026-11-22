@@ -280,3 +280,11 @@ Aucune fusion, publication, activation de route, modification de données réell
 - Le correctif PR #27 ajoute un nom accessible à la zone de navigation, expose l'onglet actif avec `aria-current="page"` et marque les boutons comme `type="button"`.
 - Les libellés et icônes restent ceux de `ro.tabs`; le correctif ne change ni les rôles, ni les écrans, ni les transitions de navigation.
 - Tests statiques dédiés et workflows Firestore Emulator / Android staging déclenchés sur le HEAD initial `9a855e68b8f4cd7dadd51048428e827d517737c6`. Résultats encore en cours au moment de la rédaction; aucune réussite n'est revendiquée avant lecture des logs.
+
+
+
+## 13. Cloudflare — comparaison statique de la branche Finance — 22 novembre 2026
+
+La racine de la branche `feature/lot9-finance-wat-branding` a été inventoriée : elle contient `wrangler.json` avec le Worker `nour-al-hidaya` et les assets statiques `.`, mais ne contient pas `package.json`, `wrangler.staging.json`, `wrangler.jsonc`, `scripts/prepare-capacitor-web.mjs` ni le workflow `.github/workflows/cloudflare-staging-preview.yml` présents dans le socle plus récent de centralisation.
+
+C'est une différence de configuration avérée entre les branches. Elle constitue une piste, pas une cause racine : si Cloudflare Build utilise seulement `wrangler.json`, l'absence de ces fichiers ne suffit pas à expliquer l'échec; si ses paramètres appellent un script npm/Capacitor ou attendent `wrangler.staging.json`, l'échec devient plausible. Les paramètres de build et la première erreur restent à vérifier dans le tableau de bord authentifié. Ne pas recopier à l'aveugle les fichiers staging de #20/#22 sur la branche Finance : il faut confirmer le root directory, la commande de build et l'environnement avant une correction ciblée.
