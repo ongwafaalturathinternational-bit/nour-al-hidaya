@@ -1,7 +1,7 @@
 import { authorizeStaffScope } from "./staff-auth.js";
 import { evaluateLearningAssignment } from "./assignment-policy.js";
 import { validateLearningAssignmentRecord } from "./learning-schema.js";
-import { resolveLearningGroup, resolveLearningEnrollment } from "./learning-resource-resolver.js";
+import { resolveLearningGroup, resolveLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate } from "./learning-resource-resolver.js";
 
 function decodeValue(value) {
   if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
@@ -83,5 +83,38 @@ export function authorizeLearningEnrollment(request, config, scope, enrollmentId
   return authorizeResolvedResource(
     request, config, scope, enrollmentId, options,
     options.resolveEnrollment ?? resolveLearningEnrollment, "enrollment",
+  );
+}
+
+
+/** Beneficiary dossier access is anchored to a server-resolved active enrollment. */
+export function authorizeLearningBeneficiary(request, config, scope, beneficiaryId, enrollmentId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveBeneficiary ?? resolveLearningBeneficiary)(firestore, beneficiaryId, id);
+      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId) {
+        throw new Error("beneficiary_resource_mismatch");
+      }
+      return resolved;
+    }, "beneficiary",
+  );
+}
+
+/** Private beneficiary fields require a distinct explicit scope grant. */
+export function authorizeLearningBeneficiaryPrivate(request, config, beneficiaryId, enrollmentId, options = {}) {
+  const scope = "learning.beneficiaries.private.read";
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveBeneficiaryPrivate ?? resolveLearningBeneficiaryPrivate)(
+        firestore, beneficiaryId, id,
+      );
+      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId ||
+          resolved.privateRecordId !== beneficiaryId) {
+        throw new Error("beneficiary_private_resource_mismatch");
+      }
+      return resolved;
+    }, "beneficiary-private",
   );
 }
