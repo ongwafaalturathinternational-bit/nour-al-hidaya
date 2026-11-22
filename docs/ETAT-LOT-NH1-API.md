@@ -151,3 +151,16 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Contrat serveur détaillé : résolution des références depuis Firestore, cohérence groupe/programme/structure/site, refus fermé, idempotence et journalisation.
 - Sept arbitrages institutionnels sont listés avant implémentation. Aucune collection, règle Firestore, permission, donnée, secret ou environnement n'a été modifié.
 - Aucun test ni résultat CI n'est revendiqué pour ce changement documentaire. Routes toujours fermées en 503; PR maintenue en brouillon.
+
+
+## Validateurs canoniques et résolveur serveur — 22 novembre 2026
+
+- Ajout de `workers/learning-api/src/learning-schema.js` : validateurs purs pour structures, sites facultatifs, groupes, inscriptions et registres d'affectations.
+- Ajout de `workers/learning-api/src/learning-resource-resolver.js` : résolution côté serveur d'un groupe ou d'une inscription à partir de références Firestore de confiance; contrôle des états actifs, des liens structure/site/programme et de la concordance entre groupe et inscription.
+- Le résolveur n'accepte pas d'objet de périmètre construit par le navigateur. Il ne crée ni ne modifie de document.
+- Le client Firestore autorise désormais la lecture seule de `programs`, `learningStructures` et `learningSites` pour la résolution; ces collections restent interdites en création et mise à jour par cet adaptateur.
+- La politique d'affectation utilise maintenant `structureIds[]` au lieu de l'hypothèse `mosqueIds[]`. Le helper historique `learning-authorization.js` demeure isolé et n'est pas raccordé au nouveau résolveur.
+- Tests ajoutés : validation des contrats, refus des références invalides/inactives, concordance inscription-groupe et séparation lecture/écriture des collections de référence.
+- Le workflow NH-1 syntax-check couvre les nouveaux modules.
+- Un premier passage CI a révélé une erreur de syntaxe dans la déclaration de la liste lecture seule; elle a été corrigée. Le dernier commit est en cours de validation. Aucun résultat de test réussi n'est revendiqué tant que la CI du HEAD final n'est pas terminée.
+- Routes toujours en 503. Aucun compte, document réel, scope réel, règle Firestore distante, secret ou déploiement n'a été modifié.
