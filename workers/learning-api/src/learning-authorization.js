@@ -1,7 +1,7 @@
 import { authorizeStaffScope } from "./staff-auth.js";
 import { evaluateLearningAssignment } from "./assignment-policy.js";
 import { validateLearningAssignmentRecord } from "./learning-schema.js";
-import { resolveLearningGroup, resolveLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate } from "./learning-resource-resolver.js";
+import { resolveLearningGroup, resolveLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile } from "./learning-resource-resolver.js";
 
 function decodeValue(value) {
   if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
@@ -129,4 +129,21 @@ export async function authorizeLearningBeneficiaryPrivate(request, config, benef
   } catch {
     return { ok: false, status: 404, error: "learning_resource_unavailable" };
   }
+}
+
+
+/** Pedagogical profile access requires its own explicit grant and canonical enrollment perimeter. */
+export function authorizeLearningProfile(request, config, beneficiaryId, enrollmentId, options = {}) {
+  const scope = "learning.profiles.read";
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveProfile ?? resolveLearningProfile)(firestore, beneficiaryId, id);
+      if (resolved.beneficiaryId !== beneficiaryId || resolved.enrollmentId !== id ||
+          resolved.profileId !== beneficiaryId) {
+        throw new Error("learning_profile_resource_mismatch");
+      }
+      return resolved;
+    }, "learning-profile",
+  );
 }
