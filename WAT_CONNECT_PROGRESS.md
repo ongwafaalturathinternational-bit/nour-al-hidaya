@@ -157,3 +157,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 ### Complément de validation CI sur le commit précédent de fondation
 
 Les deux contrôles qui étaient encore en cours lors du point précédent sont terminés avec succès sur le commit `91bd403b7e9de8a06b6d70970e80e0e032855baf` : règles Firestore **success** (run [45064721595](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721595)) et build APK Android staging **success** (run [45064721725](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721725)). Ces workflows précèdent le dernier durcissement append-only; le dernier commit dispose séparément de sa validation NH-1 116/116 réussie. Aucun déploiement de production.
+
+
+## Validation stricte du registre des autorisations équipe — 22 novembre 2026
+
+- Revue de `workers/learning-api/src/staff-auth.js` : le parseur de scopes acceptait auparavant une liste partiellement malformée en filtrant silencieusement les valeurs non textuelles. Le contrôle renforce maintenant le format du registre : liste présente, maximum 100 scopes, chaque valeur conforme au format de scope et aucune entrée dupliquée. Tout registre malformé est refusé avec `staff_access_invalid`; aucun droit n'est accordé sur la base d'une liste partiellement interprétée.
+- Trois tests ajoutés : valeur malformée, doublon et liste dépassant 100 entrées.
+- Commits sur la branche NH-1 : `e35bc524d4ce5571ac8880c4b4c8343f2a45a1a1` (code initial), `55eb3d281a0cf15ac6efe18df3fc512f4beec363` (tests), `eb7334b6cc2ebe0b893bb87d37b562a7dc138a4a` (correction d'échappement regex après détection CI).
+- Les exécutions API déclenchées sur les commits intermédiaires ont échoué à cause de cette expression régulière trop échappée; l'échec a été identifié dans les journaux, puis corrigé. Les exécutions Firestore/Android de ces commits n'étaient pas encore toutes terminées lors de ce point.
+- PR #22 reste ouverte, en brouillon, non fusionnée; sa cible Lot 8 est inchangée. Aucune route métier ouverte, aucun accès Firebase réel, donnée réelle, secret, IAM ou production modifié.
