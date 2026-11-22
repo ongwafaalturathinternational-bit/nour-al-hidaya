@@ -192,3 +192,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Nouvelle PR #26 : harmonisation `theme-color` WAT à `#103047` sur portail et modules Lot 8, plus `manifest.json`; Nour conserve son thème `#0F2240`. Test statique dédié et déclencheur Firestore Emulator ajoutés. PR #26 ouverte en brouillon, empilée sur #22. CI en cours au HEAD `abbc05b5905e10994f3143433152a2b73f7d32f1`: Firestore run [45045157000](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157000), Android staging run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005).
 - Dépendances vérifiées : #24 dépend de #12; #25, #26 et #23 sont empilées sur #22; #22 cible la branche source de #20. Attention, la base enregistrée de #22 (`fe9f51c`) est en retard de 22 commits par rapport au HEAD PR #20 (`e3b0436`) selon compare GitHub. Les PR sont marquées mergeable, mais il faudra réconcilier cette divergence avant une intégration. Aucune cible modifiée.
 - Aucune fusion, aucun déploiement, aucune donnée réelle, aucun changement Firebase/Cloudflare, aucune route métier ouverte.
+
+
+
+## Revalidation des bases de Lot 8 — 22 novembre 2026
+
+- PR #20, HEAD `e3b04361436f32425c86cf3b971e859265162d23` : Firestore Emulator **139/139**, 0 échec, run [45000655220](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655220); Android staging réussi, run [45000655207](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655207).
+- PR #22, HEAD `6ac4bfe0b035547f5670c016094ce3d102a2023e` : Firestore Emulator **144/144**, 0 échec, run [45001987191](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987191); API NH-1 **113/113** au run [45001987229](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987229); Android staging réussi, run [45001987231](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987231).
+- Ces résultats sont ceux des HEAD indiqués; ils ne certifient pas l'intégration réelle Firebase, les rôles IAM, les bindings Cloudflare ou l'ouverture des routes. Les routes NH-1 restent fermées.
