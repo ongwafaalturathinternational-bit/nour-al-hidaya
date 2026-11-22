@@ -171,3 +171,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - PR #25 créée : `feature/lot8-table-keyboard-accessibility` vers `feature/nour-central-management-foundation` (empilée sur PR #22). Six zones de tableaux sont maintenant nommées et accessibles au clavier; le focus est visible. Aucune donnée/colonne/action n'est masquée.
 - Head PR #25 : `97b8ffc4d9632d30752e1beb68b3d1a315e59072`. Les workflows « Firestore security rules » (run 45043255230) et « Android staging APK test build » (run 45043255227) ont démarré; ils sont en cours au dernier contrôle. Résultats à compléter après achèvement.
 - PR #25 reste ouverte en brouillon et non fusionnée; la cible de PR #22 n'a pas été modifiée.
+
+
+## Résultats vérifiés de PR #25 — 22 novembre 2026
+
+- PR #25 `feature/lot8-table-keyboard-accessibility` vers PR #22 : ouverte, brouillon, non fusionnée, `mergeable=true` au dernier contrôle.
+- Commit applicatif testé `97b8ffc4d9632d30752e1beb68b3d1a315e59072` : Firestore Emulator **133/133 tests réussis** (run [45043255230](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255230)); APK Android staging réussi (run [45043255227](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227), artefact [14762631201](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227/artifacts/14762631201)).
+- Les deux tests de régression ajoutés sont confirmés dans les logs. Les refus PERMISSION_DENIED sont les cas négatifs attendus; aucun échec.
+- Cette PR ne modifie pas les données métier ni les règles. Elle reste un changement de présentation/accessibilité.
