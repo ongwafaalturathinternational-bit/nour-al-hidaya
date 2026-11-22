@@ -132,3 +132,30 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+
+## Nour Al-Hidaya — accessibilité de la navigation dynamique — 22 novembre 2026
+
+- Branche dédiée `feature/nour-navigation-accessibility`, créée depuis le HEAD PR #22 `6ac4bfe0b035547f5670c016094ce3d102a2023e`.
+- Le menu inférieur / latéral de Nour est maintenant exposé comme une navigation nommée `Navigation principale de Nour Al-Hidaya`; l'onglet actif reçoit `aria-current="page"`; les contrôles sont explicitement `type="button"`.
+- Les libellés et icônes restent générés depuis `ro.tabs` selon le rôle; aucun onglet, parcours, rôle ou logique de navigation n'est supprimé ou modifié.
+- Test statique dédié `tests/nour-navigation-a11y.test.mjs`; workflow Firestore Emulator déclenché sur la page et le test.
+- CI à attendre. Aucun résultat n'est revendiqué avant lecture des workflows.
+- Aucun logo, icône, formulaire, donnée, scope, règle, route, production, fusion ou déploiement modifié.
+
+
+
+## Validation CI — PR #27 — 22 novembre 2026
+
+- Au commit de code `3796ef1f92af89481a4c722e40d845bcf2ff1d32` et HEAD testé `9a855e68b8f4cd7dadd51048428e827d517737c6`, Firestore Emulator : **133/133 tests réussis, 0 échec, 0 ignoré**, run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472).
+- APK Android staging construit avec succès, run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484). Artefact debug staging ID `14763451503`, 4 372 131 octets, SHA-256 `9c75be9c0d06c0a087ccef1294e45ee97a367799bace485bfa55d762a9579791`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484/artifacts/14763451503).
+- Les deux workflows sont entièrement terminés avec succès. L'APK reste un artefact de test staging, pas un déploiement.
+
+
+
+## Revalidation finale PR #27 — HEAD de suivi — 22 novembre 2026
+
+- HEAD de code et de suivi `b510e1e3e870d14f91757d1dbecbb7e9cde38ecf` : Firestore Emulator **133/133 tests réussis**, 0 échec, run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323).
+- Android staging APK : build réussi, run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344). Artefact debug staging ID `14763730351`, 4 372 130 octets, SHA-256 `5bcffa77fc19a6a5a228d5590c734f771729ed9080315adcb7e4b2a4f00cdba7`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344/artifacts/14763730351).
+- Les deux workflows sont terminés avec succès. Aucun changement fonctionnel métier ou publication.

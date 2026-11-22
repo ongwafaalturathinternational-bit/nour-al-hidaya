@@ -37,6 +37,7 @@ on:
       - "scripts/prepare-capacitor-web.mjs"
       - "index.html"
       - "nour-al-hidaya.html"
+      - "tests/nour-navigation-a11y.test.mjs"
       - "manifest.json"
       - "manifest-nour.json"
       - "tests/portal-syntax.test.mjs"
