@@ -110,3 +110,32 @@ test("uses the same trusted Firestore client for staff, group and assignment rec
   assert.equal(result.ok, true);
   assert.deepEqual(calls, ["staffAccess", "learningGroups", "learningStaffAssignments"]);
 });
+
+
+test("selects the matching assignment from a multi-assignment staff record", async () => {
+  const otherAssignment = {
+    ...assignment,
+    assignmentId: "assign-other",
+    groupIds: ["group-b"],
+  };
+  const matchingAssignment = { ...assignment, assignmentId: "assign-matching" };
+  const multiple = { fields: {
+    active: encode(true),
+    assignments: encode([otherAssignment, matchingAssignment]),
+  } };
+  const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
+    setup({ assignments: multiple }));
+  assert.equal(result.ok, true);
+  assert.equal(result.assignmentId, "assign-matching");
+});
+
+test("denies all assignments when the staff assignment registry is inactive", async () => {
+  const inactive = { fields: {
+    active: encode(false),
+    assignments: encode([assignment]),
+  } };
+  const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
+    setup({ assignments: inactive }));
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "learning_assignment_inactive");
+});
