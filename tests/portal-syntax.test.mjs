@@ -135,3 +135,8 @@ test("le portail invalide les chargements d'accès et masque l'espace après un 
   assert.match(html, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser\?\.uid!==user\.uid/);
   assert.match(html, /if\(generation===authGeneration\)message/);
 });
+
+test("le portail efface le mot de passe du formulaire lors d'un changement de session", () => {
+ const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
+ assert.match(html,/function clearWorkspace\(\)[\s\S]*?\$\("password"\)\.value=""/);
+});
