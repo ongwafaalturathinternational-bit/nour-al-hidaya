@@ -124,3 +124,16 @@ test("une affectation d'un bénévole inactif ne peut être réactivée depuis l
   assert.match(html, /if\(!isActive&&value!=="retire"\)option\.disabled=true/);
   assert.match(html, /status!=="retire"&&assignedVolunteer\?\.status!=="actif"/);
 });
+
+
+test("le registre projets masque et vide les données privées à chaque changement de session", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /let scopes=\[\],authGeneration=0/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /\$\("app"\)\.hidden=true/);
+  assert.match(html, /projects=\[\];programs=\[\];volunteers=\[\];activities=\[\]/);
+  assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
+  assert.match(html, /if\(generation!==authGeneration\)return/g);
+  assert.match(html, /async function load\(generation=authGeneration\)/);
+  assert.match(html, /async function loadAssignments\(generation=authGeneration\)/);
+});
