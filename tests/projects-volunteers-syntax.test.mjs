@@ -157,3 +157,9 @@ test("les historiques de la fiche bénévole ignorent les lectures asynchrones d
   assert.match(profile, /if\(generation!==authGeneration\)return/g);
   assert.match(profile, /if\(generation!==authGeneration\)return;\s*const present=/);
 });
+
+
+test("le registre projets ignore une réponse d'affectations pour un autre projet sélectionné", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /if\(generation!==authGeneration\|\|\$\("assignmentProject"\)\.value!==id\)return/);
+});
