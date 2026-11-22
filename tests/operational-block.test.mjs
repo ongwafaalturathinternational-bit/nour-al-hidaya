@@ -80,3 +80,13 @@ test("le portail ne propose Nour Al-Hidaya aux membres d'équipe que s'ils ont a
   assert.ok(staffBranch.includes("if(profile.role") && staffBranch.includes("apprenant") && staffBranch.includes('addModule("⌂"'));
   assert.equal((staffBranch.match(/addModule\("⌂"/g) || []).length, 1);
 });
+
+test("les écritures du module Programmes refusent une session équipe obsolète", () => {
+  const programmes = fs.readFileSync("programmes.html", "utf8");
+  assert.match(programmes, /function isCurrentStaffSession\(account,generation\)/);
+  assert.match(programmes, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=user;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(programmes, /async function changeStatus\(id,status\)[\s\S]*?if\(!isCurrentStaffSession\(actor,generation\)\)return;await load\(generation\)/);
+  assert.match(programmes, /programForm\"\)\.addEventListener\(\"submit\",async e=>\{e\.preventDefault\(\);const actor=user,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(programmes, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\(\"programs\"\)\.add\(data\)/);
+  assert.match(programmes, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
+});
