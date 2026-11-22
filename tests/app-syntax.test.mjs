@@ -40,3 +40,21 @@ test("la session apprenant invalide les chargements Firebase devenus obsolètes"
   assert.match(html, /const generation=\+\+firebaseAuthGeneration/);
   assert.match(html, /if\(!DEMO_MODE\)\{S\.role=null;S\.cur=null;S\.access=null/);
 });
+
+
+test("les candidatures Club Khuddam sont isolées entre sessions", () => {
+  const html = readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .filter(([, attributes]) => !/\bsrc\s*=/.test(attributes))
+    .map(([, , source]) => source)
+    .filter(source => source.trim());
+  assert.ok(scripts.length > 0);
+  scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), "script n°" + (index + 1)));
+  assert.match(html, /let currentUser=null,authGeneration=0/);
+  assert.match(html, /function isCurrentSession\(user,generation\)/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /checkExisting\(user,generation\)/);
+  assert.match(html, /if\(!isCurrentSession\(user,generation\)\)return/);
+  assert.match(html, /const actor=currentUser,generation=authGeneration/);
+  assert.match(html, /if\(!isCurrentSession\(active,generation\)\)return/);
+});
