@@ -126,3 +126,15 @@ test("modifier manuellement un participant dissocie la sélection préalable du 
 });
 
 
+
+
+test("le registre Activités et Présences efface les données privées au changement de session", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /authGeneration=0/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /activities=\[\];attendanceRecords=\[\];clubVolunteers=\[\];linkedProjects=\[\]/);
+  assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
+  assert.match(html, /if\(generation!==authGeneration\)return/g);
+  assert.match(html, /async function load\(generation=authGeneration\)/);
+  assert.match(html, /async function loadAttendance\(generation=authGeneration\)/);
+});
