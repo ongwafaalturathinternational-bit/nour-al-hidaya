@@ -161,3 +161,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le repère visuel et la destination des liens ne changent pas; aucun onglet ni module n'est masqué. Cette sémantique aide les lecteurs d'écran à situer l'utilisateur dans le portail.
 - Le test `tests/responsive-tables-a11y.test.mjs` vérifie aussi la présence d'une page courante unique dans chaque navigation.
 - Une nouvelle exécution CI est attendue sur le HEAD mis à jour; le résultat précédent 133/133 et Android staging s'appliquait au HEAD antérieur.
+
+
+
+## Revalidation après indication de la page courante — PR #25 — 22 novembre 2026
+
+- HEAD testé `5f32e4304d385b3223f6a49b9ef7d6438429628a` : Firestore Emulator **134/134 tests réussis**, 0 échec, run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302).
+- Android staging APK : build réussi, run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206). Artefact debug staging ID `14762644307`, 4 372 525 octets, SHA-256 `d52c4c1b20dd2b24ed5d5ae3c5b2d774270ad29ae50b050d5de094958476dd39`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206/artifacts/14762644307).
+- Les six zones de tableau restent disponibles; les liens de navigation des cinq modules indiquent maintenant la page courante. Aucun contrôle métier n'a été changé.
