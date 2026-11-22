@@ -493,3 +493,15 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - **Artefact APK staging debug :** [wat-connect-android-staging-debug-apk — ID 14777455995](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080899605/artifacts/14777455995), 4 374 852 octets, SHA-256 `95fc9f544029ebb5ad19490925ee38678531151b9b3e5b0b9ae8d669608ccddc`, expiration le **6 décembre 2026 à 23:02 UTC**.
 - Ces validations correspondent au commit applicatif ci-dessus. Elles ne remplacent pas la recette sur téléphone Android réel.
 - PR #20 reste ouverte, en brouillon, non fusionnée et non déployée. Aucun compte, secret ou donnée Firebase réelle n'a été modifié.
+
+
+## Validation du shell PWA — 22 novembre 2026
+
+- HEAD de branche vérifié : `2134a48f6a46f1b0b7f7b7e616644c1dae3e583f`.
+- La page `portail.html` est désormais incluse dans la liste des ressources précachées du service worker; un test de régression vérifie sa présence dans le shell PWA.
+- **Tests Firestore/application : réussite** — [workflow 45082803294](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45082803294).
+- **APK Android staging debug : réussite** — [workflow 45082803316](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45082803316).
+- Artefact : [wat-connect-android-staging-debug-apk — ID 14777648644](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45082803316/artifacts/14777648644), 4 374 943 octets, SHA-256 `7c83a841567619a55eeb497e19d3204b720b468e1a7a411cdae2efdec1b594db`, expiration le **6 décembre 2026 à 23:22 UTC**.
+- Ces validations concernent exactement le HEAD indiqué. Elles ne remplacent pas les essais hors connexion sur téléphone Android réel.
+- PR #20 toujours ouverte, en brouillon, non fusionnée. Aucun déploiement de production ni changement de données réelles.
+
