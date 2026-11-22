@@ -3,10 +3,11 @@ import { createGoogleAccessToken } from "./google-auth.js";
 const API_ROOT = "https://firestore.googleapis.com/v1";
 const COLLECTIONS = new Set([
   "staffAccess",
-  "beneficiaries",
-  "beneficiaryPrivate",
-  "beneficiaryEnrollments",
-  "beneficiaryAccess",
+  "learningBeneficiaries",
+  "learningBeneficiaryPrivate",
+  "learningEnrollments",
+  "learningRegistrationReceipts",
+  "learningBeneficiaryAccess",
   "learningProfiles",
   "learningGroups",
   "learningStaffAssignments",
