@@ -318,3 +318,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Commits de cette correction : `0c5bc002` (page) et `5371a0fb` (test). Les validations CI de ce nouvel état doivent encore être confirmées.
 - L'espace personnel candidat reste distinct du registre interne; aucun droit d'équipe n'est accordé par cette correction.
 - Aucun compte, dossier réel, paramètre Firebase, merge ou déploiement de production n'a été touché.
+
+
+## Poursuite — durcissement de l'espace candidat — 22 novembre 2026
+
+- Audit de `club-khuddam-espace.html` : ajout de l'effacement du mot de passe dans le nettoyage de l'espace privé et après toute tentative de connexion.
+- Les réponses tardives de connexion ne peuvent plus afficher un message d'erreur sur une session qui a changé.
+- Le renvoi de vérification exige désormais une session courante valide avant l'envoi.
+- La demande de réinitialisation du mot de passe vérifie la génération et l'identité de session avant d'afficher son résultat, afin d'éviter les messages obsolètes après un changement de compte.
+- Tests statiques de régression ajoutés pour ces garde-fous dans `tests/club-candidate-session.test.mjs`.
+- Ces modifications sont limitées à l'espace candidat et à ses tests; elles ne changent pas les règles ni les droits d'accès.
