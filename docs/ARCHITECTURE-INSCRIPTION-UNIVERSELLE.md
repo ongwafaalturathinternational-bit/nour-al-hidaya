@@ -16,9 +16,9 @@ L'inscription universelle doit être un service métier de Nour Al-Hidaya, et no
 
 ## 2. Modèle de données proposé
 
-Les noms ci-dessous sont indicatifs et devront être harmonisés avec le cahier des charges initial.
+Les noms ci-dessous suivent désormais le préfixe `learning` retenu par la décision technique NH-1. Les champs restent indicatifs et devront être validés avec le cahier des charges initial.
 
-### `beneficiaries/{beneficiaryId}` — dossier central
+### `learningBeneficiaries/{beneficiaryId}` — dossier central
 
 Champs possibles :
 - `status` : brouillon, actif, suspendu, archivé ;
@@ -29,17 +29,17 @@ Champs possibles :
 
 Ne pas placer par défaut toutes les données sensibles dans un document général facilement consultable. Les données privées doivent être séparées et limitées aux rôles qui en ont besoin.
 
-### `beneficiaryPrivate/{beneficiaryId}` — informations personnelles restreintes
+### `learningBeneficiaryPrivate/{beneficiaryId}` — informations personnelles restreintes
 
 Contenu minimal déterminé par finalité : date de naissance ou tranche d'âge si nécessaire, contacts facultatifs, responsable légal pour mineur si requis, informations de consentement et autres champs explicitement autorisés.
 
 Accès plus restreint que le simple droit de consulter un dossier pédagogique. Les champs médicaux, religieux sensibles ou autres informations non nécessaires ne sont pas collectés par défaut.
 
-### `beneficiaryEnrollments/{enrollmentId}`
+### `learningEnrollments/{enrollmentId}`
 
 Association du dossier à un programme, une mosquée/structure, un groupe, une période et un parcours. Le bénéficiaire peut avoir plusieurs inscriptions sans multiplier ses dossiers.
 
-### `beneficiaryAccess/{beneficiaryId}` — liaison facultative
+### `learningBeneficiaryAccess/{beneficiaryId}` — liaison facultative
 
 Lien serveur entre dossier et compte Auth lorsqu'un accès personnel est demandé et vérifié. Le compte Auth ne devient jamais l'identifiant primaire du bénéficiaire.
 
@@ -47,7 +47,7 @@ Lien serveur entre dossier et compte Auth lorsqu'un accès personnel est demand�
 
 Registre d'appareils d'équipe enrôlés : propriétaire/équipe, statut, date d'enrôlement, dernière activité, révocation. Aucun appareil partagé ou non maîtrisé ne reçoit par défaut le droit de conserver une file de données personnelles hors connexion.
 
-### `syncReceipts/{operationId}` et journal d'audit
+### `learningRegistrationReceipts/{operationId}` et journal d'audit
 
 Reçus d'opérations idempotentes et événements d'audit écrits côté serveur uniquement. Les reçus empêchent qu'une reprise réseau crée plusieurs dossiers pour la même opération. Le journal conserve l'acteur, l'appareil, l'heure serveur, l'action et le résultat, sans recopier inutilement les données personnelles.
 
@@ -113,7 +113,7 @@ Les index de rapprochement doivent éviter de publier des données personnelles 
 
 ## 7. Règles d'accès et séparation des responsabilités
 
-Scopes à préciser : `beneficiaries.create`, `beneficiaries.read`, `beneficiaries.update`, `beneficiaries.private.read`, `beneficiaries.review`, `beneficiaries.merge`, `beneficiaries.export`.
+Scopes à préciser : `learning.beneficiaries.create`, `learning.beneficiaries.read`, `learning.beneficiaries.update`, `learning.private.read`, `learning.beneficiaries.review`, `learning.beneficiaries.merge`, `learning.beneficiaries.export`.
 
 Le droit de lire un dossier pédagogique ne doit pas donner automatiquement accès aux coordonnées ou aux informations du responsable légal. Les droits doivent être limités par rôle ET par structure/périmètre. Les écritures privilégiées passent par le backend; les clients ne peuvent pas s'attribuer un rôle ni écrire le journal d'audit.
 
