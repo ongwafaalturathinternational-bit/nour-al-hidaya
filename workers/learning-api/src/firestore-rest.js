@@ -22,7 +22,8 @@ const COLLECTIONS = new Set([
   "learningAuditLogs",
  ]);
 const WRITABLE_COLLECTIONS = new Set([...COLLECTIONS].filter((name) => name !== "staffAccess"));
-const UPDATABLE_COLLECTIONS = new Set([...WRITABLE_COLLECTIONS].filter((name) => name !== "learningAuditLogs"));
+const APPEND_ONLY_COLLECTIONS = new Set(["learningAuditLogs", "learningRegistrationReceipts", "learningAssignmentReceipts", "syncReceipts"]);
+const UPDATABLE_COLLECTIONS = new Set([...WRITABLE_COLLECTIONS].filter((name) => !APPEND_ONLY_COLLECTIONS.has(name)));
 
 function assertDocumentTarget(collection, documentId, allowedCollections = COLLECTIONS) {
   if (!(allowedCollections.has(collection) || (allowedCollections === COLLECTIONS && READ_ONLY_COLLECTIONS.has(collection)))) throw new Error("firestore_collection_not_allowed");
@@ -158,6 +159,12 @@ export function createFirestoreRestClient(config, options = {}) {
         }
         if (write.collection === "learningAuditLogs" && write.operation !== "create") {
           throw new Error("firestore_audit_append_only");
+        }
+        if (APPEND_ONLY_COLLECTIONS.has(write.collection) && write.operation !== "create") {
+          throw new Error("firestore_receipt_append_only");
+        }
+        if (write.operation === "update" && write.collection !== "learningStaffAssignments") {
+          throw new Error("firestore_commit_update_target_invalid");
         }
         assertDocumentTarget(write.collection, write.id,
           write.operation === "create" ? WRITABLE_COLLECTIONS : UPDATABLE_COLLECTIONS);
