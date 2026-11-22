@@ -132,3 +132,14 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+## Audit comparatif UI/UX — 22 novembre 2026
+
+- Création de la branche documentaire indépendante `audit/wat-connect-uiux-review`, basée sur le HEAD vérifié de PR #22 : `6ac4bfe0b035547f5670c016094ce3d102a2023e`. Aucun changement sur les branches PR #20, #22 ou #12.
+- Ajout de `docs/AUDIT-UI-UX-WAT-CONNECT.md` (commit `9de03bcd9cfdde3074095f1aae03cc94741e5416`). Audit statique comparatif du portail, site institutionnel, annuaire, programmes, projets, activités, Club, Finances Lot 9 et Nour Al-Hidaya.
+- Écart prioritaire : `finance.html` (branche Lot 9) embarque une palette et des styles autonomes, sans `wat-brand.css`, et affiche un logo textuel « WAT ». La référence visuelle WAT et les pages Lot 8 utilisent les tokens officiels turquoise/or/bleu profond et les motifs facettés mesurés.
+- Autre point UX : les tableaux Finance ont une largeur minimale de 760 px, avec défilement horizontal potentiel sur mobile. Les pages métier présentent des seuils responsive distincts ; une harmonisation contrôlée est recommandée.
+- Le document propose une refonte progressive strictement présentationnelle, sans supprimer formulaires, registres, validations, filtres, exports, impressions, règles d'accès ni audit. Il précise les tests desktop/mobile et non-régression à exiger.
+- Limites explicites : audit HTML/CSS statique, pas de capture navigateur, de test utilisateur ni de certification WCAG ; Nour Al-Hidaya nécessite une revue visuelle dédiée. Le code Lot 9 n'a pas été intégré à cette branche.
+- Aucune donnée réelle, règle Firestore, route métier, configuration Firebase/Cloudflare, secret, production, fusion ou déploiement n'a été touché. PR #20, #22 et #12 restent indépendantes et non fusionnées.
