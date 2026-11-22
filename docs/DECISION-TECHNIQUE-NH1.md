@@ -44,6 +44,7 @@ Réponses publiques génériques : elles ne doivent jamais révéler si une pers
 - Vérification Turnstile côté serveur pour le parcours public, si le service est retenu et configuré.
 - Vérification Firebase ID token côté serveur pour les parcours d'équipe; vérification de l'état actif et des scopes actuels à chaque opération.
 - Les scopes proposés pour NH-1 sont `learning.beneficiaries.read`, `learning.beneficiaries.create`, `learning.beneficiaries.review`, `learning.beneficiaries.update` et `learning.private.read`. Ils restent inactifs tant que règles, backend et tests ne sont pas livrés.
+- Le portail masque le raccourci Nour Al-Hidaya aux membres d’équipe qui ne possèdent aucun scope `learning.*`. Ce filtrage est uniquement une mesure de navigation : les API devront refaire chaque contrôle côté serveur. Aucun scope `learning.*` n’est actuellement déclaré dans les règles Firestore existantes.
 - Aucun accès direct public en lecture Firestore; aucune écriture directe du navigateur dans les collections privées.
 - Aucun compte d'équipe, rôle ou scope ne peut être créé depuis le formulaire public.
 - Données des mineurs minimisées; consentement du représentant légal selon les exigences validées.
