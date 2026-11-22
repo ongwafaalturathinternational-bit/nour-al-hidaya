@@ -167,3 +167,43 @@ test("staff access is read-only and audit logs are append-only", async () => {
   await assert.rejects(() => client.updateDocument("learningAuditLogs", "event-a", { action: "changed" }), /collection_not_allowed/);
   assert.equal(calls, 2);
 });
+
+
+test("Firestore atomic commit requires operation-matched preconditions", async () => {
+  let calls = 0;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { calls += 1; return new Response("{}", { status: 200 }); },
+  });
+  const update = { operation: "update", collection: "learningStaffAssignments", id: "staff-1", fields: { active: true } };
+  const create = { operation: "create", collection: "learningAssignmentReceipts", id: "receipt-1", fields: { requestHash: "hash" } };
+
+  await assert.rejects(() => client.commitDocuments([
+    { ...update, precondition: { exists: false } },
+    { ...create, precondition: { exists: false } },
+  ]), /precondition_invalid/);
+  await assert.rejects(() => client.commitDocuments([
+    { ...update, precondition: { updateTime: "2026-11-22T11:00:00Z", exists: false } },
+    { ...create, precondition: { exists: false } },
+  ]), /precondition_invalid/);
+  await assert.rejects(() => client.commitDocuments([
+    { ...update, precondition: { updateTime: "2026-11-22T11:00:00Z" } },
+    { ...create, precondition: { updateTime: "2026-11-22T11:00:00Z" } },
+  ]), /precondition_invalid/);
+  assert.equal(calls, 0);
+});
+
+test("Firestore atomic commit rejects duplicate document targets before network access", async () => {
+  let calls = 0;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { calls += 1; return new Response("{}", { status: 200 }); },
+  });
+  await assert.rejects(() => client.commitDocuments([
+    { operation: "create", collection: "learningAssignmentReceipts", id: "same-target",
+      precondition: { exists: false }, fields: { requestHash: "one" } },
+    { operation: "create", collection: "learningAssignmentReceipts", id: "same-target",
+      precondition: { exists: false }, fields: { requestHash: "two" } },
+  ]), /duplicate_target/);
+  assert.equal(calls, 0);
+});
