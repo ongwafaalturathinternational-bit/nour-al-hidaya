@@ -22,7 +22,7 @@ const assignmentDocument = { fields: {
 } };
 const groupDocument = { fields: {
   siteId: encode("site-a"),
-  mosqueId: encode("mosque-a"),
+  structureId: encode("structure-a"),
   programId: encode("program-a"),
 } };
 const request = new Request("https://example.test", { headers: { authorization: "Bearer token" } });
@@ -69,7 +69,7 @@ test("fails closed when resource or assignment registry is unavailable", async (
 });
 
 test("denies cross-site and cross-group resource access", async () => {
-  const otherSite = { fields: { siteId: encode("site-b"), mosqueId: encode("mosque-a"), programId: encode("program-a") } };
+  const otherSite = { fields: { siteId: encode("site-b"), structureId: encode("structure-a"), programId: encode("program-a") } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a", setup({ group: otherSite }));
   assert.equal(result.error, "learning_assignment_scope_denied");
 });
@@ -81,7 +81,7 @@ test("denies private-data scope without a matching explicit assignment grant", a
 });
 
 test("rejects malformed group perimeter instead of trusting request data", async () => {
-  const malformed = { fields: { siteId: encode("site-a"), mosqueId: encode("*"), programId: encode("program-a") } };
+  const malformed = { fields: { siteId: encode("site-a"), structureId: encode("*"), programId: encode("program-a") } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a", setup({ group: malformed }));
   assert.equal(result.error, "learning_resource_unavailable");
 });
