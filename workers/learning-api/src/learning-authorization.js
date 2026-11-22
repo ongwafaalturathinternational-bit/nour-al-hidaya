@@ -37,7 +37,7 @@ async function loadTrustedGroup(firestore, groupId) {
   if (![siteId, mosqueId, programId].every(validResourceId)) {
     throw new Error("learning_resource_perimeter_invalid");
   }
-  return Object.freeze({ groupId, siteId, mosqueId, programId });
+  return Object.freeze({ groupId, siteId, structureId, programId });
 }
 
 /**
