@@ -42,7 +42,13 @@ Les règles Firestore interdisent au titulaire de créer ou modifier son propre 
 
 Cette procédure est réservée à la personne de confiance qui administre le projet Firebase. Elle n'est pas un formulaire public.
 
-1. Ouvrir Firebase Console et sélectionner le projet **wat-connect**.
+**Attention à la séparation des environnements :**
+- Les aperçus Cloudflare de branches et les APK de test utilisent le projet Firebase **wat-connect-staging**. Pour tester une connexion sur ces versions, le compte Authentication et son document `staffAccess/{uid}` doivent exister dans ce projet de staging.
+- Le site de production et l'application publiée utilisent **wat-connect**. Les comptes et documents d'accès de production doivent être créés uniquement dans ce projet.
+- Les comptes, UID et documents Firestore ne sont pas partagés entre ces deux projets. Un compte créé dans `wat-connect` ne peut donc pas se connecter à un aperçu qui utilise `wat-connect-staging`.
+- Ne jamais copier des données personnelles ou des comptes réels dans staging. Utiliser des identités de test dédiées.
+
+1. Ouvrir Firebase Console et sélectionner le projet correspondant à l'environnement à administrer : **wat-connect-staging** pour un test, **wat-connect** pour la production.
 2. Aller dans **Authentication → Users → Add user**; saisir l'adresse personnelle/institutionnelle validée et un mot de passe temporaire robuste. Ne jamais envoyer ce mot de passe dans un groupe WhatsApp.
 3. Transmettre au membre la procédure de connexion et de vérification de son adresse. Le membre choisit un mot de passe personnel après la première connexion si le mécanisme de réinitialisation est utilisé.
 4. Dans la liste Authentication, copier l'UID exact du compte créé.
