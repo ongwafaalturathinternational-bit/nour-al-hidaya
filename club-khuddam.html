@@ -47,6 +47,7 @@ function safeDate(value){if(!value)return "Non renseignée";try{const d=typeof v
 function addProfileItem(root,label,value){const box=document.createElement("div"),caption=document.createElement("span"),content=document.createElement("strong");box.className="profile-item";caption.textContent=label;content.textContent=value===undefined||value===null||value===""?"—":String(value);box.append(caption,content);root.append(box)}
 function addProfileSection(root,title,items,empty){if(title){const heading=document.createElement("h3");heading.textContent=title;root.append(heading)}if(!items.length){const p=document.createElement("p");p.className="muted";p.textContent=empty;root.append(p)}else{const list=document.createElement("ul");list.className="profile-list";items.forEach(label=>{const li=document.createElement("li");li.textContent=label;list.append(li)});root.append(list)}}
 async function showVolunteerDetails(v){
+ const generation=authGeneration;
  const dialog=$("volunteerDetailDialog"),root=$("volunteerDetailContent");root.replaceChildren();
  const grid=document.createElement("div");grid.className="profile-grid";
  addProfileItem(grid,"Nom complet",v.fullName);addProfileItem(grid,"Type d’engagement",categories[v.category]||v.category);addProfileItem(grid,"Statut",statuses[v.status]||v.status);addProfileItem(grid,"E-mail",v.email);addProfileItem(grid,"Téléphone",v.phone);addProfileItem(grid,"Disponibilités",v.availability);addProfileItem(grid,"Compétences",(v.skills||[]).join(", "));addProfileItem(grid,"Centres d’intérêt",(v.interests||[]).join(", "));addProfileItem(grid,"Inscription",safeDate(v.createdAt));addProfileItem(grid,"Dernière mise à jour",safeDate(v.updatedAt));root.append(grid);
@@ -61,19 +62,19 @@ async function showVolunteerDetails(v){
  let attendanceItems=[],assignmentItems=[];
  const tasks=[];
  if(canAttendanceRead)tasks.push((async()=>{try{
-  const snap=await WATFirebase.db.collection("attendance").where("participantRef","==",v.id).get();
+  const snap=await WATFirebase.db.collection("attendance").where("participantRef","==",v.id).get();if(generation!==authGeneration)return;
   const entries=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.participantType==="benevole");
   const activityNames={};
-  if(canActivitiesRead){const ids=[...new Set(entries.map(x=>x.activityId).filter(Boolean))];await Promise.all(ids.map(async id=>{try{const doc=await WATFirebase.db.collection("activities").doc(id).get();if(doc.exists)activityNames[id]=doc.data().title||doc.data().name||id}catch(e){console.warn("Nom d’activité indisponible",id,e)}}))}
+  if(canActivitiesRead){const ids=[...new Set(entries.map(x=>x.activityId).filter(Boolean))];await Promise.all(ids.map(async id=>{try{const doc=await WATFirebase.db.collection("activities").doc(id).get();if(generation!==authGeneration)return;if(doc.exists)activityNames[id]=doc.data().title||doc.data().name||id}catch(e){console.warn("Nom d’activité indisponible",id,e)}}))}
   attendanceItems=entries.map(x=>({status:x.status,label:(canActivitiesRead?(activityNames[x.activityId]||"Activité"):"Réf. activité "+x.activityId)+" — "+({present:"Présent",absent:"Absent",excuse:"Excusé"}[x.status]||x.status)+" · "+safeDate(x.recordedAt)}));
   loading1.remove();addProfileSection(attendanceSection,"",attendanceItems.map(x=>x.label),"Aucune participation enregistrée pour ce bénévole.");
  }catch(e){console.error(e);loading1.textContent="Historique indisponible avec les droits actuels."}})());
  if(canAssignmentsRead)tasks.push((async()=>{try{
-  const projectSnap=await WATFirebase.db.collection("projects").get(),projects=projectSnap.docs.map(d=>({id:d.id,...d.data()}));
-  const groups=await Promise.all(projects.map(async p=>{const snap=await WATFirebase.db.collection("projects").doc(p.id).collection("volunteers").where("volunteerId","==",v.id).get();return snap.docs.map(d=>{const x=d.data();return {status:x.status,label:(p.name||"Projet")+" — "+(x.assignmentRole||"Rôle non précisé")+" · "+({propose:"Proposée",confirme:"Confirmée",retire:"Retirée"}[x.status]||x.status)}})}));
+  const projectSnap=await WATFirebase.db.collection("projects").get();if(generation!==authGeneration)return;const projects=projectSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const groups=await Promise.all(projects.map(async p=>{const snap=await WATFirebase.db.collection("projects").doc(p.id).collection("volunteers").where("volunteerId","==",v.id).get();if(generation!==authGeneration)return [];return snap.docs.map(d=>{const x=d.data();return {status:x.status,label:(p.name||"Projet")+" — "+(x.assignmentRole||"Rôle non précisé")+" · "+({propose:"Proposée",confirme:"Confirmée",retire:"Retirée"}[x.status]||x.status)}})}));
   assignmentItems=groups.flat();loading2.remove();addProfileSection(assignmentSection,"",assignmentItems.map(x=>x.label),"Aucune affectation de projet enregistrée.");
  }catch(e){console.error(e);loading2.textContent="Affectations indisponibles avec les droits actuels."}})());
- await Promise.all(tasks);
+ await Promise.all(tasks);if(generation!==authGeneration)return;
  const present=attendanceItems.filter(x=>x.status==="present").length,absent=attendanceItems.filter(x=>x.status==="absent").length,excused=attendanceItems.filter(x=>x.status==="excuse").length,confirmed=assignmentItems.filter(x=>x.status==="confirme").length;
  const summary=document.createElement("div");summary.className="profile-grid";
  addProfileItem(summary,"Participations enregistrées",canAttendanceRead?attendanceItems.length:"Non autorisé");
