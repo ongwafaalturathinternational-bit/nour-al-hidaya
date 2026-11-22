@@ -190,3 +190,38 @@ test("les décisions et enregistrements du registre Club restent liés à la ses
   assert.match(submit, /if\(generation===authGeneration\)\$\("saveButton"\)\.disabled=false/);
   assert.match(html, /expectedGeneration===authGeneration/);
 });
+
+
+test("les mutations projets et affectations restent liées à la session initiatrice", () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  assert.match(html, /function isCurrentStaffSession\(account,generation\)/);
+  for (const name of ["updateAssignmentStatus", "updateStatus"]) {
+    const start = html.indexOf("async function " + name);
+    assert.notEqual(start, -1);
+    const end = html.indexOf("\n", start);
+    const body = html.slice(start, end);
+    assert.match(body, /const actor=user,generation=authGeneration/);
+    assert.match(body, /updatedBy:actor\.uid/);
+    assert.match(body, /isCurrentStaffSession\(actor,generation\)/);
+  }
+  assert.match(html, /createdBy:actor\.uid/);
+  assert.match(html, /if\(generation===authGeneration\)\$\("saveButton"\)\.disabled=false/);
+  assert.match(html, /expectedGeneration===authGeneration/);
+});
+
+test("les mutations activités et présences restent liées à la session initiatrice", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /function isCurrentStaffSession\(account,generation\)/);
+  for (const name of ["updateAttendanceStatus", "changeStatus"]) {
+    const start = html.indexOf("async function " + name);
+    assert.notEqual(start, -1);
+    const end = html.indexOf("\n", start);
+    const body = html.slice(start, end);
+    assert.match(body, /const actor=user,generation=authGeneration/);
+    assert.match(body, /updatedBy:actor\.uid/);
+    assert.match(body, /isCurrentStaffSession\(actor,generation\)/);
+  }
+  assert.match(html, /recordedBy:actor\.uid/);
+  assert.match(html, /if\(generation===authGeneration\)\$\("saveAttendance"\)\.disabled=false/);
+  assert.match(html, /expectedGeneration===authGeneration/);
+});
