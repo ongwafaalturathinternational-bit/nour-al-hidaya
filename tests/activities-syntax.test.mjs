@@ -138,3 +138,9 @@ test("le registre Activités et Présences efface les données privées au chang
   assert.match(html, /async function load\(generation=authGeneration\)/);
   assert.match(html, /async function loadAttendance\(generation=authGeneration\)/);
 });
+
+
+test("le registre des présences ignore une réponse liée à une ancienne activité sélectionnée", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /if\(generation!==authGeneration\|\|\$\("selectedActivity"\)\.value!==id\)return/);
+});
