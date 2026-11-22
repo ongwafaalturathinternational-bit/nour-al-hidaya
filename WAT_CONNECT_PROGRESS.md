@@ -164,3 +164,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Distinction essentielle : l'annotation du bot est celle du flux Preview PR. Elle n'est pas une preuve de déploiement production. Le workflow GitHub Firestore réussi ne valide pas le build Cloudflare.
 - PR #24 reste ouverte en brouillon, non fusionnée, mergeable=true. Aucun déploiement production, changement de secret, de binding, de route ou de donnée réelle.
 - Action de diagnostic disponible dès qu'un accès authentifié aux logs Cloudflare est fourni : lire la première erreur et le build command, vérifier le répertoire racine, les variables d'environnement et la version Node, corriger uniquement sur la branche Preview, puis attendre un nouveau commentaire Preview réussi. Ne pas toucher au Worker production.
+
+
+
+## Précision de classification Cloudflare — PR #24 — 22 novembre 2026
+
+- Relecture du commentaire bot Cloudflare : le message est intitulé « Deploying Preview to Cloudflare » et liste des builds échoués, sans URL de déploiement publiée.
+- Les deux liens de logs pointent toutefois vers le chemin de service `workers/services/view/nour-al-hidaya/production/builds/<build-id>`. Cette étiquette `production` dans l'URL est un signal à clarifier; elle ne permet pas à elle seule de conclure que le Worker de production a été déployé ou modifié.
+- Classification retenue : **build en échec signalé par le bot sur le flux PR, environnement Cloudflare exact non confirmé**. Ne pas présenter ce build comme une preview staging réussie, ni comme une publication production. Les logs authentifiés sont nécessaires pour identifier l'environnement et la cause.
+- Aucun déploiement ou changement de service n'a été lancé par cette session.
