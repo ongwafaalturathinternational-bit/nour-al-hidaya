@@ -4,7 +4,7 @@ import {
   validateLearningStructure, validateLearningSite, validateLearningGroup,
   validateLearningEnrollment, validateLearningAssignmentRecord,
 } from "../workers/learning-api/src/learning-schema.js";
-import { resolveLearningGroup, resolveLearningEnrollment } from "../workers/learning-api/src/learning-resource-resolver.js";
+import { resolveLearningGroup, resolveLearningEnrollment, resolvePendingLearningEnrollment } from "../workers/learning-api/src/learning-resource-resolver.js";
 
 const structure = { name: "Mosquée centrale", type: "mosque", status: "active" };
 const site = { name: "Secteur Sud", status: "active", structureIds: ["structure-a"] };
@@ -103,4 +103,22 @@ test("does not resolve a pending or withdrawn enrollment as an active resource",
   await assert.rejects(() => resolveLearningEnrollment(db({
     "learningEnrollments/enrollment-a": { ...enrollment, status: "pending" },
   }), "enrollment-a"), /enrollment_not_active/);
+});
+
+
+test("resolves only pending enrollments through the dedicated review resolver", async () => {
+  const pending = { ...enrollment, status: "pending" };
+  const result = await resolvePendingLearningEnrollment(db({ "learningEnrollments/enrollment-a": pending }), "enrollment-a");
+  assert.equal(result.status, "pending");
+  await assert.rejects(() => resolveLearningEnrollment(db({ "learningEnrollments/enrollment-a": pending }), "enrollment-a"), /enrollment_not_active/);
+  await assert.rejects(() => resolvePendingLearningEnrollment(db(), "enrollment-a"), /enrollment_not_pending/);
+});
+
+test("pending enrollment resolver validates canonical group and structure references", async () => {
+  await assert.rejects(() => resolvePendingLearningEnrollment(db({
+    "learningEnrollments/enrollment-a": { ...enrollment, status: "pending", groupId: "missing-group" },
+  }), "enrollment-a"), /resource_not_found/);
+  await assert.rejects(() => resolvePendingLearningEnrollment(db({
+    "learningEnrollments/enrollment-a": { ...enrollment, status: "pending", structureId: "structure-b" },
+  }), "enrollment-a"), /resource_not_found/);
 });
