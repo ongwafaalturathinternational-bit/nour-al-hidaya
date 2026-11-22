@@ -183,3 +183,14 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Hypothèse à vérifier dans les journaux Cloudflare : si le service Build est configuré avec un build command qui appelle un script npm/Capacitor ou attend `wrangler.staging.json`, cette branche échouera car ces fichiers ne sont pas présents. Si Cloudflare utilise seulement `wrangler.json` et un déploiement statique, cette hypothèse ne s'applique pas.
 - Le paramétrage Cloudflare (root directory, build command, environnement, version Wrangler/Node, variables) et la première erreur restent inaccessibles sans les logs authentifiés. La cause racine reste donc **non confirmée**.
 - Ne pas corriger en copiant à l'aveugle les fichiers staging de PR #20/#22 dans la branche Finance : cela pourrait changer le périmètre de déploiement. Attendre le log et confirmer l'environnement exact, puis isoler une correction Preview dédiée si nécessaire.
+
+
+
+## Lot 9 — accessibilité clavier des registres financiers — 22 novembre 2026
+
+- Les neuf zones de tableaux de `finance.html` portent maintenant `role="region"`, un `aria-label` descriptif et `tabindex="0"`. Les tableaux, colonnes, filtres, actions, exports et données restent intacts.
+- `wat-brand.css` rend le focus clavier visible avec le même contour or que les autres registres WAT.
+- Test dédié `tests/finance-table-a11y.test.mjs` : neuf conteneurs attendus, noms accessibles, focus et style visibles. Le workflow Firestore Emulator inclut ce test.
+- Ce correctif applique à Finance le même modèle d'accessibilité que PR #25; il ne transforme pas la structure métier ni les colonnes en cartes et ne masque aucune donnée.
+- CI à attendre sur le HEAD mis à jour. Aucun résultat n'est revendiqué avant lecture du workflow.
+- Aucun calcul, validation, registre, filtre, export, impression, permission, règle Firestore, route ou donnée réelle modifié.
