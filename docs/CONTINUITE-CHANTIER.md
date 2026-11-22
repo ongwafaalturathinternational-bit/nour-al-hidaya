@@ -371,3 +371,13 @@ Contrôle statique effectué sur `projets.html`, `activites.html`, `club-khuddam
 **Résultat :** aucun élargissement de permission ni défaut bloquant supplémentaire n'a été identifié dans ce contrôle statique. Les tests automatisés CI du HEAD de branche restent réussis (workflows 45070114394 et 45070114420). Les scénarios multi-comptes, révocation en cours d'utilisation, transactions concurrentes et usage hors connexion restent à tester avec des comptes fictifs et sur appareil réel.
 
 Cette entrée est consignée dans le journal de continuité de la branche de travail.
+
+
+## Complément audit parcours candidat public — 22 novembre 2026
+
+- Le formulaire public efface maintenant le mot de passe après chaque tentative de création de compte ou de connexion, y compris en cas d'échec.
+- Les messages d'erreur des opérations d'authentification sont ignorés si la session a changé entre-temps; cela évite qu'une réponse tardive remplace l'état du compte actuellement connecté.
+- Ajout d'un test de régression couvrant l'effacement des deux mots de passe et les garde-fous de génération de session.
+- Commits : page `5acbc74b`; tests `b36cece5`.
+- Les workflows Firestore et APK staging doivent être vérifiés sur le HEAD résultant avant de considérer cette correction validée.
+- Aucun compte ni dossier réel n'a été modifié; aucune fusion ni publication production.
