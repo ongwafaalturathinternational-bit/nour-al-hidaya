@@ -26,6 +26,7 @@ on:
       - "firebase.json"
       - ".firebaserc"
       - "tests/firebase-default-project.test.mjs"
+      - "tests/user-profile-validation.rules.test.mjs"
       - "sw.js"
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
