@@ -1373,19 +1373,24 @@ async function queueAndSyncProgress(uid,lessonId,score,total){
  enqueueProgress(uid,lessonId,score,total);
  if(navigator.onLine)await syncPendingProgress(uid);
 }
-async function syncPendingProgress(uid){
- if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!WATFirebase.auth.currentUser||WATFirebase.auth.currentUser.uid!==uid)return 0;
+async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
+ if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!isCurrentFirebaseSession(uid,generation))return 0;
  const items=readProgressQueue(uid);let synced=0;const remaining=[];
  for(const item of items){
+  if(!isCurrentFirebaseSession(uid,generation))return synced;
   try{
    await WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
     lessonId:String(item.lessonId),score:Number(item.score),total:Number(item.total),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
    synced++;
-  }catch(error){console.error("Synchronisation progression :",error);remaining.push(item)}
+  }catch(error){
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
+   console.error("Synchronisation progression :",error);remaining.push(item)
+  }
  }
- writeProgressQueue(uid,remaining);
+ if(isCurrentFirebaseSession(uid,generation))writeProgressQueue(uid,remaining);
  return synced;
 }
 async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
@@ -1427,19 +1432,25 @@ async function queueAndSyncLearning(uid,recordId,data){
  enqueueLearning(uid,recordId,data);applyLearningRecord(uid,data);
  if(navigator.onLine)await syncPendingLearning(uid);
 }
-async function syncPendingLearning(uid){
+async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
  const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;
- if(!uid||!navigator.onLine||!user||user.uid!==uid||!user.emailVerified)return 0;
+ if(!uid||!navigator.onLine||!user||!user.emailVerified||!isCurrentFirebaseSession(uid,generation))return 0;
  const items=readLearningQueue(uid),remaining=[];let synced=0;
  for(const item of items){
+  if(!isCurrentFirebaseSession(uid,generation))return synced;
   try{
    await WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
    synced++;
-  }catch(error){console.error("Synchronisation pédagogique :",error);remaining.push(item)}
+  }catch(error){
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
+   console.error("Synchronisation pédagogique :",error);remaining.push(item)
+  }
  }
- writeLearningQueue(uid,remaining);return synced;
+ if(isCurrentFirebaseSession(uid,generation))writeLearningQueue(uid,remaining);
+ return synced;
 }
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
