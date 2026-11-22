@@ -89,6 +89,13 @@ test("les programmes exigent des dates ISO et une période cohérente à la cré
     startDate: "2027-02-01",
     endDate: "2027-03-31"
   })));
+  await assertSucceeds(setDoc(doc(db, "programs", "leap-day"), program(uid, {
+    startDate: "2028-02-29",
+    endDate: "2028-02-29"
+  })));
+  await assertFails(setDoc(doc(db, "programs", "invalid-calendar-date"), program(uid, {
+    startDate: "2027-02-29"
+  })));
   await assertFails(setDoc(doc(db, "programs", "bad-format"), program(uid, {
     startDate: "2027/02/01"
   })));
@@ -126,6 +133,9 @@ test("les projets exigent des dates ISO et conservent l'ordre début-fin", async
     startDate: "2027-04-01",
     endDate: "2027-03-31"
   })));
+  await assertFails(setDoc(doc(db, "projects", "impossible-day"), project(uid, {
+    startDate: "2027-04-31"
+  })));
 
   await env.withSecurityRulesDisabled(async context => {
     await setDoc(doc(context.firestore(), "projects", "update-target"), project("system"));
@@ -144,6 +154,12 @@ test("les activités exigent une date ISO à la création et à la mise à jour"
   await assertSucceeds(setDoc(doc(db, "activities", "valid"), activity(uid)));
   await assertFails(setDoc(doc(db, "activities", "bad-format"), activity(uid, {
     activityDate: "12-02-2027"
+  })));
+  await assertFails(setDoc(doc(db, "activities", "impossible-day"), activity(uid, {
+    activityDate: "2027-02-29"
+  })));
+  await assertSucceeds(setDoc(doc(db, "activities", "leap-day"), activity(uid, {
+    activityDate: "2028-02-29"
   })));
 
   await env.withSecurityRulesDisabled(async context => {
