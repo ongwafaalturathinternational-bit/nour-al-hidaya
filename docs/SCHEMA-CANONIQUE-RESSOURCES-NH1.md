@@ -176,3 +176,13 @@ Ce schéma est une proposition construite à partir des documents et règles pr�
 - Les résolveurs ne renvoient aucun champ personnel privé : ils valident uniquement le lien et le statut. Une route future devra charger/serialiser les champs privés seulement après autorisation.
 - Ces helpers et leurs tests restent isolés; ils ne branchent aucune route, n'activent aucun scope réel et ne modifient aucune règle Firestore.
 - Limite assumée : l'accès est lié à une inscription active identifiée. La consultation transversale d'un dossier sans inscription active, ou la recherche multi-inscriptions, nécessite une décision de modèle et un mécanisme serveur dédié; aucun accès élargi n'est inféré.
+
+
+## 11. Profil pédagogique — primitive de consultation
+
+- `learningProfiles/{beneficiaryId}` est séparé du document privé `learningBeneficiaryPrivate/{beneficiaryId}`. Le profil pédagogique ne doit pas devenir un doublon des coordonnées, contacts ou pièces justificatives.
+- Le contrat minimal validé par le code préparatoire exige `beneficiaryId`, `status` (`active | inactive | archived`) et, si le profil est lié à une seule inscription, un `enrollmentId` concordant.
+- Le résolveur exige un bénéficiaire actif et une inscription active; le profil doit correspondre au même bénéficiaire et, si renseigné, à la même inscription.
+- Le scope de consultation est distinct : `learning.profiles.read`. Il doit être accordé dans le registre du personnel et dans une affectation active couvrant le périmètre canonique.
+- Les attributs pédagogiques détaillés (langue, niveaux de lecture/arabe/coran, objectifs, évaluations) ne sont pas imposés ici : leurs taxonomies et règles de visibilité doivent être validées par WAT avant de les ajouter.
+- Les helpers sont isolés; aucune route, donnée Firestore, règle ou permission réelle n'est activée.
