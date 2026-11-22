@@ -180,3 +180,15 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Les deux contrôles partagent le même moteur : scope explicite, registre complet validé, dates de validité et correspondance stricte de chaque dimension de périmètre. Le contexte transmis par le navigateur n'est pas utilisé.
 - CI NH-1 : **80 tests réussis, 0 échec** — [run #44979263779](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44979263779), commit `a3a5379d8169c89bae460e372d093e6fe5dd2e61`.
 - Ces fonctions restent des primitives isolées : aucune route métier n'est activée, aucune règle distante ni donnée Firestore n'a été modifiée.
+
+
+## Mise à jour — profils pédagogiques et dossiers bénéficiaires (22 novembre 2026)
+
+- Ajout de `learningProfiles/{beneficiaryId}` : validation du lien exact au bénéficiaire, statut actif et lien optionnel à l'inscription.
+- Le résolveur du profil exige un bénéficiaire actif et une inscription active; il n'accepte aucun périmètre fabriqué par le client.
+- Ajout du scope dédié `learning.profiles.read` et de `authorizeLearningProfile` qui réutilise le contrôle strict des affectations.
+- Les données privées restent dans `learningBeneficiaryPrivate` et sous le scope séparé `learning.beneficiaries.private.read`. Le résolveur privé est appelé seulement après autorisation.
+- Aucun attribut de niveau, langue ou objectif pédagogique n'est inventé; la taxonomie attend une validation WAT.
+- CI du commit `f2fd1b97fbc760a4a468d315db879c7c2d074788` : NH-1 **88 tests réussis, 0 échec** — [workflow #44980249993](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44980249993).
+- Firestore et APK Android de test sont encore en cours de vérification sur ce même commit.
+- Aucune route métier activée, aucun scope réel attribué, aucune règle distante, donnée réelle ou déploiement de production modifié. PR #22 reste ouverte en brouillon.
