@@ -48,7 +48,7 @@ test("authorizes only after resolving group perimeter from Firestore", async () 
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a", deps);
   assert.equal(result.ok, true);
   assert.equal(result.assignmentId, "assign-1");
-  assert.deepEqual(result.resource, { groupId: "group-a", siteId: "site-a", mosqueId: "mosque-a", programId: "program-a" });
+  assert.deepEqual(result.resource, { groupId: "group-a", siteId: "site-a", structureId: "structure-a", programId: "program-a" });
   assert.deepEqual(deps.calls, ["learningGroups", "learningStaffAssignments"]);
 });
 
