@@ -68,3 +68,24 @@ test("la déconnexion des modules membres et programmes passe par le nettoyage s
     assert.doesNotMatch(html, /WATFirebase\.auth\.signOut\(\)/, page);
   }
 });
+
+
+test("toutes les ressources du précache et des manifestes existent", () => {
+  const match = worker.match(/const APP_FILES = \[([\\s\\S]*?)\];/);
+  assert.ok(match, "la liste APP_FILES doit être déclarée");
+  const appFiles = JSON.parse(`[${match[1]}]`);
+  for (const resource of appFiles) {
+    const localPath = resource.replace(/^\.\//, "") || ".";
+    assert.ok(fs.existsSync(localPath), "ressource précachée absente : " + resource);
+  }
+
+  for (const manifestPath of ["manifest.json", "manifest-nour.json"]) {
+    const currentManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const startPath = currentManifest.start_url.replace(/^\.\//, "");
+    assert.ok(fs.existsSync(startPath), manifestPath + " : start_url absent");
+    for (const icon of currentManifest.icons) {
+      const iconPath = icon.src.replace(/^\.\//, "");
+      assert.ok(fs.existsSync(iconPath), manifestPath + " : icône absente " + icon.src);
+    }
+  }
+});
