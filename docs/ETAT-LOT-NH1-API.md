@@ -67,7 +67,7 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Audit des règles Firestore WAT Connect existantes : `staffAccess` est en lecture individuelle seulement ; aucun scope `learning.*` n'existe encore dans les règles héritées.
 - Scopes existants confirmés : `programs.*`, `activities.*`, `attendance.*`, `members.*`, `projects.*`, `volunteers.*`.
 - Le raccourci Nour Al-Hidaya dans le portail est désormais affiché uniquement aux comptes d'équipe possédant un scope `learning.*` ; ce filtrage UI ne remplace pas les contrôles serveur.
-- Les tests d'autorisation utilisent maintenant les scopes granulaires `learning.beneficiaries.read` et `learning.beneficiaries.review`.
+- Les tests d'autorisation couvrent les scopes granulaires `learning.beneficiaries.read` et `learning.beneficiaries.private.read`. La revue des inscriptions en attente utilise le scope préparatoire distinct `learning.enrollments.review`; aucun de ces scopes n'est encore attribué dans les comptes d'équipe.
 - L'audit `docs/AUDIT-PERMISSIONS-NH1.md` confirme que la matrice de rôles, les scopes NH et les périmètres site/mosquée/groupe/programme doivent être validés avant raccordement des routes.
 - Aucun accès réel NH-1 n'est activé ; les routes restent en 503.
 
