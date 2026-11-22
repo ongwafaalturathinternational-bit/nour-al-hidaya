@@ -89,6 +89,7 @@ test("grant writes registry, idempotency receipt and audit event in one atomic c
   assert.equal(audit[1].fields.action.stringValue, "assignment.grant");
   assert.equal(audit[1].fields.targetId.stringValue, "staff-target");
   assert.equal(audit[1].fields.reason.stringValue, grantInput().reason);
+  assert.equal(audit[1].fields.requestId.stringValue, grantInput().requestId);
 });
 
 test("same request replays its receipt, while reusing the request ID with changed content conflicts", async () => {
@@ -171,7 +172,9 @@ test("update uses expected assignment version and revoke is a versioned soft rev
   assert.equal(revoked.assignmentVersion, 3);
   const events = [...f.records.entries()].filter(([key]) => key.startsWith("learningAuditLogs:")).map(([, value]) => value);
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.update").fields.reason.stringValue, "Role responsibilities updated");
+  assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.update").fields.requestId.stringValue, "request-update");
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.reason.stringValue, "End of teaching mandate");
+  assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.requestId.stringValue, "request-revoke");
   const registry = f.records.get("learningStaffAssignments:staff-target");
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.active.booleanValue, false);
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.revokedBy.stringValue, "staff-admin");
