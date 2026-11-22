@@ -8,6 +8,7 @@ const CACHE_NAME = "wat-connect-shell-v5";
 const APP_FILES = [
   "./",
   "./index.html",
+  "./portail.html",
   "./site-institutionnel.html",
   "./nour-al-hidaya.html",
   "./administration.html",
