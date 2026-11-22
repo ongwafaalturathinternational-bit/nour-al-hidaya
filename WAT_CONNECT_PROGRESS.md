@@ -7,16 +7,16 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié au 22 novembre 2026
 
-- HEAD de la PR #22 : `cddb079b7c100c8e31c3aa5bda064785cf451970` (API 110/110, Firestore 137/137 et Android staging réussis; ce checkpoint actualise les résultats); PR ouverte, brouillon, non fusionnée.
+- HEAD de la PR #22 : `6ebf91c6ad98880de68eba90452b80ec1bb0fa3f` (API 111/111, Firestore 137/137 et Android staging réussis; test de routes d’affectation fermées); PR ouverte, brouillon, non fusionnée.
 - HEAD de la PR #20 : `6c03c9d8758fd5e8e213301fe7085f7bb5ac3afc`; PR ouverte, brouillon, non fusionnée. Cible conservée : `audit/wat-connect-lot8-projects-club-khuddam`.
 - PR #22 reste empilée sur `fix/lot8-club-onboarding-and-access`, pas sur `main`. Après l’ajout du test sur les deux branches, GitHub a signalé `dirty`; l’analyse a isolé le conflit add/add sur le même chemin. Le test Lot 8 a été renommé, les deux tests sont conservés, et l’API GitHub indique de nouveau `mergeable_state=clean`. Aucune cible n’a été changée.
 - PR #20, commit `269c675` : Firestore Emulator **129/129 réussis** (run 44993962097); build Android staging réussi (run 44993962095). Le commit `2899a93` ajoute trois tests de confinement Firebase : **132/132** (run 44994507222), build Android staging (run 44994507277). Le commit `6c03c9d` renomme le nouveau test pour éviter un conflit d’ajout avec le test existant de PR #22; revalidation **132/132** (run 44994890261) et Android staging (run 44994890246). Les tests couvrent les dates impossibles, les années bissextiles 2028/2000 et les années communes 2027/1900.
 - Historique des validations du correctif Lot 8 consigné sans masquer les échecs : `ffe59fb` a échoué à l’analyse à cause d’une ligne tronquée; `725413e` a passé 127/129, l’année bissextile étant encore erronée, Android a réussi; deux tentatives intermédiaires ont aussi échoué à cause d’un fichier de règles dupliqué. Le commit `269c675` repart du fichier intact d4c96e6, corrige le motif et passe les 129 tests. `2899a93` ajoute les tests de sélection du projet demo, de l'émulateur explicitement demo et du build Android staging. `6c03c9d` sépare son nom de fichier de celui du test NH-1, résout le conflit add/add sans changer la cible de PR #22.
 - `.firebaserc` aux têtes PR #20 et #22 : défaut `demo-wat-connect`, alias staging `wat-connect-staging`; aucun alias production. La base de PR #20 sélectionnait `wat-connect` et a été sécurisée. Le test Firestore CI cible explicitement demo; le workflow APK fixe l’environnement staging.
 - Inventaire des workflows/scripts PR #20 : aucun déploiement Firebase production n’est défini. Le processus de production n’a été ni exécuté ni modifié; il devra toujours choisir explicitement son projet. Les workflows Cloudflare staging restent distincts du Wrangler production.
-- PR #22 code applicatif : les tests ciblés locaux étaient 115/115; CI du commit `bcaf337` : API 44992433833, Firestore Emulator 44992433789, Android staging 44992433810 — tous réussis. Le checkpoint `6d28ef4` a passé API 44994342212, Firestore 44994342156 et Android 44994342216; le checkpoint `eb6b42c` a les trois workflows réussis; le contrôle courant `cddb079` valide 110/110 tests API (run 44995129744), 137/137 tests Firestore (run 44995129708) et Android staging (run 44995129710). Preview de branche Cloudflare réussie (5413d640). Le commit `902f891` actualise le rapport; ne pas le présenter comme une nouvelle validation de code.
+- PR #22 code applicatif : les tests ciblés locaux étaient 115/115; CI du commit `bcaf337` : API 44992433833, Firestore Emulator 44992433789, Android staging 44992433810 — tous réussis. Le checkpoint `6d28ef4` a passé API 44994342212, Firestore 44994342156 et Android 44994342216; le checkpoint `eb6b42c` a les trois workflows réussis; le contrôle `cddb079` valide 110/110 API, 137/137 Firestore et Android staging; le commit de test de routes `6ebf91c` valide 111/111 API (run 44995615345), 137/137 Firestore (run 44995615324) et Android staging (run 44995615319). Preview de branche Cloudflare réussie (5413d640). Le commit `902f891` actualise le rapport; ne pas le présenter comme une nouvelle validation de code.
 - Auth Firebase staging toujours non vérifiable : aucun CLI Firebase/gcloud, connecteur ni identité de service accessible. Aucun test contre Firebase réel. Permissions IAM/bindings non validés; routes API métier toujours fermées.
-- Cloudflare consulté en lecture seule. Compte associé à `ongwafaalturathinternational@gmail.com`; le compte a `enforce_twofactor=false`. Workers `wat-connect-staging` et `nour-al-hidaya` présents; leurs bindings et routes sont vides. Ce lien institutionnel et la protection 2FA restent à confirmer par WAT. Aucun réglage ni secret n’a été modifié.
+- Cloudflare consulté en lecture seule. Compte standard associé à `ongwafaalturathinternational@gmail.com`; `enforce_twofactor=false`. Les Workers `wat-connect-staging` et `nour-al-hidaya` ont bindings et routes vides, mais `workers.dev` et les previews sont activés sur les deux. Dernières mises à jour de déploiement visibles : staging 21 nov. 2026 11:29Z, production 18 nov. 2026 22:37Z. Le code API est non routé; les opérations d'inscription restent en 503 et les affectations en 404. L'affiliation institutionnelle et la protection 2FA restent à confirmer par WAT. Aucun réglage, secret ni déploiement n’a été modifié.
 - Aucun compte réel, dossier réel, configuration de production, fusion ou déploiement production modifié/exécuté.
 
 ## Commits vérifiables
@@ -29,6 +29,8 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - 2899a93 — garde-fous de sélection `.firebaserc`, Emulator demo et Android staging; Firestore 132/132.
 - 6c03c9d — test renommé pour lever le conflit add/add; Firestore 132/132, Android staging, PR #22 revenue à `clean`.
 - 6d28ef4 / eb6b42c — rapports de progression; tests applicatifs, Firestore Emulator et APK staging réussis.
+- 084d7bb — checkpoint de résultats PR #20/#22.
+- 6ebf91c — test API confirmant que les routes HTTP grant/update/revoke restent fermées; 111 tests API, 137 tests Firestore et Android staging réussis.
 - CI associée : API run 44990071689 (success), Firestore run 44990071677 (success), Android staging run 44990071687 (success).
 
 ## Tâches terminées
@@ -39,6 +41,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Durcissement des motifs d'audit/idempotence des affectations et tests de rejeu/concurrence.
 - Extension des tests aux rejeux update/revoke avec changement de patch, version et motif.
 - Navigation portail : liens publics conservés sur mobile, retour à la ligne et focus clavier visibles; test de régression dédié.
+- API assignment : test dédié à l'absence de routes HTTP grant/update/revoke (404), aucune route métier ajoutée.
 - Isolement Firebase : `.firebaserc` par défaut demo, alias staging, tests automatisés du projet Emulator et du build Android; aucun déploiement Firebase production trouvé dans les scripts/workflows de la branche Lot 8.
 - Preview de branche Cloudflare réussie après l'ajout du bloc Wrangler staging; URL publique. Elle est distincte du déploiement production et n'utilise aucun binding. Ne saisir aucune donnée réelle dans l'aperçu.
 - Inventaire Cloudflare staging en lecture seule.
