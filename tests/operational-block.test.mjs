@@ -22,7 +22,7 @@ test("une candidature publique vérifiée est examinée avant son entrée au reg
   assert.match(club, /runTransaction\(async tx=>\{/);
   assert.match(club, /appSnap\.data\(\)\.status!==\"en_attente\"/);
   assert.match(club, /tx\.set\(volRef/);
-  assert.match(club, /reviewedBy:user\.uid/);
+  assert.match(club, /reviewedBy:actor\.uid/);
   assert.match(rules, /allow delete: if false;/);
 });
 
