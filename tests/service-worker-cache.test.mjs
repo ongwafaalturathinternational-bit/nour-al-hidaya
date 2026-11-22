@@ -32,6 +32,9 @@ test("les requêtes autres que GET ne passent jamais dans le cache du service wo
 
 test("les requêtes métier et API non listées ne sont pas interceptées comme ressources locales", () => {
   assert.match(sw, /if \(url\.origin !== scope\.origin\) return;/);
-  assert.match(sw, /if \(!appUrls\.has\(url\.href\)\) return;/);
+  const allowlistGuard = sw.indexOf("if (!appUrls.has(url.href)) return;");
+  const navigationHandler = sw.indexOf('if (request.mode === "navigate")');
+  assert.ok(allowlistGuard >= 0 && allowlistGuard < navigationHandler,
+    "la liste blanche doit être vérifiée avant tout fallback de navigation");
   assert.doesNotMatch(sw, /caches\.put\(request,\s*response\)/);
 });
