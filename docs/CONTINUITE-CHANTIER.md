@@ -189,3 +189,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Tests de régression ajoutés dans `tests/projects-volunteers-syntax.test.mjs` et `tests/activities-syntax.test.mjs`.
 - Commits de ce groupe : `acd6bc6701e99c2568b6b4aa4e3c3e35450db695`, `e2126009dbb62e03d774f451b324aad85747908b`, `020e6b7fc3b2ec73ba1e06a5cb6b92df89837ca2`, `23f785a5baa5263a15b07e26b438faf550cef1e6`, `b20d513c8d2c1eb8685b37e2e4e92ae48e710718`, `29900e5d5155ebd1eeb99befae29438384a89663`.
 - Les validations du HEAD courant doivent être vérifiées après le dernier commit; les succès du SHA `f592750` ne valent pas validation des nouveaux changements Club/Activités.
+
+
+### Complément — invalidation des réponses devenues obsolètes
+
+- Le registre Projets vérifie désormais aussi que le projet sélectionné n'a pas changé pendant le chargement d'une liste d'affectations.
+- Le registre Activités/Présences vérifie que l'activité sélectionnée est toujours la même avant d'afficher une feuille de présence chargée de façon asynchrone.
+- Tests ajoutés pour les deux courses de sélection.
+- Commits complémentaires : `d1e96fe609fdc3643759b04dc809061c676e35c5`, `1389ab174d50ddf3c189f4be6c09747214e5a5f1`, `7567d4b7a37f0ec3727094541ce97d3a5709535c`, `25e51ff182d067a874863ad20fc54ed5b333862c`.
+- Les validations du SHA `25e51ff` doivent encore être lues après conclusion des workflows; les résultats des commits précédents ne remplacent pas cette vérification.
