@@ -381,3 +381,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits : page `5acbc74b`; tests `b36cece5`.
 - Les workflows Firestore et APK staging doivent être vérifiés sur le HEAD résultant avant de considérer cette correction validée.
 - Aucun compte ni dossier réel n'a été modifié; aucune fusion ni publication production.
+
+
+## Garde de session — annuaire des membres — 22 novembre 2026
+
+- L'audit de `administration.html` a relevé que le formulaire de création de fiche membre ne vérifiait pas explicitement que la session administrative était toujours courante juste avant l'écriture Firestore.
+- Ajout d'un contrôle `isCurrentStaffSession` avant et après l'écriture, capture de l'identité de l'agent au début de l'action et limitation du rétablissement du bouton à la génération de session d'origine.
+- Ajout d'un test statique de régression dans `tests/operational-block.test.mjs` couvrant le contrôle de session et le comportement du formulaire.
+- Commits : correctif `91e2e92bbb79fd635daf3b0e25a02d676a084155`, test `de105b54b46569f2208022ccc8515da2924cec3b`.
+- Les validations Firestore/application et APK Android staging du HEAD `de105b54...` sont déclenchées automatiquement; leur résultat doit être vérifié avant de considérer ce lot validé.
+- Contrôle statique uniquement : aucune fiche membre ni donnée réelle modifiée. PR #20 reste ouverte en brouillon; aucune fusion ni publication production.
