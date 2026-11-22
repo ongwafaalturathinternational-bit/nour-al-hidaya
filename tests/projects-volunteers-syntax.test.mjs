@@ -137,3 +137,14 @@ test("le registre projets masque et vide les données privées à chaque changem
   assert.match(html, /async function load\(generation=authGeneration\)/);
   assert.match(html, /async function loadAssignments\(generation=authGeneration\)/);
 });
+
+
+test("le registre Club masque et vide les données privées à chaque changement de session", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(html, /authGeneration=0/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /records=\[\];applications=\[\]/);
+  assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
+  assert.match(html, /if\(generation!==authGeneration\)return/g);
+  assert.match(html, /async function load\(generation=authGeneration\)/);
+});
