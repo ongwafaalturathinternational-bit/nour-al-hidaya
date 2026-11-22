@@ -11,8 +11,12 @@ function booleanField(fields, name) {
 
 function stringArrayField(fields, name) {
   const values = fields?.[name]?.arrayValue?.values;
-  if (!Array.isArray(values)) return [];
-  return values.map((item) => item?.stringValue).filter((item) => typeof item === "string");
+  if (!Array.isArray(values) || values.length > 100) return null;
+  const scopes = values.map((item) => item?.stringValue);
+  if (scopes.some((scope) => typeof scope !== "string" ||
+      !/^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){1,4}$/.test(scope))) return null;
+  if (new Set(scopes).size !== scopes.length) return null;
+  return scopes;
 }
 
 export async function authorizeStaffScope(request, config, scope, options = {}) {
@@ -71,6 +75,9 @@ export async function authorizeStaffScope(request, config, scope, options = {}) 
   }
 
   const scopes = stringArrayField(fields, "scopes");
+  if (!scopes) {
+    return { ok: false, status: 403, error: "staff_access_invalid" };
+  }
   if (!scopes.includes(scope)) {
     return { ok: false, status: 403, error: "staff_scope_denied" };
   }
