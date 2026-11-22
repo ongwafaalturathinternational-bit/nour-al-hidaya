@@ -32,7 +32,7 @@ Suites ajoutées :
 - `learning-api-staff-auth.test.js` : authentification, e-mail vérifié, état actif et scopes.
 - `learning-api-turnstile.test.js` : validation Siteverify, action, hostname, fraîcheur, réseau et IP d'origine.
 
-La suite complète est exécutée automatiquement par GitHub Actions sur Node.js 22. Le premier passage a détecté une attente de test devenue obsolète après l'ajout du support timestamp Firestore ; elle a été corrigée. Le passage suivant a validé **34 tests sur 34**. Les nouveaux tests Turnstile sont en cours de validation sur le commit le plus récent.
+La suite complète est exécutée automatiquement par GitHub Actions sur Node.js 22. Un premier passage a détecté une attente de test devenue obsolète après l'ajout du support timestamp Firestore ; elle a été corrigée. Sur le commit `886cec33072b5a7991836c0cf508a074e79929c1`, les contrôles de syntaxe ont réussi et **41 tests sur 41 ont réussi, 0 échec**.
 
 ## Limites importantes
 
