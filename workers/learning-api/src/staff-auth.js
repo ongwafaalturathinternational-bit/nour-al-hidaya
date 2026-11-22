@@ -1,0 +1,65 @@
+import { verifyFirebaseIdToken } from "./google-auth.js";
+
+function stringField(fields, name) {
+  const value = fields?.[name]?.stringValue;
+  return typeof value === "string" ? value : null;
+}
+
+function booleanField(fields, name) {
+  return fields?.[name]?.booleanValue === true;
+}
+
+function stringArrayField(fields, name) {
+  const values = fields?.[name]?.arrayValue?.values;
+  if (!Array.isArray(values)) return [];
+  return values.map((item) => item?.stringValue).filter((item) => typeof item === "string");
+}
+
+export async function authorizeStaffScope(request, config, scope, options = {}) {
+  if (typeof scope !== "string" || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,4}$/.test(scope)) {
+    throw new Error("staff_scope_invalid");
+  }
+
+  const authorization = request.headers.get("authorization") ?? "";
+  const match = /^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(authorization);
+  if (!match) return { ok: false, status: 401, error: "authentication_required" };
+
+  let identity;
+  try {
+    identity = await (options.verifyToken ?? verifyFirebaseIdToken)(
+      match[1], config.firebaseProjectId, options.tokenOptions ?? {},
+    );
+  } catch {
+    return { ok: false, status: 401, error: "authentication_invalid" };
+  }
+
+  if (identity.emailVerified !== true) {
+    return { ok: false, status: 403, error: "verified_staff_email_required" };
+  }
+
+  let accessDocument;
+  try {
+    accessDocument = await options.firestore.getDocument("staffAccess", identity.uid);
+  } catch {
+    return { ok: false, status: 403, error: "staff_access_unavailable" };
+  }
+
+  const fields = accessDocument?.fields;
+  if (!fields || !booleanField(fields, "active")) {
+    return { ok: false, status: 403, error: "staff_access_inactive" };
+  }
+
+  const scopes = stringArrayField(fields, "scopes");
+  if (!scopes.includes(scope)) {
+    return { ok: false, status: 403, error: "staff_scope_denied" };
+  }
+
+  return {
+    ok: true,
+    principal: Object.freeze({
+      uid: identity.uid,
+      role: stringField(fields, "role"),
+      scopes: Object.freeze(scopes),
+    }),
+  };
+}
