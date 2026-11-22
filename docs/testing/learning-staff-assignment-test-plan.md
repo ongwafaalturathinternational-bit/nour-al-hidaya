@@ -1,121 +1,97 @@
-# Nour Al-Hidaya — plan de tests fonctionnels et sécurité des affectations
+# Nour Al-Hidaya — plan de tests sécurité des affectations
 
-Statut : plan de validation staging uniquement. Aucun compte réel, aucune affectation réelle, aucune route ouverte.
+Statut : handlers internes testés avec identités fictives; intégration Firebase staging réelle non validée. Les routes restent fermées et aucun compte ou document réel n'est utilisé.
 
-## 1. État du code observé
+## 1. État vérifié
 
-- `assignment-policy.js` fournit une décision pure fail-closed sur l'état, les scopes, les dates et le périmètre d'une affectation.
-- `staff-auth.js` vérifie le jeton, l'état courant Firebase Auth (désactivation, e-mail vérifié, révocation), `staffAccess.active` et le scope exact. Les erreurs d'API Auth et les états incomplets bloquent l'accès.
-- `learning-authorization.js` applique le contrôle institutionnel avant la résolution d'une ressource et le contrôle du périmètre d'affectation NH.
-- `learning-assignment-service.js` contient les handlers internes grant/update/revoke. Ils exigent `learning.staffAssignments.manage`, vérifient le compte WAT cible et ne sont raccordés à aucune route HTTP.
-- `firestore-rest.js` regroupe registre, reçu idempotent et événement d'audit dans un commit atomique avec préconditions de version ou d'absence. Les versions périmées et réutilisations conflictuelles de `requestId` sont refusées.
-- Le catalogue attribuable est en liste blanche; le scope d'administration ne peut pas être attribué par ce service.
-- Le compte de service, son droit IAM staging et le catalogue institutionnel restent à confirmer. Aucun compte ou document réel n'a été consulté ou modifié.
+Au commit de code 62c46395771df3a02b24370282ac400ea517f92c :
 
-Les tests avec mocks valident le comportement local, mais ne prouvent pas encore les permissions IAM et l'intégration avec Firebase staging.
+- Tests NH-1 Node.js : 113/113 réussis. Ils utilisent des mocks isolés pour Auth, Firestore et les appels réseau.
+- Règles Firestore dans l'émulateur avec le projet fictif demo-wat-connect : 144/144 réussis.
+- Build APK debug explicitement routé vers Firebase staging : réussi.
+- Les tests d'affectation couvrent grant/update/revoke, contrôle de scope et périmètre, dates, version attendue, concurrence, commits atomiques, motifs d'audit et rejeux idempotents avec un seul reçu et un seul événement.
+- Les tests HTTP confirment que les mutations d'affectation ne sont pas exposées; les routes d'inscription restent en 503.
+- Aucun de ces résultats ne valide les credentials, l'IAM ou les bindings du projet Firebase staging réel.
 
-## 2. Niveaux de tests à mettre en place
+Les handlers sont des fonctions internes. Ils ne sont pas raccordés au routeur HTTP ou à des callable functions. Aucun scope learning.* n'a été accordé à une personne réelle.
 
-### A. Tests unitaires — politique d'affectation
+## 2. Matrice des tests automatisés existants
 
-Fichier cible proposé : `tests/learning-assignment-policy.test.js`.
+### A. Identité Firebase et habilitations WAT
 
-| Cas | Résultat attendu |
-|---|---|
-| Affectation active, scope exact, dates valides, ressource dans le périmètre | Autorisé |
-| Affectation absente, inactive ou mal formée | Refusé |
-| Scope absent, inconnu, dupliqué ou différent | Refusé |
-| Avant validFrom | Refusé |
-| À partir de validUntil | Refusé |
-| Périmètre absent, vide, incomplet ou invalide | Refusé |
-| Ressource hors structure/site/groupe/programme autorisé | Refusé |
-| Dimensions de la ressource et de l'affectation incohérentes | Refusé |
-| Horloge invalide | Refusé |
-| Deux affectations séparées nécessaires pour reconstituer scope + périmètre | Refusé |
+Les tests dans tests/learning-api-staff-auth.test.js, tests/learning-api-google-auth.test.js et tests/learning-api-assignment-service.test.js couvrent :
 
-### B. Tests d'intégration — authentification et autorisation
+- jeton absent, mal formé, invalide, expiré ou rattaché à un autre projet : refus;
+- e-mail non vérifié : refus;
+- compte Auth désactivé ou non vérifié, UID incohérent ou état Auth illisible : refus;
+- session révoquée ou état validSince invalide : refus;
+- staffAccess absent/inactif, scope WAT exact absent ou registre illisible : refus;
+- compte cible d'une affectation absent, désactivé, non vérifié ou inactif : refus;
+- auto-attribution et tentative d'accorder learning.staffAssignments.manage : refus.
 
-À exécuter avec Firebase Emulator et des identités entièrement fictives.
+Le test de la dépendance réelle à l'identité WAT reste à faire après vérification institutionnelle du compte de service staging et des permissions minimales.
 
-- Jeton absent, invalide, expiré ou destiné à un autre projet : HTTP 401.
-- E-mail non vérifié : HTTP 403.
-- Compte WAT absent, suspendu ou désactivé dans Firebase Auth : HTTP 403.
-- Compte actif sans affectation NH : HTTP 403.
-- Affectation active mais sans scope institutionnel correspondant : HTTP 403.
-- Affectation révoquée ou expirée : HTTP 403 dès la requête suivante.
-- Scope valide mais ressource hors périmètre : HTTP 403.
-- Ressource dont les dimensions de sécurité sont incomplètes : HTTP 403.
-- Aucun cumul de scopes ou périmètres provenant d'affectations différentes.
+### B. Politique NH et périmètres
 
-Le statut Auth désactivé/révoqué doit être vérifié par une source serveur fiable; ne pas considérer le seul champ Firestore `staffAccess.active` comme une preuve suffisante.
+Les tests dans tests/learning-api-assignment-policy.test.js, tests/learning-api-learning-authorization.test.js et tests/learning-api-resource-resolver.test.js vérifient :
 
-### C. Tests des opérations d'affectation
+- scope exact, affectation active et dates valides;
+- refus des scopes inconnus, dates impossibles, affectations expirées et inactives;
+- présence et cohérence des périmètres structure/site/groupe/programme;
+- résolution des ressources depuis les documents canoniques et refus des références absentes ou inactives;
+- refus des ressources hors périmètre et absence de combinaison de scopes provenant d'affectations distinctes;
+- séparation du scope des dossiers privés et des inscriptions en attente.
 
-Les tests isolés avec des identités et documents fictifs couvrent désormais les opérations internes :
+### C. Mutations, audit et concurrence
 
-1. Grant, update et révocation douce : registre versionné, reçu et audit.
-2. Même requête rejouée : même résultat, motif conservé, sans second événement d'audit.
-3. Réutilisation du requestId avec un motif différent : conflit, aucun nouvel événement.
-3. Même identifiant avec contenu différent : conflit.
-4. Deux mises à jour concurrentes avec la même version : une seule gagne.
-5. Échec du commit : aucune écriture partielle.
-6. Cible Auth désactivée, scope non autorisé ou périmètre incohérent : refus.
+Les tests isolés dans tests/learning-api-assignment-service.test.js vérifient :
 
-1. Création valide : une affectation serveur est créée, version 1.
-2. Création ciblant un compte absent, non vérifié, désactivé ou inactif : refusée.
-3. Scope inconnu ou non autorisé : refusé.
-4. Périmètre vide, inexistant ou incohérent : refusé.
-5. Modification avec `expectedVersion` courant : réussie, version incrémentée.
-6. Modification avec version obsolète : conflit, aucune écriture.
-7. Deux modifications concurrentes : une seule version gagne; aucune mise à jour silencieuse perdue.
-8. Révocation : affectation conservée avec métadonnées de révocation, accès immédiatement refusé.
-9. Répétition avec le même `requestId` et le même contenu : résultat idempotent, motif conservé, aucun événement d'audit en double.
-10. Réutilisation du même `requestId` avec un motif, une cible, une affectation, une version ou un patch différent : conflit, aucune nouvelle mutation ni audit.
-10. Échec d'écriture de l'audit : mutation annulée intégralement.
-11. Suspension WAT : toutes les affectations deviennent inutilisables sans être effacées.
-12. Réactivation WAT : ne réactive aucune affectation révoquée ou expirée.
+- grant, update et révocation douce avec incrément de version;
+- motif normalisé et requestId présents dans les événements d'audit grant/update/revoke;
+- un seul commit contient registre, reçu idempotent et audit; une panne ne laisse aucune écriture partielle;
+- rejeu identique : même résultat et aucun nouvel événement d'audit;
+- réutilisation du requestId avec motif, cible, opération, patch ou expectedVersion modifiés : conflit;
+- demandes concurrentes identiques : un résultat initial, un rejeu, un reçu et un événement;
+- mises à jour concurrentes avec la même version : une seule mutation gagne;
+- version périmée, périmètre incohérent et champs serveur forgés : refus.
 
-### D. Tests des règles Firestore
+Les tests utilisent des documents et UID fictifs, sans requête à Firebase réel.
 
-Avec les règles réelles chargées dans l'émulateur :
+### D. Règles Firestore et routes
 
-- Client non authentifié : lecture/écriture du registre d'affectations refusée.
-- Membre connecté : écriture directe du registre refusée.
-- Administrateur connecté : écriture directe toujours refusée; opérations exclusivement via callable serveur.
-- Client : création, modification et suppression des journaux d'audit refusées.
-- Historique d'une affectation révoquée : aucune suppression client ou serveur ordinaire.
+La suite Firebase Emulator charge les règles du dépôt avec le projet demo-wat-connect. Elle couvre les refus d'accès client aux collections protégées, les écritures de profil hors périmètre et les validations de données des modules existants. Les logs PERMISSION_DENIED associés aux cas négatifs sont attendus; le statut du workflow et le décompte de tests restent les critères de résultat.
 
-### E. Tests de confidentialité
+La suite API vérifie que les URL candidates d'affectation ne sont pas raccordées au Worker (404) et que les routes d'inscription non configurées restent en 503. Toute nouvelle route est interdite dans ce jalon.
 
-- Les scopes d'administration pédagogique ne donnent pas automatiquement accès aux champs privés des bénéficiaires.
-- Les dossiers concernant des mineurs restent refusés sans permission dédiée et explicitement attribuée.
-- Les événements d'audit ne contiennent ni nom, ni contact, ni document, ni donnée sensible du bénéficiaire.
-- Les réponses API ne renvoient que les champs nécessaires à la fonction demandée.
+## 3. Validation d'intégration réelle staging — en attente
 
-## 3. Préconditions techniques avant d'exécuter les tests d'intégration
+À effectuer uniquement après confirmation de l'identité institutionnelle WAT :
 
-1. Vérifier que le compte de service staging détient `firebaseauth.users.get` et l'accès Firestore requis.
-2. Valider avec WAT le catalogue `learning.*` et l'attribution du scope administratif.
-3. Exécuter les commits avec l'émulateur Firestore et des identités entièrement fictives.
-4. Revoir le schéma, les périmètres et les règles de protection des mineurs avant tout raccordement futur.
-5. Garder les routes fermées jusqu'à une décision de mise en service explicite.
+1. Confirmer que le projet est bien wat-connect-staging et que le compte de service appartient à l'organisation WAT.
+2. Examiner les permissions IAM nécessaires aux lectures Auth, aux lectures de référence Firestore et aux commits des trois collections d'affectation. Retenir le rôle minimal, sans droit de gestion des comptes.
+3. Confirmer les bindings/secrets du Worker de staging; vérifier leur absence d'accès à la production.
+4. Utiliser un projet Emulator ou un espace staging dédié avec identités et documents fictifs.
+5. Vérifier la lecture de l'état Auth (désactivation, vérification e-mail, révocation) puis l'autorisation WAT et le périmètre NH.
+6. Exécuter des essais positifs, négatifs, de concurrence et de panne d'audit; vérifier le registre, le reçu et le journal créés atomiquement.
+7. Vérifier à nouveau que les routes HTTP demeurent fermées et que les clients Firestore ne peuvent pas écrire dans les collections protégées.
 
-## 4. Critères de sortie staging
+Cette session ne dispose pas de credentials Firebase ou d'une preuve IAM WAT. Ne pas remplacer ces contrôles par des mocks et ne pas ouvrir de route en leur absence.
 
-La validation ne peut être considérée réussie que si :
+## 4. Décisions institutionnelles avant toute activation
 
-- tous les tests positifs attendus passent;
-- tous les tests de refus passent;
-- les cas de concurrence et de panne d'audit prouvent l'absence d'écriture partielle;
-- les règles Firestore refusent les écritures directes;
-- les tests de suspension, révocation et expiration prouvent le refus immédiat;
-- les rapports CI sont attachés à la PR et reproductibles.
+WAT doit valider :
+
+- l'autorité habilitée à attribuer les affectations nationales ou multi-structures;
+- la matrice des rôles et scopes, dont l'accès aux dossiers identifiables et aux données de mineurs;
+- les périmètres structure/site/groupe/programme et les durées d'affectation;
+- les taxonomies pédagogiques et le parcours de protection des mineurs;
+- la clé anti-doublon des inscriptions, séparément du requestId technique des mutations.
 
 ## 5. Garde-fous
 
-- Données de test fictives uniquement.
-- Aucun compte réel créé, activé ou modifié.
-- Aucun scope `learning.*` accordé à un membre réel.
-- Aucune inscription ou route publique activée.
-- Aucune fusion de PR et aucun déploiement sans autorisation explicite.
-- Les décisions institutionnelles sur les délégations et les données privées restent à approuver avant toute activation.
+- Utiliser exclusivement des identités et données fictives.
+- Ne créer, activer, désactiver ni modifier aucun compte réel.
+- Ne modifier aucun dossier réel de membre ou bénéficiaire.
+- Ne modifier aucune configuration de production.
+- Ne pas ouvrir les routes métier, fusionner une PR ou déployer en production.
+- Maintenir les PR #20 et #22 ouvertes et la PR #22 empilée sur sa base Lot 8 tant que cette dépendance reste présente.
