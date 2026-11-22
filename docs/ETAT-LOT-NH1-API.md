@@ -164,3 +164,11 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Le workflow NH-1 syntax-check couvre les nouveaux modules.
 - Un premier passage CI a révélé une erreur de syntaxe dans la déclaration de la liste lecture seule; elle a été corrigée. Le dernier commit est en cours de validation. Aucun résultat de test réussi n'est revendiqué tant que la CI du HEAD final n'est pas terminée.
 - Routes toujours en 503. Aucun compte, document réel, scope réel, règle Firestore distante, secret ou déploiement n'a été modifié.
+
+
+## Moteur d'affectation durci — 22 novembre 2026
+- La politique vérifie désormais la correspondance exacte des dimensions de périmètre présentes dans le contexte canonique : site, structure, groupe et programme. Une dimension présente d'un seul côté entraîne un refus; aucune liste absente/vide ne vaut accès global.
+- Les dates de validité et le scope sont validés strictement; les horodatages doivent être UTC explicites. L'horloge est injectable pour les tests.
+- Le registre complet `learningStaffAssignments/{uid}` est validé avant toute décision. Un enregistrement mal formé entraîne un refus global plutôt qu'une sélection partielle parmi des affectations potentiellement corrompues.
+- CI NH-1 : **78 tests réussis, 0 échec** — [run #44978897104](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44978897104), commit `2a41942b1b643bf3e23fa7d47bca96f25318780d`.
+- Le moteur reste isolé des routes. Le schéma de ressources et la matrice des rôles/scopes doivent être validés par WAT; aucune règle distante, donnée, affectation réelle, permission ou déploiement n'a été modifié.
