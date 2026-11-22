@@ -544,3 +544,14 @@ test("le contrôleur financier dispose d'un périmètre de consultation distinct
   assert.match(html, /scopes\.includes\("finance\.control\.read"\)/);
   assert.match(rules, /staffHasScope\("finance\.control\.read"\)/);
 });
+
+test("l’interface financière charge l’identité visuelle WAT partagée", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const brand = readFileSync(new URL("../wat-brand.css", import.meta.url), "utf8");
+  assert.match(html, /<link rel="stylesheet" href="wat-brand\.css">/);
+  assert.match(html, /<meta name="theme-color" content="#103047">/);
+  assert.match(brand, /--wat-turquoise:#1d788f/);
+  assert.match(brand, /--wat-gold:#d2b75f/);
+  assert.match(brand, /--wat-deep:#103047/);
+  assert.match(brand, /\.wat-crystal-surface/);
+});
