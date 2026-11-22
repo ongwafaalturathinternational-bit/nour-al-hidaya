@@ -25,7 +25,7 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - ".firebaserc"
-      - "tests/firebase-project-isolation.test.mjs"
+      - "tests/firebase-default-project.test.mjs"
       - "sw.js"
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
