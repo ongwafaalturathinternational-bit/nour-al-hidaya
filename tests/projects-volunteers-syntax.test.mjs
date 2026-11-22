@@ -173,3 +173,20 @@ test("le registre Club efface le formulaire privé au changement de session", ()
  const html=readFileSync(new URL("../club-khuddam.html",import.meta.url),"utf8");
  assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("volunteerForm"\)\.reset\(\)/);
 });
+
+
+test("les décisions et enregistrements du registre Club restent liés à la session initiatrice", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  assert.match(html, /function isCurrentStaffSession\(account,generation\)/);
+  const review = html.slice(html.indexOf("async function reviewApplication"), html.indexOf("\nfunction safeDate"));
+  assert.match(review, /const actor=user,generation=authGeneration/);
+  assert.match(review, /createdBy:actor\.uid/);
+  assert.match(review, /reviewedBy:actor\.uid/);
+  assert.match(review, /if\(!isCurrentStaffSession\(actor,generation\)\)return/);
+  const submit = html.slice(html.indexOf('$("volunteerForm").addEventListener("submit"'), html.indexOf('\n$("cancelEdit")'));
+  assert.match(submit, /const actor=user,generation=authGeneration/);
+  assert.match(submit, /const targetId=editingId/);
+  assert.match(submit, /updatedBy:actor\.uid/);
+  assert.match(submit, /if\(generation===authGeneration\)\$\("saveButton"\)\.disabled=false/);
+  assert.match(html, /expectedGeneration===authGeneration/);
+});
