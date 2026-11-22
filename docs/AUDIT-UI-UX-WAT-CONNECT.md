@@ -308,3 +308,11 @@ Mise à jour de validation PR #27 : Firestore Emulator **133/133**, 0 échec, ru
 - PR #24, HEAD de code `8bd9f49ec3e6da796232ef09908ad6a3563c9f40` : Firestore **193/193**, 0 échec, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833). Les neuf tableaux Finance sont maintenant des régions accessibles au clavier; aucun build Android n'a été déclenché par ce changement Finance.
 - PR #26, HEAD de code `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore **134/134**, 0 échec, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging réussi, run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Le portail a maintenant un lien d'évitement clavier vers son contenu.
 - Les validations Firestore/Android ne remplacent pas les tests visuels réels; aucune capture de navigateur ni recette sur appareil physique n'est revendiquée.
+
+
+
+## 15. Canal d'intégration des huit PNG officiels — 22 novembre 2026
+
+Une branche d'accueil dédiée `feature/official-brand-assets` a été créée depuis le HEAD de PR #22. Les dossiers `assets/brand/wat/` et `assets/brand/nour/` contiennent chacun un README qui liste les quatre noms de fichiers exacts attendus.
+
+Le canal fiable disponible est le téléversement binaire natif de GitHub Web : ouvrir le dépôt, sélectionner la branche `feature/official-brand-assets`, ouvrir le dossier de marque concerné, puis utiliser **Add file → Upload files** pour déposer les PNG originaux depuis les archives. Cette opération conserve les octets des fichiers; ne pas convertir ni recréer les images. Les dossiers et noms attendus sont préparés, mais les huit binaires ne sont pas encore présents dans GitHub. L'intégration des références ne sera faite qu'après vérification de leur présence et de leur contenu.
