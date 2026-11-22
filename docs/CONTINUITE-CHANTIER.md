@@ -301,3 +301,10 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Les erreurs tardives de chargement des modules Projets et Activités ne peuvent plus afficher un message dans une session qui a déjà changé.
 - Ajout de tests de régression sur les opérations sensibles des deux modules.
 - Les règles Firestore restent la protection serveur ; aucune règle ni donnée réelle n'a été modifiée.
+
+
+## CI — ajustement du test d'audit des candidatures — 22 novembre 2026
+
+- Le premier passage CI après le durcissement du traitement des candidatures a signalé une assertion historique qui recherchait encore `reviewedBy:user.uid`.
+- Le code utilise désormais l'identité capturée `actor.uid`, précisément pour éviter qu'un changement de compte modifie l'auteur d'une opération en cours.
+- L'assertion a été mise à jour pour vérifier cette identité capturée. Les validations du commit correctif sont en cours.
