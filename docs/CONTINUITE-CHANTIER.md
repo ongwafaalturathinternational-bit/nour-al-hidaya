@@ -292,3 +292,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Le gestionnaire d'erreur de l'observateur d'authentification ignore également les erreurs issues d'une ancienne session.
 - Ajout de tests de régression ciblant ces protections.
 - Les opérations Firestore déjà envoyées au serveur ne peuvent pas être annulées rétroactivement par le navigateur ; les règles Firestore restent l'autorité d'accès. Aucune règle ni donnée réelle n'a été modifiée.
+
+
+## Poursuite — opérations projets, affectations, activités et présences — 22 novembre 2026
+
+- Les créations et changements de statut de projets, les affectations de bénévoles, les créations d'activités et les enregistrements/actualisations de présence capturent désormais l'UID et la génération de session d'origine.
+- Les contrôles d'identité sont répétés après les lectures/écritures asynchrones ; les résultats d'une ancienne session ne réinitialisent plus les formulaires ni les listes d'un autre compte.
+- Les erreurs tardives de chargement des modules Projets et Activités ne peuvent plus afficher un message dans une session qui a déjà changé.
+- Ajout de tests de régression sur les opérations sensibles des deux modules.
+- Les règles Firestore restent la protection serveur ; aucune règle ni donnée réelle n'a été modifiée.
