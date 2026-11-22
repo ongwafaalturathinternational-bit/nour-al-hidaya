@@ -50,8 +50,12 @@ test("les listes compétences et intérêts restent bornées et composées de te
       email: item.uid + "@example.org", email_verified: true
     }).firestore();
     const { uid, ...extra } = item;
-    await assertFails(setDoc(doc(db, "volunteerApplications", uid),
-      application(uid, uid + "@example.org", extra)));
+    try {
+      await assertFails(setDoc(doc(db, "volunteerApplications", uid),
+        application(uid, uid + "@example.org", extra)));
+    } catch (error) {
+      throw new Error(`Expected invalid application payload to be rejected: ${uid}; ${error.message}`);
+    }
   }
 });
 
