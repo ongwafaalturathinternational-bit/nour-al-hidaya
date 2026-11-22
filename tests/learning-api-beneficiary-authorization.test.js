@@ -17,7 +17,8 @@ const encode = (value) => {
 const doc = (value) => ({ fields: Object.fromEntries(Object.entries(value).map(([k, v]) => [k, encode(v)])) });
 const records = {
   "learningBeneficiaries/beneficiary-a": { status: "active" },
-  "learningBeneficiaryPrivate/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active", phone: "private" },\n  "learningProfiles/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active" },
+  "learningBeneficiaryPrivate/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active", phone: "private" },
+  "learningProfiles/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active" },
   "learningEnrollments/enrollment-a": {
     beneficiaryId: "beneficiary-a", programId: "program-a", structureId: "structure-a",
     siteId: "site-a", groupId: "group-a", periodId: "period-a", status: "active",
