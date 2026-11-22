@@ -132,3 +132,16 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+
+## Harmonisation des thèmes navigateur et PWA WAT — 22 novembre 2026
+
+- Branche dédiée `feature/wat-portal-theme-consistency`, créée depuis le HEAD vérifié de PR #22 (`6ac4bfe0b035547f5670c016094ce3d102a2023e`). PR #20/#22 et leurs cibles n'ont pas été modifiées.
+- Les pages WAT `index.html`, `administration.html`, `programmes.html`, `projets.html`, `activites.html`, `club-khuddam.html`, `club-khuddam-inscription.html` et `club-khuddam-espace.html` utilisent maintenant le `theme-color` institutionnel `#103047`, cohérent avec `site-institutionnel.html` et `wat-brand.css`.
+- `manifest.json` WAT utilise aussi `#103047`. Le manifeste Nour reste volontairement distinct (`#0F2240`) et ses chemins de démarrage restent `nour-al-hidaya.html`; aucune identité n'a été fusionnée.
+- Nouveau test statique `tests/wat-brand-theme.test.mjs` : vérifie l'import du socle WAT, la couleur des 9 pages institutionnelles et la séparation des thèmes/manifests WAT/Nour.
+- Le workflow Firestore Emulator déclenche ce test et couvre explicitement `site-institutionnel.html`.
+- CI non encore terminée à ce checkpoint. Aucun résultat de test revendiqué avant lecture du workflow.
+- Limite binaire toujours ouverte : les huit PNG originaux sont extraits localement et contrôlés, mais le connecteur GitHub disponible ne propose que l'écriture UTF-8 pour les fichiers de contenu; la fonction Git Data accepte du base64, mais aucun canal de transfert de fichiers local vers cet appel n'est exposé. Aucun binaire factice ni chemin cassé n'a été committé. Les logos ne sont donc pas encore intégrés au dépôt.
+- Aucun formulaire, rôle, scope, règle Firestore, route métier, donnée réelle, configuration Firebase/Cloudflare, fusion ou déploiement n'a été modifié.
