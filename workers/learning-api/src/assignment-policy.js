@@ -1,4 +1,4 @@
-const DIMENSIONS = Object.freeze(["siteIds", "mosqueIds", "groupIds", "programIds"]);
+const DIMENSIONS = Object.freeze(["siteIds", "structureIds", "groupIds", "programIds"]);
 const SCOPE_PATTERN = /^learning\.[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){0,3}$/;
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
