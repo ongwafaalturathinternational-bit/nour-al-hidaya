@@ -100,3 +100,9 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Dépendance PR #21 relue en lecture seule : ouverte, brouillon, non fusionnée et mergeable; bootstrap/documentation explicitement limités à wat-connect-staging. Elle reste distincte de #20/#22; aucun compte ni configuration n'est changé.
 - PR #20 (branche Lot 8) et PR #22 restent ouvertes en brouillon, non fusionnées et mergeable; cibles conservées. PR #22 reste empilée sur la base Lot 8, car son fond NH-1 en dépend. Aucune activation de route.
 - Une fois le rapport commité, le HEAD de PR #22 est documentaire; le dernier commit code validé demeure 50abacf. Firebase institutionnel/IAM et bindings restent non vérifiés; Cloudflare reste en lecture seule. Pas de données réelles, production, merge ou déploiement touchés.
+
+## Concurrence d'idempotence — 22 novembre 2026
+
+- Nouveau test de rejeu concurrent identique sur grant : un appel initial et un replay, même identifiant d'affectation, un seul reçu, une seule version et un seul événement d'audit.
+- Commit de test `106202c0be11c29841c4e6b9d25582213af58e1e`; CI complète réussie : API NH-1 44999694218, Firestore Emulator 44999694234 et APK Android staging 44999694200.
+- Les routes restent fermées; aucun accès Firebase réel, donnée réelle, fusion ou déploiement.
