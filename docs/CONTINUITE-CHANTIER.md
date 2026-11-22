@@ -207,3 +207,11 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Test de régression ajouté dans `tests/portal-syntax.test.mjs`.
 - Commits : `47a1a1500c1d8e69972abf70c7e0f734401dd311`, `0316172434bd74763a12900097eb188ca2cb13b6`.
 - Validation du nouveau code à suivre sur le HEAD le plus récent. Aucun droit ni règle Firestore n'a été élargi.
+
+
+### Validation complète des protections Projets / Club / Activités — SHA `25e51ff182d067a874863ad20fc54ed5b333862c`
+
+- Firestore Emulator : **145 tests réussis, 0 échec** ([workflow 45066060546](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066060546)).
+- APK Android debug de staging : build réussi ([workflow 45066060522](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066060522)).
+- Ces résultats couvrent le nettoyage/invalidation des sessions Projets, Club et Activités/Présences ainsi que les tests de réponses d'affectation et de présence devenues obsolètes.
+- Le portail principal a ensuite reçu son correctif de session (`47a1a150`, `0316172`); ses validations propres sont en cours et ne sont pas encore déclarées réussies.
