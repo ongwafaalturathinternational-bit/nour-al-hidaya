@@ -30,3 +30,10 @@ test("le manifeste WAT utilise le thème institutionnel et reste distinct de Nou
   assert.equal(wat.start_url, "./index.html");
   assert.equal(nour.start_url, "./nour-al-hidaya.html");
 });
+
+test("le portail propose un lien d'évitement vers le contenu principal", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /<a class="skip-link" href="#main">Aller au contenu principal<\/a>/);
+  assert.match(html, /<main id="main">/);
+  assert.match(html, /\.skip-link:focus\{top:12px/);
+});
