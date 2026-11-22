@@ -74,3 +74,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 2. Maintenir la demande de validation institutionnelle Firebase staging (propriétaire, identité de service et IAM minimal) et garder les routes fermées jusque-là.
 3. Demander à WAT de confirmer le compte Cloudflare institutionnel et le mécanisme d’application de 2FA; inventaire distant maintenu en lecture seule.
 4. Suivre les contrôles CI/mergeabilité des PR #20/#22 après chaque commit. Ne jamais fusionner, déployer production, toucher aux comptes/dossiers réels ni ouvrir les routes.
+
+
+## Point de reprise vérifié — 22 novembre 2026
+
+- Vérification du commit courant PR #22 : `c4bda0c4e9101245bf2b09a10d05e765de30fe6c` (la tentative précédente n'avait pas encore enregistré de nouveau checkpoint).
+- Résultats GitHub Actions observés pour ce SHA : API NH-1 **111/111 réussis** ([run 44998277146](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998277146)); Firestore Emulator **143/143 réussis** ([run 44998277075](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998277075)); build Android staging **réussi** ([run 44998277138](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998277138)).
+- État GitHub relu : PR #22 ouverte, brouillon, non fusionnée, `mergeable=true`, base Lot 8 conservée; PR #20 ouverte, brouillon, non fusionnée, `mergeable=true`. Aucune revue formelle sur la PR #22.
+- Le rapport précédent indiquait encore des résultats antérieurs (API 111, Firestore 138) et un ancien HEAD; cette actualisation corrige ces éléments pour le commit vérifié.
+- Aucun accès Firebase réel, changement de compte ou de données, ouverture de route, fusion, déploiement ou modification production n'a eu lieu.
