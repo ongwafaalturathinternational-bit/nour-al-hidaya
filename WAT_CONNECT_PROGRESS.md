@@ -7,7 +7,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié au 22 novembre 2026
 
-- Dernier commit de code testé sur PR #22 : `b884bcd94cff790ca30f60d4cdc89d322f316f81`; PR toujours ouverte, brouillon, non fusionnée. Le rapport possède ensuite son propre commit documentaire.
+- Dernier commit de code testé sur PR #22 : `50abacfbbd9223dfed4ff0a6471827d13086be7f`; PR toujours ouverte, brouillon, non fusionnée. Le rapport possède ensuite son propre commit documentaire.
 - HEAD de la PR #20 : `655b90d0d34a915e36f65f7d4d79c11da4ae30e2`; PR ouverte, brouillon, non fusionnée. Cible conservée : `audit/wat-connect-lot8-projects-club-khuddam`.
 - PR #22 reste empilée sur `fix/lot8-club-onboarding-and-access`, pas sur `main`. Après l’ajout du test sur les deux branches, GitHub a signalé `dirty`; l’analyse a isolé le conflit add/add sur le même chemin. Le test Lot 8 a été renommé, les deux tests sont conservés, et l’API GitHub indique de nouveau `mergeable_state=clean`. Aucune cible n’a été changée.
 - PR #20, commit `269c675` : Firestore Emulator **129/129 réussis** (run 44993962097); build Android staging réussi (run 44993962095). Le commit `2899a93` ajoute trois tests de confinement Firebase : **132/132** (run 44994507222), build Android staging (run 44994507277). Le commit `6c03c9d` renomme le nouveau test pour éviter un conflit d’ajout avec le test existant de PR #22; revalidation **132/132** (run 44994890261) et Android staging (run 44994890246). Le correctif des règles de profil passe **134/134** tests (run 44996446023), Android staging réussi (run 44996446014). Le commit `91ff040` ajoute `maxlength=120` sur le formulaire et son test; suite **135/135** (run 44997248739). Le commit `655b90d` borne les entrées pédagogiques et aligne réponses/réflexions à 5 000 caractères : suite finale **138/138** (run 44997952811), Android staging réussi (run 44997952844). Les tests couvrent les dates impossibles, les années bissextiles 2028/2000 et les années communes 2027/1900.
@@ -92,3 +92,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - .firebaserc vérifié : défaut demo-wat-connect, alias staging wat-connect-staging. package.json et le workflow Firestore lancent explicitement l'émulateur sur demo-wat-connect; le build Android CI force staging. Cette vérification statique n'exécute aucun processus de publication production.
 - La PR #22 conserve sa cible fix/lot8-club-onboarding-and-access, état GitHub mergeable=true, ouverte et brouillon; PR #20 reste aussi ouverte, brouillon et mergeable sur sa cible prévue. Aucun changement de cible.
 - Routes métier fermées. Aucun accès Firebase réel/IAM validé, compte/dossier réel touché, changement de production, merge ou déploiement.
+
+## Revalidation finale et dépendances — 22 novembre 2026
+
+- Correctif de validation d'affectation/politique et scope privé canonique vérifiés au commit 50abacfbbd9223dfed4ff0a6471827d13086be7f. API NH-1 succès (44999282465), Firestore Emulator succès (44999282464), Android staging succès (44999282481). La tentative de test précédente (run 44999189171) a échoué sur une attente incohérente du test de date future; correction documentée, puis test relancé avec succès.
+- La proposition de matrice et les fixtures utilisent maintenant le même scope privé que le contrôle d'accès serveur : learning.beneficiaries.private.read. Aucun accès n'a été attribué.
+- Dépendance PR #21 relue en lecture seule : ouverte, brouillon, non fusionnée et mergeable; bootstrap/documentation explicitement limités à wat-connect-staging. Elle reste distincte de #20/#22; aucun compte ni configuration n'est changé.
+- PR #20 (branche Lot 8) et PR #22 restent ouvertes en brouillon, non fusionnées et mergeable; cibles conservées. PR #22 reste empilée sur la base Lot 8, car son fond NH-1 en dépend. Aucune activation de route.
+- Une fois le rapport commité, le HEAD de PR #22 est documentaire; le dernier commit code validé demeure 50abacf. Firebase institutionnel/IAM et bindings restent non vérifiés; Cloudflare reste en lecture seule. Pas de données réelles, production, merge ou déploiement touchés.
