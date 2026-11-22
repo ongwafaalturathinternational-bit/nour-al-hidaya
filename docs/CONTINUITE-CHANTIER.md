@@ -242,3 +242,14 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Test de régression ajouté : syntaxe JavaScript des deux pages, nettoyage de session et rejet des réponses obsolètes.
 - Les changements sont sur la branche de travail uniquement. Les workflows CI correspondants doivent encore être contrôlés.
 - Aucun droit Firestore, compte réel, donnée réelle, fusion ou déploiement n'a été modifié.
+
+
+## Poursuite — isolation de session Nour Al-Hidaya — 22 novembre 2026
+
+- Audit du parcours apprenant : les chargements asynchrones du profil, de la progression et des activités pédagogiques pouvaient continuer après un changement de compte; l'observateur Firebase ne nettoyait pas non plus l'état de session lors d'une déconnexion.
+- Ajout d'un numéro de génération de session. Les réponses de profil, progression et données pédagogiques sont ignorées si l'identité Firebase ou la génération a changé.
+- À chaque événement d'authentification en mode réel, l'interface quitte l'ancien rôle et réinitialise le contexte de navigation avant de charger le nouveau compte. Le mode de démonstration reste séparé.
+- Les files locales de synchronisation restent séparées par UID; aucune file n'est transférée entre comptes.
+- Test de régression ajouté pour la génération de session, les gardes après lecture et le nettoyage lors d'une transition d'authentification.
+- Validation CI du nouveau code encore attendue. Ce correctif ne constitue pas une validation du chiffrement du stockage local : la persistance IndexedDB/localStorage n'est toujours pas un coffre sécurisé et les appareils partagés restent exclus pour les données sensibles.
+- Aucun compte réel, document Firestore réel, règle de production, fusion ou déploiement n'a été modifié.
