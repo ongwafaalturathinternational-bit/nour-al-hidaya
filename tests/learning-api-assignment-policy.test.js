@@ -4,6 +4,7 @@ import { evaluateLearningAssignment } from "../workers/learning-api/src/assignme
 
 const now = new Date("2026-11-22T12:00:00.000Z");
 const base = {
+  assignmentId: "assign-1",
   active: true,
   siteIds: ["site-a"],
   mosqueIds: ["mosque-a"],
@@ -19,6 +20,11 @@ const evaluate = (assignment = base, scope = "learning.beneficiaries.read", targ
 
 test("allows exact scope and explicit matching resource perimeter", () => {
   assert.deepEqual(evaluate(), { allowed: true, reason: "assignment_scope_and_perimeter_match" });
+});
+
+test("denies missing or malformed assignment identifiers", () => {
+  assert.equal(evaluate({ ...base, assignmentId: undefined }).reason, "assignment_id_invalid");
+  assert.equal(evaluate({ ...base, assignmentId: "../assignment" }).reason, "assignment_id_invalid");
 });
 
 test("denies a scope not granted by the assignment", () => {
