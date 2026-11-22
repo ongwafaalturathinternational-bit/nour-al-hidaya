@@ -231,3 +231,10 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 - PR #24 : Firestore Emulator **193/193**, 0 échec, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833); accessibilité des neuf registres financiers ajoutée. Build Android non déclenché par cette modification.
 - PR #26 : Firestore Emulator **134/134**, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging réussi, run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Le portail WAT comporte un lien d'évitement clavier.
+
+
+## Branche d'accueil des logos officiels — 22 novembre 2026
+
+- Branche `feature/official-brand-assets` créée; dossiers `assets/brand/wat/` et `assets/brand/nour/` préparés avec les noms exacts des huit PNG attendus.
+- Canal binaire fiable identifié : GitHub Web, branche sélectionnée, dossier concerné, **Add file → Upload files**. Les outils connectés ne transmettent pas les octets locaux directement au dépôt; aucune image approximative ou référence cassée n'a été utilisée.
+- Après dépôt des huit originaux, l'intégration sera effectuée et vérifiée sur les manifests, favicons, en-têtes, PWA, cache service worker et APK staging.
