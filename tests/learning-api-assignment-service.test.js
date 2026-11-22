@@ -106,6 +106,22 @@ test("same request replays its receipt, while reusing the request ID with change
   assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 1);
 });
 
+test("concurrent identical grant retries converge on one receipt and one audit event", async () => {
+  const f = fixture();
+  const input = grantInput("concurrent-idempotent-grant");
+  const results = await Promise.all([
+    createLearningStaffAssignment(request, config, input, f.options),
+    createLearningStaffAssignment(request, config, input, f.options),
+  ]);
+  assert.equal(results.every((result) => result.ok), true);
+  assert.equal(results.filter((result) => result.replayed === true).length, 1);
+  assert.equal(results.filter((result) => result.replayed === false).length, 1);
+  assert.equal(results[0].assignmentId, results[1].assignmentId);
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAssignmentReceipts:")).length, 1);
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 1);
+  assert.equal(f.records.get("learningStaffAssignments:staff-target").fields.version.integerValue, "1");
+});
+
 test("update and revoke replays bind patch, expected version and reason without duplicate audit", async () => {
   const f = fixture();
   const created = await createLearningStaffAssignment(request, config, grantInput(), f.options);
