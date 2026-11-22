@@ -391,3 +391,5 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits : correctif `91e2e92bbb79fd635daf3b0e25a02d676a084155`, test `de105b54b46569f2208022ccc8515da2924cec3b`.
 - Les validations Firestore/application et APK Android staging du HEAD `de105b54...` sont déclenchées automatiquement; leur résultat doit être vérifié avant de considérer ce lot validé.
 - Contrôle statique uniquement : aucune fiche membre ni donnée réelle modifiée. PR #20 reste ouverte en brouillon; aucune fusion ni publication production.
+
+- Extension du garde-fou aux changements de statut des fiches membres : vérification de la session avant l'écriture, après l'écriture et avant l'affichage du résultat. Test de régression étendu. Commits : correctif complémentaire `5137330`, test `df00787`.
