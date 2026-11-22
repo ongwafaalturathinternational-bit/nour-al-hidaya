@@ -18,7 +18,7 @@ test("le portail enregistre le service worker", () => {
 });
 
 test("le shell précache les modules publics et exclut les données privées", () => {
-  for (const page of ["./index.html", "./site-institutionnel.html", "./activites.html", "./projets.html", "./club-khuddam.html", "./club-khuddam-inscription.html", "./club-khuddam-espace.html", "./wat-brand.css"]) {
+  for (const page of ["./index.html", "./portail.html", "./site-institutionnel.html", "./activites.html", "./projets.html", "./club-khuddam.html", "./club-khuddam-inscription.html", "./club-khuddam-espace.html", "./wat-brand.css"]) {
     assert.ok(worker.includes(JSON.stringify(page)));
   }
   assert.match(worker, /if \(request\.method !== "GET"\) return/);
