@@ -405,3 +405,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - CI Firestore : réussi — [workflow 45075973731](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45075973731).
 - Build APK Android staging : encore en cours au moment de cette entrée — [workflow 45075973650](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45075973650).
 - PR #20 reste ouverte en brouillon et non fusionnée. Aucun compte, dossier réel ou environnement de production n'a été modifié.
+
+
+## Durcissement du référentiel Programmes — 22 novembre 2026
+
+- L'audit de `programmes.html` et des règles Firestore a relevé un écart : le formulaire exige une description non vide, mais les règles serveur acceptaient une description vide.
+- Les règles Firestore imposent maintenant une description texte d'au moins un caractère et de 1 500 caractères maximum, à la création comme à la modification.
+- Tests Emulator ajoutés pour refuser une description vide et une valeur de type incorrect, en complément du rejet d'un statut invalide.
+- Commits : règles `8640dac368c26f18a3f87dbc3abae374ee4c3c08`, test `2e58b50a9162a1a23f5243f2940b6e86695ba758`.
+- Les validations Firestore et APK Android staging du nouveau HEAD doivent être contrôlées avant de déclarer ce correctif validé.
+- Aucun document, compte ou profil réel n'a été modifié; aucune fusion ni publication en production.
