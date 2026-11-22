@@ -328,3 +328,31 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - La demande de réinitialisation du mot de passe vérifie la génération et l'identité de session avant d'afficher son résultat, afin d'éviter les messages obsolètes après un changement de compte.
 - Tests statiques de régression ajoutés pour ces garde-fous dans `tests/club-candidate-session.test.mjs`.
 - Ces modifications sont limitées à l'espace candidat et à ses tests; elles ne changent pas les règles ni les droits d'accès.
+
+
+## Mise à jour — 22 novembre 2026, sécurisation finale du parcours candidat
+
+- **HEAD de la branche :** `0d2c097d6b5734c0bf56a4def7c2da4a14896a8e` (mise à jour documentaire).
+- **Dernier commit applicatif :** `528ef913c931ff9001e7e0fd000b0206d1ad8ddc`.
+- **PR #20 :** ouverte, brouillon, non fusionnée; aucune publication en production.
+
+### Validations CI du HEAD de branche
+
+- **Règles Firestore : réussi** — [workflow 45070114394](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45070114394).
+- **APK Android staging : réussi** — [workflow 45070114420](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45070114420). Les étapes de préparation Firebase staging, génération du projet Android, synchronisation et compilation debug ont terminé avec succès.
+- Les mêmes validations ont également réussi sur le commit applicatif `528ef913...` : [Firestore 45070095578](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45070095578) et [APK 45070095614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45070095614).
+
+### Contrôle statique complémentaire
+
+- Relecture du formulaire public, de l'espace candidat, des règles `volunteerApplications` et des tests associés.
+- Le dépôt public exige une session courante, une adresse vérifiée et un consentement explicite; le document est créé sous le UID du candidat.
+- Le candidat ne peut ni lister les dossiers, ni modifier son dossier après dépôt, ni décider de son acceptation. Les responsables doivent disposer de `volunteers.read` ou `volunteers.manage`; seul `volunteers.manage` permet de traiter une candidature.
+- Les opérations asynchrones du portail candidat vérifient la session après les attentes réseau; le mot de passe est effacé après la tentative de connexion.
+- Aucun défaut bloquant supplémentaire n'a été constaté dans ce contrôle statique. Il ne remplace pas la recette manuelle avec comptes Firebase fictifs ni le test sur téléphone Android réel.
+
+### Suite du chantier
+
+1. Préparer et conserver une recette courte pour tester dépôt, vérification d'e-mail, suivi, changement de compte et révocation d'accès.
+2. Poursuivre l'audit des modules opérationnels et de leurs transitions d'état.
+3. Garder l'inscription universelle Nour Al-Hidaya et les notifications comme chantiers distincts; ne pas les déclarer livrés.
+4. Ne pas fusionner la PR, déployer en production ou toucher aux données et comptes réels sans autorisation explicite.
