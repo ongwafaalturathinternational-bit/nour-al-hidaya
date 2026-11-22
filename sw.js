@@ -83,6 +83,10 @@ self.addEventListener("fetch", event => {
   if (url.origin !== scope.origin) return;
 
   const appUrls = new Set(APP_FILES.map(file => new URL(file, scope).href));
+  // Ne pas transformer une navigation vers une URL non gérée en page d'accueil :
+  // seules les pages explicitement autorisées bénéficient du fallback hors ligne.
+  if (!appUrls.has(url.href)) return;
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -98,7 +102,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (!appUrls.has(url.href)) return;
   event.respondWith(
     caches.match(request).then(cached => cached || fetch(request).then(response => {
       if (response && response.ok) {
