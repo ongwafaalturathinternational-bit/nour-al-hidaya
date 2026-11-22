@@ -34,7 +34,7 @@ test("denies cross-site, cross-structure, cross-group and cross-program access",
   }
 });
 test("denies absent, empty and incomplete perimeters rather than inferring global access", () => {
-  assert.equal(evaluate(base, undefined, {}).reason, "resource_perimeter_missing");
+  assert.equal(evaluate(base, undefined, {}).reason, "resource_perimeter_incomplete");
   assert.equal(evaluate({ ...base, siteIds: [] }, undefined, { siteId: "site-a" }).reason, "resource_perimeter_invalid");
   const noSiteContext = { structureId: "structure-a", groupId: "group-a", programId: "program-a" };
   assert.equal(evaluate(base, undefined, noSiteContext).reason, "resource_perimeter_incomplete");
@@ -49,5 +49,5 @@ test("denies malformed dates, identifiers, scopes and invalid clock", () => {
   assert.equal(evaluateLearningAssignment({ assignment: base, scope: "learning.beneficiaries.read", resource, now: "now" }).reason, "clock_invalid");
 });
 test("requires at least one explicit resource dimension", () => {
-  assert.equal(evaluate(base, undefined, { unrelated: "value" }).reason, "resource_perimeter_missing");
+  assert.equal(evaluate(base, undefined, { unrelated: "value" }).reason, "resource_perimeter_incomplete");
 });
