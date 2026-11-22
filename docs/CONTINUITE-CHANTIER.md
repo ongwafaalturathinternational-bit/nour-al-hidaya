@@ -471,3 +471,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Validation du HEAD applicatif `fa6c8a293f2545ff7206801aa47183d88cfbe82d` : workflows Firestore/application et Android staging tous deux **réussis** — [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434113) · [APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434099).
 - Artefact APK staging debug : `wat-connect-android-staging-debug-apk`, ID `14776605615`, 4 374 754 octets, expiration le **6 décembre 2026** — [ouvrir le workflow et récupérer l'artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434099).
 - La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun compte, dossier réel, secret, configuration distante ni environnement de production n'a été modifié. La recette Android physique reste à faire.
+
+## Protection des chargements asynchrones — modules Projets et Activités — 22 novembre 2026
+
+- Les chargements des modules Projets et Activités vérifient désormais l'UID Firebase courant, la session active et sa génération après chaque lecture asynchrone principale, et avant d'afficher les résultats.
+- La lecture des affectations de bénévoles et celle des présences ignorent aussi les réponses arrivant après un changement de compte ou de sélection.
+- L'initialisation vérifie l'identité Firebase réelle après l'attente de la persistance et après la lecture du document d'accès équipe; une ancienne session ne peut plus terminer l'initialisation en s'appuyant uniquement sur un compteur de génération.
+- Test de régression ajouté dans `tests/operational-block.test.mjs`.
+- Commits applicatifs : `c6e0f41e13747553add2ae318d47e2ab90cb64b2` (Projets), `35c6e9a5c1b16a567f898310e553b11dcf9c3e98` (Activités). Test : `15be63f05ec8119748de50fe2460c184e1d300a6`.
+- CI sur le commit de test `15be63f05ec8119748de50fe2460c184e1d300a6` : tests Firestore/application et build Android staging lancés, résultats en attente au moment de cette note — [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080392825) · [APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080392493).
+- Aucun compte réel, dossier membre, secret ou environnement de production n'a été modifié. PR #20 toujours en brouillon et non fusionnée.
