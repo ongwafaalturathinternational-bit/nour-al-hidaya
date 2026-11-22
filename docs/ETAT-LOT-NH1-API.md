@@ -1,48 +1,39 @@
-# NH-1 — premier squelette API et tests de sécurité
+# NH-1 — squelette API et préparation de la connexion sécurisée
 
 Date : 22 novembre 2026  
 Branche : `feature/nour-central-management-foundation`  
-Statut : code préparatoire uniquement ; aucun déploiement.
+Statut : préparation de code uniquement ; aucun déploiement.
 
-## Livré dans cette étape
+## Livré
 
-- `workers/learning-api/src/index.js` : point d'entrée Worker minimal.
-- `tests/learning-api-worker.test.js` : tests du comportement fermé par défaut et des méthodes HTTP.
-- `package.json` : commande `npm run test:learning-api`.
+- Worker NH-1 fermé par défaut : routes non configurées en 503, méthodes non autorisées en 405.
+- Contrat de configuration serveur dans `workers/learning-api/src/config.js`.
+- Cible staging explicitement verrouillée sur `wat-connect-staging`; le projet production `wat-connect` est rejeté.
+- Vérification de présence/format des variables de configuration, de l'identité de service, de la clé PEM et du secret Turnstile.
+- Normalisation des retours à la ligne PEM ; diagnostics sans divulgation des valeurs secrètes.
+- Guide `docs/CONFIGURATION-SERVEUR-NH1-STAGING.md` pour la future configuration Cloudflare/Firebase.
+- Commande `npm run test:learning-api` étendue à toute la suite NH-1.
 
-Le squelette expose uniquement :
-- `GET /health` : indique explicitement que le service n'est pas configuré et n'accepte aucune inscription ;
-- les routes publiques, agent et revue NH-1 : répondent `503 service_not_configured` ;
-- les routes de décision et d'examen des doublons : répondent également `503 service_not_configured` ;
-- une méthode HTTP non autorisée : répond `405 method_not_allowed` avec l'en-tête `Allow` ;
-- toute autre route : répond `404`.
+## Tests
 
-Les réponses utilisent `Cache-Control: no-store` et `X-Content-Type-Options: nosniff`.
+Suite locale Node.js exécutée sur les sources correspondantes :
+- 9 tests Worker : réussis ;
+- 6 tests de configuration : réussis.
 
-## Tests effectués
+**Total : 15 tests réussis, 0 échec.**
 
-Suite Node.js exécutée sur le code ajouté :
-- état de santé et en-têtes : réussi ;
-- méthode incorrecte sur `/health` : réussi ;
-- soumission publique refusée : réussi ;
-- soumission agent refusée : réussi ;
-- file de revue non exposée : réussi ;
-- méthode incorrecte sur une route d'inscription : réussi ;
-- route de décision maintenue désactivée : réussi ;
-- route d'examen des doublons maintenue désactivée : réussi ;
-- route inconnue : réussi.
+## Limites importantes
 
-Résultat : **9 tests réussis, 0 échec**.
+Le validateur de configuration est une préparation isolée : il n'est pas encore raccordé au chemin d'exécution du Worker et ne prouve ni l'identité Firebase ni l'accès Firestore. Aucun échange OAuth, aucune vérification cryptographique de Firebase ID token, aucun appel Firestore, aucune validation Turnstile, aucune limitation de débit et aucune écriture métier ne sont encore implémentés.
 
-## Ce qui n'est pas encore activé
+Les routes restent donc toutes désactivées. Même si des variables sont présentes, le service ne doit pas accepter d'inscription.
 
-- aucune configuration Wrangler n'a été modifiée ;
-- aucun Worker Cloudflare n'a été téléversé ou déployé ;
-- aucune écriture Firestore n'est implémentée ;
-- aucune authentification Firebase ID token ni aucun scope agent n'est encore vérifié ;
-- aucune inscription réelle n'est acceptée ;
-- aucune interface APK ou WAT Connect n'appelle ce squelette.
+## Conditions avant activation
 
-## Condition avant passage à l'API réelle
+1. Créer une identité de service dédiée au seul projet staging et valider ses privilèges minimaux.
+2. Enregistrer les secrets dans le magasin Cloudflare du Worker staging, jamais dans Git ou dans l'APK.
+3. Implémenter OAuth serveur, vérification des ID tokens, contrôle des scopes et adaptateur Firestore.
+4. Ajouter Turnstile, limites de débit, idempotence, audit et tests d'intégration.
+5. Effectuer une revue de sécurité et présenter les résultats avant tout déploiement.
 
-Il faut d'abord valider l'identité serveur Firebase staging et son stockage sécurisé dans le seul Worker staging, puis implémenter et tester l'adaptateur Firestore, la vérification Firebase Auth, les scopes, l'idempotence, l'anti-abus et l'audit. Le formulaire ne sera raccordé qu'après ces validations.
+Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM ou facturation n'a été modifiée. Aucun Worker n'a été téléversé ou déployé.
