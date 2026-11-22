@@ -120,6 +120,10 @@ test("authorizes dossier access only with matching enrollment perimeter and expl
 
 test("private dossier requires the distinct private scope and assignment grant", async () => {
   const deps = authDeps("learning.beneficiaries.private.read", {
+    resolveBeneficiary: async () => ({
+      beneficiaryId: "beneficiary-a", enrollmentId: "enrollment-a",
+      structureId: "structure-a", siteId: "site-a", groupId: "group-a", programId: "program-a",
+    }),
     resolveBeneficiaryPrivate: async () => ({
       beneficiaryId: "beneficiary-a", privateRecordId: "beneficiary-a", enrollmentId: "enrollment-a",
       structureId: "structure-a", siteId: "site-a", groupId: "group-a", programId: "program-a",
