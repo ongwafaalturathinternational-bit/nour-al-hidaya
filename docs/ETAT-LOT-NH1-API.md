@@ -12,19 +12,20 @@ Statut : préparation de code uniquement ; aucun déploiement.
 - Vérification de présence/format des variables de configuration, de l'identité de service, de la clé PEM et du secret Turnstile.
 - Normalisation des retours à la ligne PEM ; diagnostics sans divulgation des valeurs secrètes.
 - Guide `docs/CONFIGURATION-SERVEUR-NH1-STAGING.md` pour la future configuration Cloudflare/Firebase.
+- Primitives cryptographiques isolées : assertion JWT de compte de service pour OAuth Google et vérification RS256 des Firebase ID tokens (audience, issuer, UID, expiration, émission et `auth_time`).
+- Cache JWKS Google piloté par `Cache-Control`, avec actualisation si un `kid` inconnu apparaît.
+- Tests dédiés des chemins OAuth et de vérification de jetons, avec clés RSA générées uniquement en mémoire pour les tests.
 - Commande `npm run test:learning-api` étendue à toute la suite NH-1.
 
 ## Tests
 
-Suite locale Node.js exécutée sur les sources correspondantes :
-- 9 tests Worker : réussis ;
-- 6 tests de configuration : réussis.
+Suite locale précédemment exécutée : 15 tests réussis, 0 échec (Worker et configuration).
 
-**Total : 15 tests réussis, 0 échec.**
+La nouvelle suite `tests/learning-api-google-auth.test.js` couvre la signature OAuth, les réponses OAuth mal formées, la signature Firebase, le verrouillage projet et l’expiration. Elle est ajoutée au script global ; elle reste à exécuter dans un environnement Node.js/Workers compatible avant toute activation.
 
 ## Limites importantes
 
-Le validateur de configuration est une préparation isolée : il n'est pas encore raccordé au chemin d'exécution du Worker et ne prouve ni l'identité Firebase ni l'accès Firestore. Aucun échange OAuth, aucune vérification cryptographique de Firebase ID token, aucun appel Firestore, aucune validation Turnstile, aucune limitation de débit et aucune écriture métier ne sont encore implémentés.
+Le validateur de configuration et les primitives OAuth/ID-token sont des modules isolés : ils ne sont pas encore raccordés au chemin d'exécution du Worker. L'échange OAuth et la vérification cryptographique disposent de code et de tests dédiés, mais ne sont pas encore exécutés sur le service réel. Aucun appel Firestore, aucune validation Turnstile, aucune limitation de débit et aucune écriture métier ne sont implémentés.
 
 Les routes restent donc toutes désactivées. Même si des variables sont présentes, le service ne doit pas accepter d'inscription.
 
