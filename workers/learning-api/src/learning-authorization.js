@@ -29,7 +29,7 @@ function decodeFields(fields) {
  */
 export async function authorizeLearningAssignment(request, config, scope, resource, options = {}) {
   const staff = await (options.authorizeStaff ?? authorizeStaffScope)(
-    request, config, scope, options.staffOptions ?? {},
+    request, config, scope, { ...(options.staffOptions ?? {}), firestore: options.firestore },
   );
   if (!staff.ok) return staff;
 
