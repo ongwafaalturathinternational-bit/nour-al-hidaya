@@ -85,11 +85,26 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
       const body = await response.json();
       if (!Array.isArray(body.keys)) throw new Error("firebase_signing_keys_invalid");
       cachedKeys = body.keys;
-      cachedKeysUntil = now + 300;
+      const cacheControl = response.headers.get("cache-control") ?? "";
+      const maxAge = Number(cacheControl.match(/(?:^|,)\\s*max-age=(\\d+)/i)?.[1] ?? 300);
+      cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
     }
     keys = cachedKeys;
   }
-  const jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
+  let jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
+  if (!jwk && !options.keys) {
+    cachedKeysUntil = 0;
+    const refresh = await fetcher(FIREBASE_JWKS_URI, { headers: { accept: "application/json" } });
+    if (!refresh.ok) throw new Error("firebase_signing_keys_unavailable");
+    const refreshed = await refresh.json();
+    if (!Array.isArray(refreshed.keys)) throw new Error("firebase_signing_keys_invalid");
+    cachedKeys = refreshed.keys;
+    const cacheControl = refresh.headers.get("cache-control") ?? "";
+    const maxAge = Number(cacheControl.match(/(?:^|,)\\s*max-age=(\\d+)/i)?.[1] ?? 300);
+    cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
+    keys = cachedKeys;
+    jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
+  }
   if (!jwk) throw new Error("firebase_signing_key_not_found");
 
   const publicKey = await crypto.subtle.importKey(
