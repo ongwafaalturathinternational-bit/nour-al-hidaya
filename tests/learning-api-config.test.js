@@ -50,7 +50,7 @@ test("valid staging configuration normalizes escaped PEM newlines", () => {
   assert.equal(result.config.environment, "staging");
   assert.equal(result.config.firebaseProjectId, "wat-connect-staging");
   assert.equal(result.config.firestoreDatabaseId, "(default)");
-  assert.match(result.config.firebasePrivateKey, /BEGIN PRIVATE KEY-----\\nFAKE_TEST_KEY\\n-----END/);
+  assert.match(result.config.firebasePrivateKey, /BEGIN PRIVATE KEY-----\nFAKE_TEST_KEY\n-----END/);
   assert.equal(Object.isFrozen(result.config), true);
 });
 
