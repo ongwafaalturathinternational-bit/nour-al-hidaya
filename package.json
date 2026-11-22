@@ -5,8 +5,12 @@
   "type": "module",
   "scripts": {
     "build:android:web": "node scripts/prepare-capacitor-web.mjs",
-    "preview:cloudflare": "bun run build:android:web && npx wrangler preview",
-    "postinstall": "node scripts/prepare-capacitor-web.mjs"
+    "build:staging:web": "node scripts/prepare-capacitor-web.mjs --staging",
+    "preview:cloudflare": "bun run build:staging:web && npx wrangler preview --config wrangler.staging.json",
+    "postinstall": "node scripts/prepare-capacitor-web.mjs",
+    "test:learning-api": "node --test tests/learning-api-*.test.js",
+    "test:firestore-rules": "npx firebase emulators:exec --only firestore --project demo-wat-connect \"node --test tests/*.test.mjs\"",
+    "test:security": "npm run test:learning-api && npm run test:firestore-rules"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

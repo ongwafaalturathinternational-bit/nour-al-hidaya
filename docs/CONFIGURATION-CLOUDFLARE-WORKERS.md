@@ -18,9 +18,9 @@ La branche de production Cloudflare reste `main`. Les branches de travail et les
 
 Le script `scripts/prepare-capacitor-web.mjs` prépare le répertoire `web-dist/`, utilisé à la fois par l'application Android Capacitor et par les actifs statiques du Worker. Il copie les pages autorisées et prépare les SDK Firebase locaux nécessaires au démarrage hors connexion.
 
-Le script `preview:cloudflare` exécute explicitement la préparation des fichiers web, puis lance Wrangler Preview :
+Le script `preview:cloudflare` prépare les ressources avec la configuration Firebase staging, puis utilise explicitement le Worker de staging :
 ```sh
-bun run build:android:web && npx wrangler preview
+bun run build:staging:web && npx wrangler preview --config wrangler.staging.json
 ```
 
 Cette séquence est volontairement intégrée à la commande d'aperçu, afin que `web-dist/` existe même si l'étape « Build command » des branches d'aperçu n'est pas exécutée par Cloudflare.

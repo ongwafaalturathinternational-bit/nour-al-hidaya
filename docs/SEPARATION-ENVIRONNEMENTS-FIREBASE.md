@@ -2,6 +2,10 @@
 
 ## Règle de sécurité
 
+- La cible CLI par défaut de `.firebaserc` est le projet fictif Emulator `demo-wat-connect`; les tests Firestore passent aussi explicitement `--project demo-wat-connect`.
+- L'alias CLI `staging` pointe vers `wat-connect-staging` pour les opérations staging explicitement autorisées. Aucun alias de production n'est défini dans `.firebaserc`.
+- Les commandes de développement et de test ne doivent jamais utiliser `--project wat-connect`. Les identifiants de production présents dans le code du site ne sont pas des cibles de test.
+
 - L'application Android installée normalement et tous les domaines ordinaires utilisent le projet Firebase de production `wat-connect`.
 - L'APK debug généré par le workflow de test est explicitement construit avec le projet Firebase staging `wat-connect-staging`.
 - Le domaine dédié `wat-connect-staging.ongwafaalturathinternational.workers.dev` et les sous-domaines d'aperçu Cloudflare suffixés par `-nour-al-hidaya.ongwafaalturathinternational.workers.dev` sélectionnent le projet Firebase `wat-connect-staging`.
