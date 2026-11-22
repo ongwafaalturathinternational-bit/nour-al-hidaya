@@ -1,6 +1,7 @@
 import { authorizeStaffScope } from "./staff-auth.js";
 import { evaluateLearningAssignment } from "./assignment-policy.js";
 import { validateLearningAssignmentRecord } from "./learning-schema.js";
+import { resolveLearningGroup } from "./learning-resource-resolver.js";
 
 function decodeValue(value) {
   if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
@@ -22,20 +23,7 @@ function decodeFields(fields) {
   return Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, decodeValue(value)]));
 }
 
-function validResourceId(value) {
-  return typeof value === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(value);
-}
-
-async function loadTrustedGroup(firestore, groupId) {
-  if (!validResourceId(groupId)) throw new Error("learning_resource_id_invalid");
-  const document = await firestore.getDocument("learningGroups", groupId);
-  const fields = decodeFields(document?.fields);
-  const { siteId, structureId, programId } = fields;
-  if (![siteId, structureId, programId].every(validResourceId)) throw new Error("learning_resource_perimeter_invalid");
-  return Object.freeze({ groupId, siteId, structureId, programId });
-}
-
-/** Server-side group authorization. Client-supplied perimeter fields are never accepted. */
+/** Server-side group authorization. Resource context is resolved from canonical Firestore records. */
 export async function authorizeLearningGroup(request, config, scope, groupId, options = {}) {
   const firestore = options.firestore;
   if (!firestore || typeof firestore.getDocument !== "function") {
@@ -49,7 +37,7 @@ export async function authorizeLearningGroup(request, config, scope, groupId, op
 
   let resource;
   try {
-    resource = await loadTrustedGroup(firestore, groupId);
+    resource = await (options.resolveGroup ?? resolveLearningGroup)(firestore, groupId);
   } catch {
     return { ok: false, status: 404, error: "learning_resource_unavailable" };
   }
