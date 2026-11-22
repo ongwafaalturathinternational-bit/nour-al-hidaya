@@ -21,9 +21,8 @@ const assignmentDocument = { fields: {
   assignments: encode([assignment]),
 } };
 const groupDocument = { fields: {
-  siteId: encode("site-a"),
-  structureId: encode("structure-a"),
-  programId: encode("program-a"),
+  name: encode("Groupe A"), status: encode("active"),
+  siteId: encode("site-a"), structureId: encode("structure-a"), programId: encode("program-a"),
 } };
 const request = new Request("https://example.test", { headers: { authorization: "Bearer token-token-token-123456" } });
 function setup({ staff = { ok: true, principal }, group = groupDocument, assignments = assignmentDocument, errorCollection = null } = {}) {
@@ -36,6 +35,13 @@ function setup({ staff = { ok: true, principal }, group = groupDocument, assignm
       if (errorCollection === collection) throw new Error("offline");
       if (collection === "staffAccess") return { fields: {} };
       if (collection === "learningGroups" && uid === "group-a") return group;
+      if (collection === "learningStructures" && uid === "structure-a") return { fields: {
+        name: encode("Mosquée centrale"), type: encode("mosque"), status: encode("active"),
+      } };
+      if (collection === "learningSites" && ["site-a", "site-b"].includes(uid)) return { fields: {
+        name: encode("Secteur"), status: encode("active"), structureIds: encode(["structure-a"]),
+      } };
+      if (collection === "programs" && uid === "program-a") return { fields: { name: encode("Nour Al-Hidaya"), status: encode("active") } };
       if (collection === "learningStaffAssignments" && uid === principal.uid) return assignments;
       return null;
     } },
@@ -48,8 +54,13 @@ test("authorizes only after resolving group perimeter from Firestore", async () 
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a", deps);
   assert.equal(result.ok, true);
   assert.equal(result.assignmentId, "assign-1");
-  assert.deepEqual(result.resource, { groupId: "group-a", siteId: "site-a", structureId: "structure-a", programId: "program-a" });
-  assert.deepEqual(deps.calls, ["learningGroups", "learningStaffAssignments"]);
+  assert.deepEqual(result.resource, {
+    groupId: "group-a", groupName: "Groupe A", groupStatus: "active",
+    structureId: "structure-a", structureType: "mosque", programId: "program-a", siteId: "site-a",
+  });
+  assert.deepEqual(deps.calls, [
+    "learningGroups", "learningStructures", "programs", "learningSites", "learningStaffAssignments",
+  ]);
 });
 
 test("does not bypass failed staff authorization", async () => {
@@ -97,6 +108,13 @@ test("uses the same trusted Firestore client for staff, group and assignment rec
         scopes: { arrayValue: { values: [{ stringValue: "learning.beneficiaries.read" }] } },
       } };
       if (collection === "learningGroups" && id === "group-a") return groupDocument;
+      if (collection === "learningStructures" && id === "structure-a") return { fields: {
+        name: encode("Mosquée centrale"), type: encode("mosque"), status: encode("active"),
+      } };
+      if (collection === "learningSites" && id === "site-a") return { fields: {
+        name: encode("Secteur Sud"), status: encode("active"), structureIds: encode(["structure-a"]),
+      } };
+      if (collection === "programs" && id === "program-a") return { fields: { name: encode("Nour Al-Hidaya"), status: encode("active") } };
       if (collection === "learningStaffAssignments" && id === principal.uid) return assignmentDocument;
       return null;
     },
@@ -108,7 +126,9 @@ test("uses the same trusted Firestore client for staff, group and assignment rec
       now: new Date("2026-11-22T12:00:00Z"),
     });
   assert.equal(result.ok, true);
-  assert.deepEqual(calls, ["staffAccess", "learningGroups", "learningStaffAssignments"]);
+  assert.deepEqual(calls, [
+    "staffAccess", "learningGroups", "learningStructures", "programs", "learningSites", "learningStaffAssignments",
+  ]);
 });
 
 
