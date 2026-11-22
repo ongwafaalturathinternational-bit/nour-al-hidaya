@@ -52,3 +52,16 @@ test("l'espace candidat efface le mot de passe et protège les actions asynchron
   const reset = portal.slice(portal.indexOf('$("forgot")'), portal.indexOf('$("resend")'));
   assert.match(reset, /generation===authGeneration/);
 });
+
+
+test("les formulaires publics effacent les mots de passe et ignorent les erreurs de session obsolètes", () => {
+  const page = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const register = page.slice(page.indexOf('$("registerForm")'), page.indexOf('$("loginForm")'));
+  const login = page.slice(page.indexOf('$("loginForm")'), page.indexOf('$("resend")'));
+  assert.match(register, /generation=authGeneration/);
+  assert.match(register, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser/);
+  assert.match(register, /finally\{\$\("registerPassword"\)\.value=""\}/);
+  assert.match(login, /generation=authGeneration/);
+  assert.match(login, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser/);
+  assert.match(login, /finally\{\$\("loginPassword"\)\.value=""\}/);
+});
