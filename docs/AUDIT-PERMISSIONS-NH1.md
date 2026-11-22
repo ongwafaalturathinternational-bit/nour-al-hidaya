@@ -52,3 +52,8 @@ Il ne vérifie pas encore de périmètre organisationnel (site, mosquée, groupe
 Ne pas raccorder les routes de lecture ou d'écriture NH-1 et ne pas créer de dossiers réels tant que ces écarts ne sont pas résolus. Ne pas ouvrir Firestore aux clients pour accélérer le développement. Les prochaines implémentations doivent rester sur données fictives et tests automatisés.
 
 Aucune règle Firestore distante, aucun compte, aucun scope réel et aucune donnée bénéficiaire n'a été modifié par cet audit.
+
+
+## 6. Préparation du modèle de périmètre
+
+Une proposition distincte est maintenant disponible dans `docs/PROPOSITION-MATRICE-ROLES-SCOPES-PERIMETRES-NH1.md`. Elle décrit le catalogue de scopes, une matrice fonctionnelle non attribuée, le schéma logique proposé pour `learningStaffAssignments/{uid}`, les contrôles serveur et les tests inter-sites. Il s'agit d'une proposition à arbitrer par WAT, pas d'une configuration active. Aucun droit n'a été accordé et le helper serveur n'a pas encore été modifié.
