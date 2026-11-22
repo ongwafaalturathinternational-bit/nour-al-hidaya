@@ -41,6 +41,12 @@ test("le formulaire public efface les mots de passe lors de chaque transition de
   assert.ok(update.indexOf('authGeneration') < update.indexOf('registerPassword'));
 });
 
+test("la validation du courriel de réinitialisation accepte les adresses normales", () => {
+  const reset = html.slice(html.indexOf('$("forgot")'), html.indexOf('$("resend")'));
+  assert.ok(reset.includes('if(!/^\\S+@\\S+\\.\\S+$/.test(email))'));
+  assert.ok(!reset.includes('\\\\S'));
+});
+
 test("l'espace candidat efface le mot de passe et protège les actions asynchrones", () => {
   const portal = fs.readFileSync(new URL("../club-khuddam-espace.html", import.meta.url), "utf8");
   assert.match(portal, /\$\("password"\)\.value = ""/);
