@@ -173,3 +173,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Les deux liens de logs pointent toutefois vers le chemin de service `workers/services/view/nour-al-hidaya/production/builds/<build-id>`. Cette étiquette `production` dans l'URL est un signal à clarifier; elle ne permet pas à elle seule de conclure que le Worker de production a été déployé ou modifié.
 - Classification retenue : **build en échec signalé par le bot sur le flux PR, environnement Cloudflare exact non confirmé**. Ne pas présenter ce build comme une preview staging réussie, ni comme une publication production. Les logs authentifiés sont nécessaires pour identifier l'environnement et la cause.
 - Aucun déploiement ou changement de service n'a été lancé par cette session.
+
+
+
+## Diagnostic statique complémentaire Cloudflare — branche PR #24 — 22 novembre 2026
+
+- Inventaire de la racine de `feature/lot9-finance-wat-branding` : présence de `wrangler.json` (Worker `nour-al-hidaya`, assets statiques `.`, `previews: {}`), mais absence de `package.json`, `wrangler.jsonc`, `wrangler.staging.json`, `scripts/prepare-capacitor-web.mjs` et du workflow `.github/workflows/cloudflare-staging-preview.yml`.
+- Cette branche PR #24 est un chantier Finances issu de la base Lot 9, plus ancienne que le socle de PR #20/#22. Elle n'embarque donc pas les fichiers de préparation PWA/Android et la configuration staging présents dans la branche de centralisation.
+- Hypothèse à vérifier dans les journaux Cloudflare : si le service Build est configuré avec un build command qui appelle un script npm/Capacitor ou attend `wrangler.staging.json`, cette branche échouera car ces fichiers ne sont pas présents. Si Cloudflare utilise seulement `wrangler.json` et un déploiement statique, cette hypothèse ne s'applique pas.
+- Le paramétrage Cloudflare (root directory, build command, environnement, version Wrangler/Node, variables) et la première erreur restent inaccessibles sans les logs authentifiés. La cause racine reste donc **non confirmée**.
+- Ne pas corriger en copiant à l'aveugle les fichiers staging de PR #20/#22 dans la branche Finance : cela pourrait changer le périmètre de déploiement. Attendre le log et confirmer l'environnement exact, puis isoler une correction Preview dédiée si nécessaire.
