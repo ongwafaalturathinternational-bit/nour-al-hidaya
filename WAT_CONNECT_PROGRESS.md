@@ -166,3 +166,10 @@ Les deux contrôles qui étaient encore en cours lors du point précédent sont 
 - Commits sur la branche NH-1 : `e35bc524d4ce5571ac8880c4b4c8343f2a45a1a1` (code initial), `55eb3d281a0cf15ac6efe18df3fc512f4beec363` (tests), `eb7334b6cc2ebe0b893bb87d37b562a7dc138a4a` (correction d'échappement regex après détection CI).
 - Les exécutions API déclenchées sur les commits intermédiaires ont échoué à cause de cette expression régulière trop échappée; l'échec a été identifié dans les journaux, puis corrigé. Les exécutions Firestore/Android de ces commits n'étaient pas encore toutes terminées lors de ce point.
 - PR #22 reste ouverte, en brouillon, non fusionnée; sa cible Lot 8 est inchangée. Aucune route métier ouverte, aucun accès Firebase réel, donnée réelle, secret, IAM ou production modifié.
+
+
+### Résultat après correction du contrôle des scopes — 22 novembre 2026
+
+- Le contrôle NH-1 a été relancé sur le commit code `eb7334b6cc2ebe0b893bb87d37b562a7dc138a4a` : **119/119 tests réussis, 0 échec** (runs API [45065153633](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065153633) et [45065159005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065159005)).
+- La vérification inclut les nouveaux cas de scopes malformés, dupliqués et de liste trop longue.
+- Les workflows Firestore Emulator et APK Android du commit documentaire `09fd181a66884c7189c40524af5bad163a21cfb8` étaient encore en cours au moment de la lecture. Ils ne sont pas annoncés comme réussis.
