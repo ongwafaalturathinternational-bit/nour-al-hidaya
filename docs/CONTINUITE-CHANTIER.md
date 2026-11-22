@@ -370,4 +370,4 @@ Contrôle statique effectué sur `projets.html`, `activites.html`, `club-khuddam
 
 **Résultat :** aucun élargissement de permission ni défaut bloquant supplémentaire n'a été identifié dans ce contrôle statique. Les tests automatisés CI du HEAD de branche restent réussis (workflows 45070114394 et 45070114420). Les scénarios multi-comptes, révocation en cours d'utilisation, transactions concurrentes et usage hors connexion restent à tester avec des comptes fictifs et sur appareil réel.
 
-**Dernier commit documentaire après cet audit :** à actualiser après enregistrement de cette entrée.
+Cette entrée est consignée dans le journal de continuité de la branche de travail.
