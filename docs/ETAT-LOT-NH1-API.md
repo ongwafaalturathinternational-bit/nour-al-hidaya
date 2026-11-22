@@ -70,3 +70,12 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Les tests d'autorisation utilisent maintenant les scopes granulaires `learning.beneficiaries.read` et `learning.beneficiaries.review`.
 - L'audit `docs/AUDIT-PERMISSIONS-NH1.md` confirme que la matrice de rôles, les scopes NH et les périmètres site/mosquée/groupe/programme doivent être validés avant raccordement des routes.
 - Aucun accès réel NH-1 n'est activé ; les routes restent en 503.
+
+## Compatibilité avec le provisionnement des comptes d'équipe — 22 novembre 2026
+
+- Audit statique de la PR #21 ajouté dans `docs/AUDIT-COMPATIBILITE-PR21-NH1.md`.
+- Confirmation : le catalogue `ALLOWED_SCOPES` de `functions/index.js` et les choix de `staff-accounts.html` ne contiennent aucun scope `learning.*`.
+- La PR #21 n'enregistre pas d'affectations pédagogiques `learningStaffAssignments/{uid}` et ne limite pas les droits NH par site/mosquée/groupe/programme.
+- La PR #21 reste une fondation réutilisable pour le provisionnement central, mais elle n'est pas compatible NH en l'état. Aucun changement n'a été poussé sur sa branche.
+- Décision : ne pas fusionner les PR #21 et #22 en l'état. Préparer une extension coordonnée après validation du modèle d'affectation et des responsabilités d'administration.
+- Les routes NH restent fermées en 503 ; aucun scope, compte, affectation, secret, règle distante ou déploiement n'a été créé ou activé.
