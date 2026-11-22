@@ -80,12 +80,13 @@ export async function resolveLearningGroup(firestore, groupId) {
   return Object.freeze(resolved);
 }
 
-export async function resolveLearningEnrollment(firestore, enrollmentId) {
+async function resolveLearningEnrollmentWithStatus(firestore, enrollmentId, expectedStatus) {
   if (!firestore || typeof firestore.getDocument !== "function") throw new Error("resource_resolver_unavailable");
   const enrollment = await read(firestore, "learningEnrollments", enrollmentId);
   const check = validateLearningEnrollment(enrollment);
   if (!check.ok) throw new Error(check.error);
-  if (enrollment.status !== "active") throw new Error("enrollment_not_active");
+  if (enrollment.status !== expectedStatus) throw new Error(expectedStatus === "active"
+    ? "enrollment_not_active" : "enrollment_not_pending");
 
   const [structure, program] = await Promise.all([
     read(firestore, "learningStructures", enrollment.structureId),
@@ -120,6 +121,16 @@ export async function resolveLearningEnrollment(firestore, enrollmentId) {
     periodId: enrollment.periodId,
     status: enrollment.status,
   });
+}
+
+/** Active-only enrollment resolver for ordinary access. */
+export function resolveLearningEnrollment(firestore, enrollmentId) {
+  return resolveLearningEnrollmentWithStatus(firestore, enrollmentId, "active");
+}
+
+/** Pending-only resolver reserved for administrative review. */
+export function resolvePendingLearningEnrollment(firestore, enrollmentId) {
+  return resolveLearningEnrollmentWithStatus(firestore, enrollmentId, "pending");
 }
 
 
