@@ -192,3 +192,12 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - CI du commit `f2fd1b97fbc760a4a468d315db879c7c2d074788` : NH-1 **88 tests réussis, 0 échec** — [workflow #44980249993](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44980249993).
 - Firestore et APK Android de test sont encore en cours de vérification sur ce même commit.
 - Aucune route métier activée, aucun scope réel attribué, aucune règle distante, donnée réelle ou déploiement de production modifié. PR #22 reste ouverte en brouillon.
+
+
+## Revue des inscriptions en attente — 22 novembre 2026
+
+- Ajout d’un résolveur dédié aux inscriptions pending; le résolveur des inscriptions actives continue de refuser les inscriptions en attente.
+- Le résolveur de revue contrôle les mêmes références Firestore canoniques (programme, structure, site et groupe éventuels) et leur cohérence.
+- Ajout de authorizeLearningEnrollmentReview avec le scope préparatoire distinct learning.enrollments.review et le contrôle du périmètre complet de l’affectation.
+- Les tests couvrent la séparation pending/active, les références absentes et le refus d’une affectation hors périmètre.
+- Le scope n’est attribué à aucun compte et aucune route n’est activée. La décision sur la clé d’unicité anti-doublon reste à valider par WAT; aucune création/idempotence métier n’est encore implémentée.
