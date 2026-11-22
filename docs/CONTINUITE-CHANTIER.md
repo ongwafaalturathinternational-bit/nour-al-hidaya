@@ -253,3 +253,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Test de régression ajouté pour la génération de session, les gardes après lecture et le nettoyage lors d'une transition d'authentification.
 - Validation CI du nouveau code encore attendue. Ce correctif ne constitue pas une validation du chiffrement du stockage local : la persistance IndexedDB/localStorage n'est toujours pas un coffre sécurisé et les appareils partagés restent exclus pour les données sensibles.
 - Aucun compte réel, document Firestore réel, règle de production, fusion ou déploiement n'a été modifié.
+
+
+## Poursuite — sécurisation du dépôt de candidature Club Khuddam — 22 novembre 2026
+
+- Le formulaire public de candidature pouvait conserver le contexte d'un ancien compte pendant un changement d'authentification, et une lecture ou un envoi asynchrone pouvait terminer après le changement de session.
+- Ajout d'une génération de session, d'une remise à zéro des champs et de l'état privé lors de chaque transition, et de contrôles UID/génération après les lectures, actualisations de compte et avant la mise à jour de l'interface.
+- Le dépôt d'une candidature vérifie maintenant que le même compte vérifié est toujours actif après le renouvellement du jeton et après l'écriture Firestore, avant d'afficher une confirmation.
+- Ajout d'un test de régression sur la syntaxe et les gardes de session du formulaire.
+- Validation CI de ce dernier lot en attente.
+- Aucun dossier réel, compte, règle Firestore, fusion ou déploiement n'a été modifié.
