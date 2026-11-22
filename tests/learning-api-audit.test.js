@@ -38,6 +38,24 @@ test("writes a minimal server-generated audit event with exact scope and perimet
   assert.equal(Object.hasOwn(write[2], "phone"), false);
 });
 
+test("accepts valid learning scopes and rejects malformed scopes", async () => {
+  const firestore = { createDocument: async () => ({}) };
+  for (const scope of ["learning.read", "learning.private.read", "learning.registration.review"]) {
+    const result = await writeLearningAuditEvent({
+      authorization: { ...authorization, scope }, action: "beneficiary.update",
+      targetType: "beneficiary", targetId: "b-1", outcome: "completed", now, firestore,
+    });
+    assert.equal(result.ok, true, scope);
+  }
+  for (const scope of ["programs.read", "learning.", "learning..read", "learning.private.read.extra.too.many"]) {
+    const result = await writeLearningAuditEvent({
+      authorization: { ...authorization, scope }, action: "beneficiary.update",
+      targetType: "beneficiary", targetId: "b-1", outcome: "completed", now, firestore,
+    });
+    assert.equal(result.error, "learning_audit_authorization_required", scope);
+  }
+});
+
 test("does not write an event without successful authorization", async () => {
   let writes = 0;
   const result = await writeLearningAuditEvent({
@@ -58,12 +76,18 @@ test("fails closed when audit storage is unavailable", async () => {
   assert.equal(result.error, "learning_audit_write_failed");
 });
 
-test("rejects unapproved actions, outcomes and malformed identifiers", async () => {
-  const firestore = { createDocument: async () => ({}) };
+test("rejects unapproved actions, outcomes and malformed identifiers before storage", async () => {
+  let writes = 0;
+  const firestore = { createDocument: async () => { writes += 1; return {}; } };
   assert.equal((await writeLearningAuditEvent({
     authorization, action: "anything", targetType: "beneficiary", targetId: "b-1", outcome: "allowed", now, firestore,
   })).error, "learning_audit_event_invalid");
   assert.equal((await writeLearningAuditEvent({
     authorization, action: "beneficiary.update", targetType: "beneficiary", targetId: "../b", outcome: "allowed", now, firestore,
-  })).error, "learning_audit_write_failed");
+  })).error, "learning_audit_event_invalid");
+  assert.equal((await writeLearningAuditEvent({
+    authorization: { ...authorization, assignmentId: "../assignment" }, action: "beneficiary.update",
+    targetType: "beneficiary", targetId: "b-1", outcome: "allowed", now, firestore,
+  })).error, "learning_audit_event_invalid");
+  assert.equal(writes, 0);
 });
