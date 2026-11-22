@@ -1050,7 +1050,7 @@ function render(){
  app.classList.toggle("nonav",back);
  const pend=S.subs.filter(s=>s.pending).length;
  const status=online()?(pend?`<span class="pill off">${pend} en attente</span>`:`<span class="pill">En ligne</span>`):`<span class="pill off">Hors ligne</span>`;
- const nav=back?"":`<nav class="bar">${ro.tabs.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}">${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
+ const nav=back?"":`<nav class="bar" aria-label="Navigation principale de Nour Al-Hidaya">${ro.tabs.map(t=>`<button type="button" data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}" ${R.tab===t[0]?"aria-current=\"page\"":""}>${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
  app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div><a class="portal-link" href="index.html" aria-label="Retour au portail WAT Connect">WAT Connect ↗</a>${status}</header><main>${inner}</main>${nav}`;
  tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
 }
