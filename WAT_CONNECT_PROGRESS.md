@@ -132,3 +132,40 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+## Lot 8 — accessibilité clavier des registres sur mobile — 22 novembre 2026
+
+- Branche dédiée `feature/lot8-table-keyboard-accessibility`, basée sur le HEAD vérifié de PR #22 (`6ac4bfe0b035547f5670c016094ce3d102a2023e`). PR #22 et sa cible restent inchangées.
+- Les zones de défilement des tableaux dans Administration, Programmes, Projets, Activités et Club Khuddam sont maintenant nommées comme régions accessibles (`role=region`, `aria-label`) et atteignables au clavier (`tabindex=0`). Les tableaux, colonnes, données, filtres et actions ne sont pas masqués ou supprimés.
+- Le socle `wat-brand.css` ajoute un contour de focus visible pour ces zones. Le défilement horizontal existant est conservé; aucun comportement métier, règle Firestore, formulaire ou permission n'est modifié.
+- Test statique ajouté : `tests/responsive-tables-a11y.test.mjs`, qui vérifie le nombre de zones, leur nom accessible, le focus clavier et le style de focus.
+- Validation CI à attendre sur la PR dédiée; aucun résultat de test n'est revendiqué avant lecture des workflows.
+- Aucun compte/dossier réel, configuration Firebase réelle, route métier, fusion, déploiement ou changement production n'a été touché.
+
+
+## Validation CI — PR #25 — 22 novembre 2026
+
+- Commit applicatif testé : `97b8ffc4d9632d30752e1beb68b3d1a315e59072`.
+- Workflow Firestore security rules : run [45043255230](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255230), terminé avec succès. La suite compte **133 tests réussis, 0 échec, 0 ignoré**; les deux tests ajoutés sur l'accessibilité clavier et le focus visible sont présents dans les logs.
+- Workflow Android staging APK : run [45043255227](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227), terminé avec succès. Artefact debug staging `wat-connect-android-staging-debug-apk`, ID `14762631201`, 4 372 494 octets, conservation 14 jours — [artefact GitHub Actions](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227/artifacts/14762631201).
+- Les logs contiennent des refus `PERMISSION_DENIED` attendus dans les tests négatifs Firestore; tous les sous-tests sont réussis. Les avertissements de dépréciation Node ne font pas échouer les workflows.
+- PR #25 vérifiée ouverte, brouillon, non fusionnée, `mergeable=true`; elle reste empilée sur PR #22. L'APK est un artefact de test staging, pas un déploiement ni une version de production.
+- Aucun compte/dossier réel, route métier, secret, IAM ou configuration de production touché.
+
+
+
+## Navigation des modules WAT — indication de la page active — 22 novembre 2026
+
+- En complément de l'accessibilité des tableaux, les cinq modules Administration, Programmes, Projets, Activités et Club Khuddam exposent maintenant `aria-current="page"` sur leur lien de navigation actif.
+- Le repère visuel et la destination des liens ne changent pas; aucun onglet ni module n'est masqué. Cette sémantique aide les lecteurs d'écran à situer l'utilisateur dans le portail.
+- Le test `tests/responsive-tables-a11y.test.mjs` vérifie aussi la présence d'une page courante unique dans chaque navigation.
+- Une nouvelle exécution CI est attendue sur le HEAD mis à jour; le résultat précédent 133/133 et Android staging s'appliquait au HEAD antérieur.
+
+
+
+## Revalidation après indication de la page courante — PR #25 — 22 novembre 2026
+
+- HEAD testé `5f32e4304d385b3223f6a49b9ef7d6438429628a` : Firestore Emulator **134/134 tests réussis**, 0 échec, run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302).
+- Android staging APK : build réussi, run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206). Artefact debug staging ID `14762644307`, 4 372 525 octets, SHA-256 `d52c4c1b20dd2b24ed5d5ae3c5b2d774270ad29ae50b050d5de094958476dd39`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206/artifacts/14762644307).
+- Les six zones de tableau restent disponibles; les liens de navigation des cinq modules indiquent maintenant la page courante. Aucun contrôle métier n'a été changé.
