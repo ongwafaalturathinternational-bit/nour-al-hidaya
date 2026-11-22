@@ -178,3 +178,14 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Commits : `e32a8da157e71d978887f07a910cf4bca4cf9655` (module), `f5927500f4392a84612e41efd19afeee1b2846fa` (test).
 - Validations du nouveau HEAD : workflows Firestore et APK debug déclenchés, encore en cours au dernier contrôle. Ne pas confondre avec les validations réussies du SHA précédent.
 - Audit complémentaire : les modules Club Khuddam et Activités présentent le même risque apparent de conservation de l'écran privé après déconnexion/changement de compte. À corriger sur la même branche avec tests dédiés, sans ouvrir de nouveaux droits.
+
+
+## Extension de l'isolation de session aux modules Club et Activités — 22 novembre 2026
+
+- Le correctif du registre Projets (`f5927500f4392a84612e41efd19afeee1b2846fa`) a reçu les deux validations ciblées : Firestore rules **succès** ([45065720627](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065720627)) et APK debug **succès** ([45065720654](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065720654)).
+- Même risque identifié sur Club Khuddam et Activités/Présences : écran privé et données en mémoire conservés au changement de compte, avec risque de réponse asynchrone tardive.
+- `club-khuddam.html` : fermeture de l'espace privé, remise à zéro des registres et invalidation des chargements de bénévoles/candidatures à chaque changement de session. Les historiques asynchrones des fiches bénévoles vérifient aussi la génération avant d'afficher les résultats.
+- `activites.html` : fermeture et vidage des listes activités, présences, bénévoles et projets liés; invalidation des lectures asynchrones de l'écran et des feuilles de présence.
+- Tests de régression ajoutés dans `tests/projects-volunteers-syntax.test.mjs` et `tests/activities-syntax.test.mjs`.
+- Commits de ce groupe : `acd6bc6701e99c2568b6b4aa4e3c3e35450db695`, `e2126009dbb62e03d774f451b324aad85747908b`, `020e6b7fc3b2ec73ba1e06a5cb6b92df89837ca2`, `23f785a5baa5263a15b07e26b438faf550cef1e6`, `b20d513c8d2c1eb8685b37e2e4e92ae48e710718`, `29900e5d5155ebd1eeb99befae29438384a89663`.
+- Les validations du HEAD courant doivent être vérifiées après le dernier commit; les succès du SHA `f592750` ne valent pas validation des nouveaux changements Club/Activités.
