@@ -232,3 +232,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - APK Android debug de staging : **build réussi** ([workflow 45066202405](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066202405)).
 - Cette validation couvre également le correctif de session du portail principal.
 - Les réinitialisations de formulaires privées ont ensuite été ajoutées; leurs workflows dédiés sur le nouveau HEAD sont en cours et restent à vérifier.
+
+
+## Poursuite — isolation de session des modules Programmes et Membres — 22 novembre 2026
+
+- Audit des pages opérationnelles : les modules Programmes et Annuaire des Membres conservaient leurs listes privées et pouvaient afficher une réponse Firestore issue d'une session précédente après un changement de compte.
+- Correctif dans `programmes.html` et `administration.html` : invalidation des requêtes asynchrones par génération de session, vérification du UID Firebase courant après les lectures, fermeture/masquage de l'espace privé et vidage des listes et formulaires à chaque transition d'authentification.
+- Les opérations de modification et de création vérifient également que la session est toujours la même avant de réafficher les résultats.
+- Test de régression ajouté : syntaxe JavaScript des deux pages, nettoyage de session et rejet des réponses obsolètes.
+- Les changements sont sur la branche de travail uniquement. Les workflows CI correspondants doivent encore être contrôlés.
+- Aucun droit Firestore, compte réel, donnée réelle, fusion ou déploiement n'a été modifié.
