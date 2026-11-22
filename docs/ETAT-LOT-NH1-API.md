@@ -96,3 +96,5 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Ajout de `tests/learning-api-learning-authorization.test.js` pour vérifier l'intersection des droits, les accès inter-sites, l'absence d'affectation et le refus des données privées sans grant explicite.
 - **Frontière de confiance :** l'argument `resource` de cette fonction doit provenir d'une lecture Firestore effectuée côté serveur. Il ne doit jamais être construit à partir de `siteId`, `groupId` ou autres champs envoyés par le navigateur.
 - **Non raccordé :** le Worker continue de répondre 503 sur les routes d'inscription. Aucun endpoint n'utilise encore cette fonction ; aucune règle Firestore ni aucun compte réel n'a été modifié. Les tests doivent être exécutés par la CI avant de considérer le code validé.
+
+- Ajustement après revue du helper composé : le même client Firestore de confiance est désormais transmis au contrôle `staffAccess` et à la lecture `learningStaffAssignments`. Un test de non-régression vérifie les deux lectures successives avec ce client partagé.
