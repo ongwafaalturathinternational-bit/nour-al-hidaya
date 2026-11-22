@@ -215,3 +215,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - APK Android debug de staging : build réussi ([workflow 45066060522](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066060522)).
 - Ces résultats couvrent le nettoyage/invalidation des sessions Projets, Club et Activités/Présences ainsi que les tests de réponses d'affectation et de présence devenues obsolètes.
 - Le portail principal a ensuite reçu son correctif de session (`47a1a150`, `0316172`); ses validations propres sont en cours et ne sont pas encore déclarées réussies.
+
+
+### Nettoyage complémentaire des formulaires privés — 22 novembre 2026
+
+- Lors d'un changement de compte, les formulaires de création/affectation de Projets, de gestion du Club et de pointage Activités/Présences sont maintenant réinitialisés en même temps que les listes privées.
+- Le portail vide également le champ mot de passe lors de la remise à zéro de l'espace.
+- Tests de régression ajoutés dans les suites syntaxiques Projets/Club, Activités et portail.
+- Commits code : `872a719d746dfffca2cb0662ab8ca191a0db32fa`, `a79fde32813fc2db2e0ffa315c1c44e3552b4b4b`, `9355ec6e05e5a48b737ff31c7fec90c8872d0dd2`, `4465c6d887ac60076c6a8eb0a66213c116fb12f4`. Tests : `9e01660485c00e589dbc345a8299ae276ec28d12`, `d90ec4176b335ffd3939b0a50b4a6af694588bd3`, `1e6707235e1294338eb215302ab65cdbcea40792`, `06a3f13e3bede80fad1b2c7fb5aa8528eaf3eb58`.
+- Validation à suivre sur ce nouveau HEAD; les résultats 145/145 et APK réussis ci-dessus concernent le SHA antérieur `25e51ff`, pas ces ajouts.
