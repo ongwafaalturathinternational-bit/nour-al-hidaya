@@ -128,3 +128,13 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Ajout de tests négatifs couvrant : affectation mal formée suivie d'une affectation valide, registre assignments de type incorrect et groupe dépourvu d'un lien de périmètre requis.
 - Ces tests viennent d'être ajoutés au dépôt ; leur exécution locale et la CI du nouveau commit restent à confirmer. Aucun résultat de test n'est revendiqué à ce stade.
 - Prochaine dépendance : retrouver le référentiel réel des sites/mosquées/groupes/programmes dans le projet WAT Connect source ou faire valider formellement le schéma cible avant de modifier le résolveur.
+
+
+## Audit approfondi du modèle des ressources — 22 novembre 2026
+
+- Vérification croisée de `MODELE-DONNEES-ET-PERMISSIONS.md`, `ARCHITECTURE-INSCRIPTION-UNIVERSELLE.md`, `DECISION-TECHNIQUE-NH1.md`, `ARCHITECTURE-WAT-CONNECT.md`, `LOT7-ACTIVITES-PRESENCES.md` et `firestore.rules`.
+- Constat : le modèle historique propose `groups/{groupId}` avec `name`, `mosqueId`, `teacherUids`, `learnerIds`, mais il est explicitement non validé. NH-1 prévoit plutôt un lien programme/site/structure/groupe dans `learningEnrollments`; aucun schéma final de site, mosquée ou groupe n'est défini.
+- Les modules WAT existants confirment `programs`, `projects`, `activities` et `attendance`. Les activités ont un lieu textuel et un rattachement projet facultatif; ce champ ne constitue pas un identifiant de site ou de mosquée.
+- Conclusion : l'hypothèse `learningGroups/{groupId}` avec `siteId`, `mosqueId`, `programId` est non fondée et reste bloquante. Aucun basculement vers l'ancienne collection `groups` n'est fait car elle n'est pas davantage validée.
+- Audit détaillé enregistré dans `docs/AUDIT-SCHEMA-RESSOURCES-NH1.md`, avec sources, différences, conséquence pour le contrôle d'accès et décisions nécessaires.
+- Le helper demeure isolé et les routes restent en 503. Aucune donnée réelle, règle Firestore, permission, secret ou déploiement n'a été modifié.
