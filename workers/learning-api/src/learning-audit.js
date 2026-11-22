@@ -22,8 +22,11 @@ function isValidId(value) {
 export async function writeLearningAuditEvent({
   firestore, authorization, action, targetType, targetId, outcome, now = new Date(),
 }) {
+  const principalScopes = authorization?.principal?.scopes;
   if (!authorization?.ok || !isValidId(authorization.principal?.uid) ||
-      typeof authorization.scope !== "string" || !SCOPE_PATTERN.test(authorization.scope)) {
+      !Array.isArray(principalScopes) || !principalScopes.includes(authorization.scope) ||
+      typeof authorization.scope !== "string" || !SCOPE_PATTERN.test(authorization.scope) ||
+      !isValidId(authorization.assignmentId)) {
     return { ok: false, error: "learning_audit_authorization_required" };
   }
   if (!firestore || typeof firestore.createDocument !== "function") {
@@ -31,8 +34,7 @@ export async function writeLearningAuditEvent({
   }
   if (!ALLOWED_ACTIONS.has(action) || !ALLOWED_TARGETS.has(targetType) ||
       !ALLOWED_OUTCOMES.has(outcome) || !(now instanceof Date) || !Number.isFinite(now.getTime()) ||
-      !isValidId(targetId) ||
-      (authorization.assignmentId !== undefined && !isValidId(authorization.assignmentId))) {
+      !isValidId(targetId)) {
     return { ok: false, error: "learning_audit_event_invalid" };
   }
 
@@ -58,7 +60,7 @@ export async function writeLearningAuditEvent({
     scope: authorization.scope,
     outcome,
     occurredAt: now,
-    ...(authorization.assignmentId ? { assignmentId: authorization.assignmentId } : {}),
+    assignmentId: authorization.assignmentId,
     ...resourceFields,
   };
 
