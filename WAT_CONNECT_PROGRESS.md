@@ -162,3 +162,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Ajout d'un lien d'évitement « Aller au contenu principal » dans `index.html`, avec cible `main#main` et état de focus visible. Le lien n'apparaît qu'au focus clavier.
 - Test statique ajouté dans `tests/wat-brand-theme.test.mjs`. Le changement ne modifie pas les liens de navigation, l'authentification ni les fonctions du portail.
 - La PR #26 déclenche une nouvelle validation CI sur le HEAD actualisé; les résultats précédents 133/133 et Android staging ne couvrent pas encore cette dernière modification.
+
+
+
+## Revalidation Firestore — portail WAT — 22 novembre 2026
+
+- HEAD de code testé `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore Emulator **134/134 tests réussis**, 0 échec, 0 ignoré, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614). Le test inclut le lien d'évitement clavier du portail et la cohérence des thèmes.
+- Android staging est encore en cours au run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643); aucune réussite Android n'est encore revendiquée pour ce HEAD.
+- PR #26 reste ouverte en brouillon, sans fusion ni déploiement.
