@@ -140,3 +140,22 @@ test("le portail efface le mot de passe du formulaire lors d'un changement de se
  const html=readFileSync(new URL("../index.html",import.meta.url),"utf8");
  assert.match(html,/function clearWorkspace\(\)[\s\S]*?\$\("password"\)\.value=""/);
 });
+
+
+test("les modules Programmes et Membres isolent les données entre sessions", () => {
+  for (const file of ["programmes.html", "administration.html"]) {
+    const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
+    const scripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
+      .filter(([, attributes]) => !/\\bsrc\\s*=/.test(attributes))
+      .map(([, , source]) => source)
+      .filter(source => source.trim());
+    assert.ok(scripts.length > 0, file + " doit contenir son script applicatif");
+    scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), file + " script n°" + (index + 1)));
+    assert.match(html, /let authGeneration=0/);
+    assert.match(html, /function clearPrivateView\\(\\)/);
+    assert.match(html, /const generation=\\+\\+authGeneration;clearPrivateView\\(\\)/);
+    assert.match(html, /generation!==authGeneration/);
+    assert.match(html, /WATFirebase\\.auth\\.currentUser\\?\\.uid/);
+    assert.match(html, /if\\(generation===authGeneration\\)say/);
+  }
+});
