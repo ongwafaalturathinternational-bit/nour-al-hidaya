@@ -81,3 +81,19 @@ export function validateLearningAssignmentRecord(value) {
   }
   return { ok: true };
 }
+
+
+const BENEFICIARY_STATUSES = new Set(["active", "inactive", "archived"]);
+export function validateLearningBeneficiary(value) {
+  if (!record(value) || !BENEFICIARY_STATUSES.has(value.status)) {
+    return { ok: false, error: "beneficiary_fields_invalid" };
+  }
+  return { ok: true };
+}
+export function validateLearningBeneficiaryPrivate(value, beneficiaryId) {
+  if (!record(value) || value.beneficiaryId !== beneficiaryId ||
+      !BENEFICIARY_STATUSES.has(value.status)) {
+    return { ok: false, error: "beneficiary_private_fields_invalid" };
+  }
+  return { ok: true };
+}
