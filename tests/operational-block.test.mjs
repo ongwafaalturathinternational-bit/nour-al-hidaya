@@ -69,4 +69,6 @@ test("la création de fiches membres invalide les sessions administratives obsol
   assert.match(administration, /const actor=currentUser,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
   assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.add\(data\)/);
   assert.match(administration, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
+  assert.match(administration, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=currentUser;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.doc\(id\)\.update/);
 });
