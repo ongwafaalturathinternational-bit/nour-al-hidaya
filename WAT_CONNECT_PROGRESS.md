@@ -152,3 +152,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Les logs contiennent des refus `PERMISSION_DENIED` attendus dans les tests négatifs Firestore; tous les sous-tests sont réussis. Les avertissements de dépréciation Node ne font pas échouer les workflows.
 - PR #25 vérifiée ouverte, brouillon, non fusionnée, `mergeable=true`; elle reste empilée sur PR #22. L'APK est un artefact de test staging, pas un déploiement ni une version de production.
 - Aucun compte/dossier réel, route métier, secret, IAM ou configuration de production touché.
+
+
+
+## Navigation des modules WAT — indication de la page active — 22 novembre 2026
+
+- En complément de l'accessibilité des tableaux, les cinq modules Administration, Programmes, Projets, Activités et Club Khuddam exposent maintenant `aria-current="page"` sur leur lien de navigation actif.
+- Le repère visuel et la destination des liens ne changent pas; aucun onglet ni module n'est masqué. Cette sémantique aide les lecteurs d'écran à situer l'utilisateur dans le portail.
+- Le test `tests/responsive-tables-a11y.test.mjs` vérifie aussi la présence d'une page courante unique dans chaque navigation.
+- Une nouvelle exécution CI est attendue sur le HEAD mis à jour; le résultat précédent 133/133 et Android staging s'appliquait au HEAD antérieur.
