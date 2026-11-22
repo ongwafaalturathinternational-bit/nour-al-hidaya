@@ -13,19 +13,28 @@ Statut : préparation de code uniquement ; aucun déploiement.
 - Normalisation des retours à la ligne PEM ; diagnostics sans divulgation des valeurs secrètes.
 - Guide `docs/CONFIGURATION-SERVEUR-NH1-STAGING.md` pour la future configuration Cloudflare/Firebase.
 - Primitives cryptographiques isolées : assertion JWT de compte de service pour OAuth Google et vérification RS256 des Firebase ID tokens (audience, issuer, UID, expiration, émission et `auth_time`).
-- Cache JWKS Google piloté par `Cache-Control`, avec actualisation si un `kid` inconnu apparaît.
-- Tests dédiés des chemins OAuth et de vérification de jetons, avec clés RSA générées uniquement en mémoire pour les tests.
+- Cache JWKS Google piloté par `Cache-Control`, avec actualisation si un `kid` inconnu apparaît et contrôle renforcé des claims Firebase.
+- Adaptateur REST Firestore limité au projet staging, à la base `(default)` et à une liste explicite de collections WAT/Nour.
+- Lectures, créations sans écrasement et mises à jour avec précondition d'existence et masque de champs ; validation stricte des chemins et des valeurs.
+- Réutilisation temporaire du jeton OAuth en mémoire, sans journalisation du jeton.
+- Autorisation d'équipe côté serveur : vérification du Firebase ID token, e-mail vérifié, lecture du document `staffAccess/{uid}`, état actif et scope exact.
+- Tests dédiés OAuth, jetons Firebase, Firestore et droits d'équipe ; clés RSA temporaires générées uniquement en mémoire.
 - Commande `npm run test:learning-api` étendue à toute la suite NH-1.
 
 ## Tests
 
 Suite locale précédemment exécutée : 15 tests réussis, 0 échec (Worker et configuration).
 
-La nouvelle suite `tests/learning-api-google-auth.test.js` couvre la signature OAuth, les réponses OAuth mal formées, la signature Firebase, le verrouillage projet et l’expiration. Elle est ajoutée au script global ; elle reste à exécuter dans un environnement Node.js/Workers compatible avant toute activation.
+Suites ajoutées :
+- `learning-api-google-auth.test.js` : signature OAuth, réponses mal formées, signature Firebase, verrouillage projet et expiration.
+- `learning-api-firestore.test.js` : collection autorisée, encodage Firestore, précondition de mise à jour, conflits et cache OAuth.
+- `learning-api-staff-auth.test.js` : authentification, e-mail vérifié, état actif et scopes.
+
+Ces nouveaux tests sont ajoutés au script global ; leur exécution complète reste à confirmer sur un runner Node.js/Workers compatible avant toute activation.
 
 ## Limites importantes
 
-Le validateur de configuration et les primitives OAuth/ID-token sont des modules isolés : ils ne sont pas encore raccordés au chemin d'exécution du Worker. L'échange OAuth et la vérification cryptographique disposent de code et de tests dédiés, mais ne sont pas encore exécutés sur le service réel. Aucun appel Firestore, aucune validation Turnstile, aucune limitation de débit et aucune écriture métier ne sont implémentés.
+Le validateur, les primitives OAuth/ID-token, l'adaptateur Firestore et le contrôle des scopes sont des modules isolés : ils ne sont pas encore raccordés au chemin d'exécution du Worker. Aucun appel réel à Google ou Firestore n'a été effectué. Aucune validation Turnstile, limitation de débit, idempotence transactionnelle, journalisation métier ou inscription n'est implémentée.
 
 Les routes restent donc toutes désactivées. Même si des variables sont présentes, le service ne doit pas accepter d'inscription.
 
@@ -33,8 +42,9 @@ Les routes restent donc toutes désactivées. Même si des variables sont prése
 
 1. Créer une identité de service dédiée au seul projet staging et valider ses privilèges minimaux.
 2. Enregistrer les secrets dans le magasin Cloudflare du Worker staging, jamais dans Git ou dans l'APK.
-3. Implémenter OAuth serveur, vérification des ID tokens, contrôle des scopes et adaptateur Firestore.
-4. Ajouter Turnstile, limites de débit, idempotence, audit et tests d'intégration.
-5. Effectuer une revue de sécurité et présenter les résultats avant tout déploiement.
+3. Valider définitivement le modèle de collections/champs NH-1 et les scopes pédagogiques avec les règles Firestore existantes.
+4. Raccorder les modules OAuth, ID-token, staffAccess et Firestore au Worker, sans ouvrir les routes avant les contrôles complets.
+5. Ajouter Turnstile, limites de débit, création idempotente transactionnelle, audit et tests d'intégration.
+6. Effectuer une revue de sécurité et présenter les résultats avant tout déploiement.
 
 Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM ou facturation n'a été modifiée. Aucun Worker n'a été téléversé ou déployé.
