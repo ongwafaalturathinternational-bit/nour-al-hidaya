@@ -12,7 +12,7 @@ const encodeJson = (value) => base64url(encoder.encode(JSON.stringify(value)));
 const decodeJson = (value) => JSON.parse(atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4)));
 
 function pemToBytes(pem) {
-  const body = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s/g, "");
+  const body = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
   const binary = atob(body);
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 }
@@ -86,7 +86,7 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
       if (!Array.isArray(body.keys)) throw new Error("firebase_signing_keys_invalid");
       cachedKeys = body.keys;
       const cacheControl = response.headers.get("cache-control") ?? "";
-      const maxAge = Number(cacheControl.match(/(?:^|,)\\s*max-age=(\\d+)/i)?.[1] ?? 300);
+      const maxAge = Number(cacheControl.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1] ?? 300);
       cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
     }
     keys = cachedKeys;
@@ -100,7 +100,7 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
     if (!Array.isArray(refreshed.keys)) throw new Error("firebase_signing_keys_invalid");
     cachedKeys = refreshed.keys;
     const cacheControl = refresh.headers.get("cache-control") ?? "";
-    const maxAge = Number(cacheControl.match(/(?:^|,)\\s*max-age=(\\d+)/i)?.[1] ?? 300);
+    const maxAge = Number(cacheControl.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1] ?? 300);
     cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
     keys = cachedKeys;
     jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
