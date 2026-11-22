@@ -146,8 +146,9 @@ test("le registre Club masque et vide les données privées à chaque changement
   assert.match(html, /function clearPrivateView\(\)/);
   assert.match(html, /records=\[\];applications=\[\]/);
   assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
-  assert.match(html, /if\(generation!==authGeneration\)return/g);
-  assert.match(html, /async function load\(generation=authGeneration\)/);
+  assert.match(html, /function isCurrentAuthAccount\(account,generation\)/);
+  assert.match(html, /await WATFirebase\.persistenceReady;if\(!isCurrentAuthAccount\(account,generation\)\)return/);
+  assert.match(html, /async function load\(generation=authGeneration\)\{const actor=user;if\(!isCurrentStaffSession\(actor,generation\)\)return/);
 });
 
 
@@ -155,8 +156,9 @@ test("les historiques de la fiche bénévole ignorent les lectures asynchrones d
   const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
   const profile = html.slice(html.indexOf("async function showVolunteerDetails"), html.indexOf('$("closeVolunteerDetails")'));
   assert.match(profile, /const generation=authGeneration/);
-  assert.match(profile, /if\(generation!==authGeneration\)return/g);
-  assert.match(profile, /if\(generation!==authGeneration\)return;\s*const present=/);
+  assert.match(profile, /const generation=authGeneration,actor=user;if\(!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(profile, /if\(!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(profile, /await Promise\.all\(tasks\);if\(!isCurrentStaffSession\(actor,generation\)\)return;\s*const present=/);
 });
 
 
