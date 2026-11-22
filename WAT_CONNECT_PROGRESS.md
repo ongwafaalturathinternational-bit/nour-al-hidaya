@@ -152,3 +152,8 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Commits : `6313411306eebed255a1afbd057707f4343bdab4` (code) et `aa1f73f7fcfcdc36e16bcd5dea2f1abdc728f51e` (tests).
 - Validation CI du HEAD de test : **116/116 tests NH-1 réussis, 0 échec** — run [45064865798](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064865798).
 - La protection des écritures atomiques et l'immutabilité des reçus sont donc vérifiées par CI. Aucun endpoint métier n'est activé et aucun accès aux données réelles n'a été ouvert.
+
+
+### Complément de validation CI sur le commit précédent de fondation
+
+Les deux contrôles qui étaient encore en cours lors du point précédent sont terminés avec succès sur le commit `91bd403b7e9de8a06b6d70970e80e0e032855baf` : règles Firestore **success** (run [45064721595](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721595)) et build APK Android staging **success** (run [45064721725](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721725)). Ces workflows précèdent le dernier durcissement append-only; le dernier commit dispose séparément de sa validation NH-1 116/116 réussie. Aucun déploiement de production.
