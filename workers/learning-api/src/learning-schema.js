@@ -74,7 +74,8 @@ export function validateLearningAssignmentRecord(value) {
     seen.add(item.assignmentId);
     for (const key of ["structureIds", "siteIds", "groupIds", "programIds"]) {
       if (item[key] !== undefined && (!Array.isArray(item[key]) || item[key].length === 0 ||
-          !item[key].every((entry) => id(entry)) || new Set(item[key]).size !== item[key].length)) {
+          item[key].length > 200 || !item[key].every((entry) => id(entry)) ||
+          new Set(item[key]).size !== item[key].length)) {
         return { ok: false, error: "assignment_perimeter_invalid" };
       }
     }
