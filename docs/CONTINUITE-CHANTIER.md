@@ -198,3 +198,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Tests ajoutés pour les deux courses de sélection.
 - Commits complémentaires : `d1e96fe609fdc3643759b04dc809061c676e35c5`, `1389ab174d50ddf3c189f4be6c09747214e5a5f1`, `7567d4b7a37f0ec3727094541ce97d3a5709535c`, `25e51ff182d067a874863ad20fc54ed5b333862c`.
 - Les validations du SHA `25e51ff` doivent encore être lues après conclusion des workflows; les résultats des commits précédents ne remplacent pas cette vérification.
+
+
+### Extension au portail WAT Connect — 22 novembre 2026
+
+- L'audit du portail principal a relevé que le tableau de bord restait affiché lors d'un changement de session externe et que plusieurs lectures de profil pouvaient se terminer après un changement de compte.
+- `index.html` masque et vide maintenant l'espace membre à chaque événement d'authentification, vérifie la génération et le UID après les lectures asynchrones, et laisse l'observateur d'authentification piloter l'ouverture du tableau de bord après connexion.
+- Test de régression ajouté dans `tests/portal-syntax.test.mjs`.
+- Commits : `47a1a1500c1d8e69972abf70c7e0f734401dd311`, `0316172434bd74763a12900097eb188ca2cb13b6`.
+- Validation du nouveau code à suivre sur le HEAD le plus récent. Aucun droit ni règle Firestore n'a été élargi.
