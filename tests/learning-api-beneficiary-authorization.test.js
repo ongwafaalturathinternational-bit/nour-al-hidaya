@@ -4,7 +4,7 @@ import {
   resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile,
 } from "../workers/learning-api/src/learning-resource-resolver.js";
 import {
-  authorizeLearningBeneficiary, authorizeLearningBeneficiaryPrivate, authorizeLearningProfile,
+  authorizeLearningBeneficiary, authorizeLearningBeneficiaryPrivate, authorizeLearningProfile, authorizeLearningEnrollmentReview,
 } from "../workers/learning-api/src/learning-authorization.js";
 
 const encode = (value) => {
@@ -208,4 +208,27 @@ test("pedagogical profile access requires a dedicated scope and matching assignm
     }] }) },
   });
   assert.equal(denied.ok, false);
+});
+
+
+test("pending enrollment review requires its dedicated scope and matching trusted perimeter", async () => {
+  const pendingResource = {
+    enrollmentId: "enrollment-pending", beneficiaryId: "beneficiary-a", programId: "program-a",
+    structureId: "structure-a", siteId: "site-a", groupId: "group-a", periodId: "period-a", status: "pending",
+  };
+  const deps = authDeps("learning.enrollments.review", { resolvePendingEnrollment: async () => pendingResource });
+  deps.firestore.getDocument = async (collection) => collection === "learningStaffAssignments"
+    ? doc({ active: true, assignments: [{ ...baseAssignment, scopeGrants: ["learning.enrollments.review"] }] }) : null;
+  const allowed = await authorizeLearningEnrollmentReview(request, {}, "enrollment-pending", deps);
+  assert.equal(allowed.ok, true);
+  assert.equal(allowed.resourceKind, "enrollment-review");
+  assert.equal(allowed.resource.status, "pending");
+  const denied = await authorizeLearningEnrollmentReview(request, {}, "enrollment-pending", {
+    ...deps,
+    firestore: { getDocument: async () => doc({ active: true, assignments: [{
+      ...baseAssignment, scopeGrants: ["learning.enrollments.review"], structureIds: ["structure-other"],
+    }] }) },
+  });
+  assert.equal(denied.ok, false);
+  assert.equal(denied.error, "learning_assignment_scope_denied");
 });
