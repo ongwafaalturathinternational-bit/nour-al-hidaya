@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createGoogleAccessToken, verifyFirebaseIdToken, resetFirebaseSigningKeyCacheForTests } from "../workers/learning-api/src/google-auth.js";
+import { createGoogleAccessToken, lookupFirebaseAuthUser, verifyFirebaseIdToken, resetFirebaseSigningKeyCacheForTests } from "../workers/learning-api/src/google-auth.js";
 
 const enc = new TextEncoder();
 const b64url = (bytes) => {
@@ -76,6 +76,8 @@ test("Google OAuth helper exchanges a signed assertion and validates the respons
   assert.equal(result.expiresAt, 1_800_003_600);
   const assertion = requestBody.get("assertion");
   assert.equal(assertion.split(".").length, 3);
+  const claims = JSON.parse(atob(assertion.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+  assert.equal(claims.scope, "https://www.googleapis.com/auth/datastore");
 });
 
 test("Google OAuth helper rejects malformed token responses", async () => {
@@ -85,4 +87,47 @@ test("Google OAuth helper rejects malformed token responses", async () => {
   await assert.rejects(() => createGoogleAccessToken({
     firebaseClientEmail: "wat-nh-staging@wat-connect-staging.iam.gserviceaccount.com", firebasePrivateKey: pem,
   }, { fetch: async () => new Response(JSON.stringify({ access_token: "x", token_type: "Bearer", expires_in: 99999 }), { status: 200 }) }), /invalid_expiry/);
+});
+
+test("Firebase Auth lookup reads only the requested staging UID and returns security state", async () => {
+  let captured, scope;
+  const result = await lookupFirebaseAuthUser("staff-123", {
+    environment: "staging", firebaseProjectId: "wat-connect-staging",
+  }, {
+    getAccessToken: async (_config, options) => { scope = options.scope; return { accessToken: "oauth-read-token" }; },
+    fetch: async (url, init) => {
+      captured = { url, init };
+      return new Response(JSON.stringify({ users: [{
+        localId: "staff-123", disabled: false, emailVerified: true, validSince: "1700000000",
+      }] }), { status: 200 });
+    },
+  });
+  assert.equal(captured.url, "https://identitytoolkit.googleapis.com/v1/projects/wat-connect-staging/accounts:lookup");
+  assert.equal(captured.init.method, "POST");
+  assert.equal(captured.init.headers.authorization, "Bearer oauth-read-token");
+  assert.deepEqual(JSON.parse(captured.init.body), { localId: ["staff-123"] });
+  assert.equal(scope, "https://www.googleapis.com/auth/identitytoolkit");
+  assert.deepEqual(result, { uid: "staff-123", disabled: false, emailVerified: true, validSince: 1_700_000_000 });
+});
+
+test("Firebase Auth lookup refuses production configuration before network access", async () => {
+  await assert.rejects(() => lookupFirebaseAuthUser("staff-123", {
+    environment: "production", firebaseProjectId: "wat-connect",
+  }, { fetch: async () => { throw new Error("must not fetch"); } }), /staging_configuration_required/);
+});
+
+test("Firebase Auth lookup fails closed on permission errors and malformed user state", async () => {
+  const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
+  const getAccessToken = async () => ({ accessToken: "oauth-read-token" });
+  await assert.rejects(() => lookupFirebaseAuthUser("staff-123", config, {
+    getAccessToken, fetch: async () => new Response("{}", { status: 403 }),
+  }), /lookup_failed_403/);
+  await assert.rejects(() => lookupFirebaseAuthUser("staff-123", config, {
+    getAccessToken, fetch: async () => new Response(JSON.stringify({ users: [{
+      localId: "staff-123", disabled: false, emailVerified: true,
+    }] }), { status: 200 }),
+  }), /user_record_invalid/);
+  assert.equal(await lookupFirebaseAuthUser("staff-123", config, {
+    getAccessToken, fetch: async () => new Response(JSON.stringify({ users: [] }), { status: 200 }),
+  }), null);
 });

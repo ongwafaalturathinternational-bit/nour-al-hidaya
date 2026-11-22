@@ -59,6 +59,51 @@ test("Firestore update uses an existence precondition and field mask", async () 
   assert.equal(request.init.method, "PATCH");
 });
 
+test("Firestore assignment, idempotency receipt and audit writes commit atomically with preconditions", async () => {
+  let request;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async (url, init) => {
+      request = { url, init };
+      return new Response(JSON.stringify({ commitTime: "2026-11-22T12:00:00Z" }), { status: 200 });
+    },
+  });
+  await client.commitDocuments([
+    { operation: "update", collection: "learningStaffAssignments", id: "staff-1",
+      precondition: { updateTime: "2026-11-22T11:00:00Z" }, fields: { version: 2, active: true } },
+    { operation: "create", collection: "learningAssignmentReceipts", id: "receipt-1",
+      precondition: { exists: false }, fields: { requestHash: "hash", resultVersion: 2 } },
+    { operation: "create", collection: "learningAuditLogs", id: "event-1",
+      precondition: { exists: false }, fields: { action: "assignment.update", targetId: "staff-1" } },
+  ]);
+  assert.match(request.url, /projects\/wat-connect-staging\/databases\/\(default\)\/documents:commit$/);
+  assert.equal(request.init.method, "POST");
+  const writes = JSON.parse(request.init.body).writes;
+  assert.equal(writes.length, 3);
+  assert.deepEqual(writes[0].currentDocument, { updateTime: "2026-11-22T11:00:00Z" });
+  assert.deepEqual(writes[1].currentDocument, { exists: false });
+  assert.equal(writes[2].update.name, "projects/wat-connect-staging/databases/(default)/documents/learningAuditLogs/event-1");
+});
+
+test("Firestore atomic commit refuses audit mutation, missing preconditions and unrelated collections", async () => {
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { throw new Error("network must not be called"); },
+  });
+  await assert.rejects(() => client.commitDocuments([
+    { operation: "update", collection: "learningAuditLogs", id: "event-1",
+      precondition: { updateTime: "2026-11-22T11:00:00Z" }, fields: { outcome: "failed" } },
+    { operation: "create", collection: "learningAssignmentReceipts", id: "receipt-1",
+      precondition: { exists: false }, fields: { requestHash: "hash" } },
+  ]), /audit_append_only/);
+  await assert.rejects(() => client.commitDocuments([
+    { operation: "update", collection: "learningStaffAssignments", id: "staff-1",
+      precondition: {}, fields: { version: 2 } },
+    { operation: "create", collection: "learningAssignmentReceipts", id: "receipt-1",
+      precondition: { exists: false }, fields: { requestHash: "hash" } },
+  ]), /precondition_invalid/);
+});
+
 test("Firestore duplicate create conflicts are not hidden", async () => {
   const client = createFirestoreRestClient(config, {
     getAccessToken: async () => token,

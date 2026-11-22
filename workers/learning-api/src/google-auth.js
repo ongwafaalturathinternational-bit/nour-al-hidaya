@@ -35,10 +35,15 @@ async function importPrivateKey(pem) {
 export async function createGoogleAccessToken(config, options = {}) {
   const now = Math.floor((options.now ?? Date.now()) / 1000);
   const fetcher = options.fetch ?? fetch;
+  const scope = options.scope ?? "https://www.googleapis.com/auth/datastore";
+  if (!["https://www.googleapis.com/auth/datastore",
+    "https://www.googleapis.com/auth/identitytoolkit"].includes(scope)) {
+    throw new Error("google_oauth_scope_not_allowed");
+  }
   const assertionHeader = encodeJson({ alg: "RS256", typ: "JWT" });
   const assertionClaims = encodeJson({
     iss: config.firebaseClientEmail,
-    scope: "https://www.googleapis.com/auth/datastore",
+    scope,
     aud: TOKEN_URI,
     iat: now,
     exp: now + 3600,
@@ -66,6 +71,50 @@ export async function createGoogleAccessToken(config, options = {}) {
     throw new Error("google_oauth_invalid_expiry");
   }
   return Object.freeze({ accessToken: payload.access_token, expiresAt: now + expiresIn });
+}
+
+/** Reads, but never changes, a Firebase Auth user record in the configured project. */
+export async function lookupFirebaseAuthUser(uid, config, options = {}) {
+  if (config?.environment !== "staging" || config?.firebaseProjectId !== "wat-connect-staging") {
+    throw new Error("firebase_auth_staging_configuration_required");
+  }
+  if (typeof uid !== "string" || !/^[A-Za-z0-9:_-]{1,128}$/.test(uid)) {
+    throw new Error("firebase_auth_uid_invalid");
+  }
+  const fetcher = options.fetch ?? fetch;
+  const token = await (options.getAccessToken ?? createGoogleAccessToken)(config, {
+    fetch: fetcher, now: options.now, scope: "https://www.googleapis.com/auth/identitytoolkit",
+  });
+  if (typeof token?.accessToken !== "string" || !token.accessToken) {
+    throw new Error("firebase_auth_access_token_invalid");
+  }
+  const response = await fetcher(
+    "https://identitytoolkit.googleapis.com/v1/projects/wat-connect-staging/accounts:lookup",
+    {
+      method: "POST",
+      redirect: "error",
+      headers: {
+        authorization: "Bearer " + token.accessToken,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ localId: [uid] }),
+    },
+  );
+  if (!response.ok) throw new Error("firebase_auth_lookup_failed_" + response.status);
+  const payload = await response.json();
+  if (!Array.isArray(payload?.users) || payload.users.length !== 1) return null;
+  const user = payload.users[0];
+  if (user?.localId !== uid || typeof user.disabled !== "boolean" ||
+      typeof user.emailVerified !== "boolean" || typeof user.validSince !== "string" ||
+      !/^\d+$/.test(user.validSince) || !Number.isFinite(Number(user.validSince))) {
+    throw new Error("firebase_auth_user_record_invalid");
+  }
+  return Object.freeze({
+    uid: user.localId,
+    disabled: user.disabled,
+    emailVerified: user.emailVerified,
+    validSince: Number(user.validSince),
+  });
 }
 
 let cachedKeys = null;

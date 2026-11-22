@@ -1,6 +1,6 @@
 # Nour Al-Hidaya staff assignment integration contract
 
-Status: proposed integration contract; staging/design only. This document does not grant access, provision accounts, open API routes, or authorize production deployment.
+Status: internal staging handlers and isolated tests implemented; no route wiring, account provisioning, access grant, or deployment is enabled. The contract remains subject to WAT scope and data-model review.
 
 ## 1. Purpose and separation of responsibilities
 
@@ -16,9 +16,13 @@ The institutional staff-account lifecycle remains owned by PR #21. Nour Al-Hiday
 
 An NH request is authorized only when all checks pass: valid authenticated Firebase identity; verified email; Firebase account not disabled; current `staffAccess.active === true`; required institutional scope present; at least one active, in-date NH assignment grants the exact NH scope; and the requested resource falls within that assignment's explicit perimeter.
 
-## 2. Proposed callable API
+## 2. Internal mutation handlers (not exposed)
 
-All operations are server-side callable functions, protected by Firebase App Check and the same current-admin revalidation discipline as PR #21. They are not exposed as direct Firestore writes.
+The Worker module `workers/learning-api/src/learning-assignment-service.js` implements grant, update, and revoke as internal handlers. They are not registered in the HTTP router or exposed as Firebase callable functions. Before any future route wiring, require explicit review, Firebase App Check where applicable, and current-admin revalidation. Direct Firestore client writes remain forbidden.
+
+Each successful mutation commits the assignment registry, a deterministic request receipt, and an append-only audit event in one Firestore `documents:commit` request. Assignment writes compare the previously read `updateTime` (or require absence); receipt and audit creation require absence. Competing writes fail atomically. Replaying the same actor and `requestId` returns the stored result without adding another audit event; reusing the ID with different content conflicts.
+
+The grantable scope catalogue is an explicit allowlist in the internal service. `learning.staffAssignments.manage` must be present in the caller's active WAT staff record and is deliberately excluded from grants. The account-management policy still needs WAT review before anyone receives this scope.
 
 ### createLearningStaffAssignment
 

@@ -4,6 +4,7 @@ const ALLOWED_ACTIONS = new Set([
   "registration.review",
   "registration.duplicate_review",
   "assignment.grant",
+  "assignment.update",
   "assignment.revoke",
 ]);
 const ALLOWED_TARGETS = new Set(["beneficiary", "registration", "staff_assignment"]);

@@ -37,6 +37,7 @@ jobs:
           node --check workers/learning-api/src/turnstile.js
           node --check workers/learning-api/src/assignment-policy.js
           node --check workers/learning-api/src/learning-authorization.js
+          node --check workers/learning-api/src/learning-assignment-service.js
           node --check workers/learning-api/src/learning-audit.js
           node --check workers/learning-api/src/learning-schema.js
           node --check workers/learning-api/src/learning-resource-resolver.js

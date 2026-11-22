@@ -125,7 +125,8 @@ test("uses the same trusted Firestore client for staff, group and assignment rec
   const result = await authorizeLearningGroup(request, { firebaseProjectId: "wat-connect-staging" },
     "learning.beneficiaries.read", "group-a", {
       firestore,
-      verifyToken: async () => ({ uid: principal.uid, emailVerified: true }),
+      verifyToken: async () => ({ uid: principal.uid, emailVerified: true, claims: { auth_time: 1_800_000_000 } }),
+      lookupAuthUser: async (uid) => ({ uid, disabled: false, emailVerified: true, validSince: 1_700_000_000 }),
       now: new Date("2026-11-22T12:00:00Z"),
     });
   assert.equal(result.ok, true);

@@ -5,14 +5,14 @@ Statut : plan de validation staging uniquement. Aucun compte réel, aucune affec
 ## 1. État du code observé
 
 - `assignment-policy.js` fournit une décision pure fail-closed sur l'état, les scopes, les dates et le périmètre d'une affectation.
-- `staff-auth.js` vérifie le jeton Firebase, l'e-mail vérifié, `staffAccess.active` et le scope institutionnel.
-- Le contrôle d'affectation n'est pas encore raccordé au middleware d'authentification des routes.
-- Le middleware ne vérifie pas actuellement, à lui seul, le statut Auth désactivé/révoqué auprès de Firebase.
-- `learning-audit.js` écrit un événement avec un identifiant aléatoire; il n'offre pas encore l'idempotence par `requestId` ni une transaction atomique avec la mutation d'affectation.
-- Le contrat d'intégration définit le registre et les trois opérations, mais les fonctions callable ne sont pas encore implémentées.
-- Le catalogue institutionnel PR #21 ne contient pas encore les scopes `learning.*`.
+- `staff-auth.js` vérifie le jeton, l'état courant Firebase Auth (désactivation, e-mail vérifié, révocation), `staffAccess.active` et le scope exact. Les erreurs d'API Auth et les états incomplets bloquent l'accès.
+- `learning-authorization.js` applique le contrôle institutionnel avant la résolution d'une ressource et le contrôle du périmètre d'affectation NH.
+- `learning-assignment-service.js` contient les handlers internes grant/update/revoke. Ils exigent `learning.staffAssignments.manage`, vérifient le compte WAT cible et ne sont raccordés à aucune route HTTP.
+- `firestore-rest.js` regroupe registre, reçu idempotent et événement d'audit dans un commit atomique avec préconditions de version ou d'absence. Les versions périmées et réutilisations conflictuelles de `requestId` sont refusées.
+- Le catalogue attribuable est en liste blanche; le scope d'administration ne peut pas être attribué par ce service.
+- Le compte de service, son droit IAM staging et le catalogue institutionnel restent à confirmer. Aucun compte ou document réel n'a été consulté ou modifié.
 
-Ces constats signifient que les tests unitaires de politique ne suffisent pas à déclarer l'intégration sécurisée.
+Les tests avec mocks valident le comportement local, mais ne prouvent pas encore les permissions IAM et l'intégration avec Firebase staging.
 
 ## 2. Niveaux de tests à mettre en place
 
@@ -51,7 +51,14 @@ Le statut Auth désactivé/révoqué doit être vérifié par une source serveur
 
 ### C. Tests des opérations d'affectation
 
-Pour les fonctions callable prévues :
+Les tests isolés avec des identités et documents fictifs couvrent désormais les opérations internes :
+
+1. Grant, update et révocation douce : registre versionné, reçu et audit.
+2. Même requête rejouée : même résultat sans second événement d'audit.
+3. Même identifiant avec contenu différent : conflit.
+4. Deux mises à jour concurrentes avec la même version : une seule gagne.
+5. Échec du commit : aucune écriture partielle.
+6. Cible Auth désactivée, scope non autorisé ou périmètre incohérent : refus.
 
 1. Création valide : une affectation serveur est créée, version 1.
 2. Création ciblant un compte absent, non vérifié, désactivé ou inactif : refusée.
@@ -85,14 +92,11 @@ Avec les règles réelles chargées dans l'émulateur :
 
 ## 3. Préconditions techniques avant d'exécuter les tests d'intégration
 
-1. Ajouter les dépendances Emulator et le script de test seulement après confirmation de la configuration Firebase existante du dépôt.
-2. Créer un projet/emplacement Emulator exclusivement fictif; ne jamais réutiliser les identifiants de production.
-3. Ajouter les callables create/update/revoke dans un module séparé de la gestion générale des comptes.
-4. Définir le catalogue `learning.*` et la règle d'intersection entre scopes WAT et scopes NH.
-5. Implémenter la transaction Firestore qui écrit ensemble l'affectation et l'événement d'audit.
-6. Rendre l'idempotence `requestId` explicite et tester les collisions/réessais.
-7. Connecter la vérification d'affectation au middleware avant toute ouverture de route.
-8. Exécuter les tests unitaires, Emulator et règles, puis joindre les rapports à la PR.
+1. Vérifier que le compte de service staging détient `firebaseauth.users.get` et l'accès Firestore requis.
+2. Valider avec WAT le catalogue `learning.*` et l'attribution du scope administratif.
+3. Exécuter les commits avec l'émulateur Firestore et des identités entièrement fictives.
+4. Revoir le schéma, les périmètres et les règles de protection des mineurs avant tout raccordement futur.
+5. Garder les routes fermées jusqu'à une décision de mise en service explicite.
 
 ## 4. Critères de sortie staging
 

@@ -30,7 +30,8 @@ async function authorizeResolvedResource(request, config, scope, resourceId, opt
   }
   const staff = await (options.authorizeStaff ?? authorizeStaffScope)(
     request, config, scope, { ...(options.staffOptions ?? {}), firestore,
-      verifyToken: options.verifyToken ?? options.staffOptions?.verifyToken },
+      verifyToken: options.verifyToken ?? options.staffOptions?.verifyToken,
+      lookupAuthUser: options.lookupAuthUser ?? options.staffOptions?.lookupAuthUser },
   );
   if (!staff.ok) return staff;
 

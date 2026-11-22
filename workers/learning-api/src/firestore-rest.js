@@ -12,6 +12,7 @@ const COLLECTIONS = new Set([
   "learningProfiles",
   "learningGroups",
   "learningStaffAssignments",
+  "learningAssignmentReceipts",
   "learningSessions",
   "learningAttendance",
   "learningAssessments",
@@ -142,6 +143,45 @@ export function createFirestoreRestClient(config, options = {}) {
         body: JSON.stringify({ name: "projects/wat-connect-staging/databases/(default)/documents/" +
           collection + "/" + id, fields: encodedFields }),
       });
+      return parseResponse(response);
+    },
+
+    async commitDocuments(writes) {
+      if (!Array.isArray(writes) || writes.length < 2 || writes.length > 10) {
+        throw new Error("firestore_commit_writes_invalid");
+      }
+      const normalized = writes.map((write) => {
+        if (!write || !["create", "update"].includes(write.operation) ||
+            !["learningStaffAssignments", "learningAssignmentReceipts", "learningAuditLogs"].includes(write.collection)) {
+          throw new Error("firestore_commit_target_invalid");
+        }
+        if (write.collection === "learningAuditLogs" && write.operation !== "create") {
+          throw new Error("firestore_audit_append_only");
+        }
+        assertDocumentTarget(write.collection, write.id,
+          write.operation === "create" ? WRITABLE_COLLECTIONS : UPDATABLE_COLLECTIONS);
+        if (!write.precondition || typeof write.precondition !== "object") {
+          throw new Error("firestore_commit_precondition_required");
+        }
+        const fields = encodeFields(write.fields);
+        const name = "projects/wat-connect-staging/databases/(default)/documents/" +
+          write.collection + "/" + write.id;
+        const currentDocument = write.precondition.exists === false
+          ? { exists: false }
+          : typeof write.precondition.updateTime === "string"
+            ? { updateTime: write.precondition.updateTime }
+            : null;
+        if (!currentDocument) throw new Error("firestore_commit_precondition_invalid");
+        return {
+          update: { name, fields },
+          updateMask: { fieldPaths: Object.keys(fields) },
+          currentDocument,
+        };
+      });
+      const response = await authorizedRequest(
+        API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents:commit",
+        { method: "POST", body: JSON.stringify({ writes: normalized }) },
+      );
       return parseResponse(response);
     },
   });

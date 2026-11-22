@@ -1,4 +1,4 @@
-import { verifyFirebaseIdToken } from "./google-auth.js";
+import { lookupFirebaseAuthUser, verifyFirebaseIdToken } from "./google-auth.js";
 
 function stringField(fields, name) {
   const value = fields?.[name]?.stringValue;
@@ -35,6 +35,27 @@ export async function authorizeStaffScope(request, config, scope, options = {}) 
 
   if (identity.emailVerified !== true) {
     return { ok: false, status: 403, error: "verified_staff_email_required" };
+  }
+
+  let authUser;
+  try {
+    authUser = await (options.lookupAuthUser ?? lookupFirebaseAuthUser)(
+      identity.uid, config, options.authOptions ?? {},
+    );
+  } catch {
+    return { ok: false, status: 503, error: "firebase_account_state_unavailable" };
+  }
+  if (!authUser || authUser.uid !== identity.uid || authUser.disabled === true ||
+      authUser.emailVerified !== true) {
+    return { ok: false, status: 403, error: "firebase_staff_account_inactive" };
+  }
+  const authTime = identity.claims?.auth_time;
+  if (!Number.isFinite(authTime) || !Number.isFinite(authUser.validSince) ||
+      authUser.validSince < 0) {
+    return { ok: false, status: 503, error: "firebase_account_state_unavailable" };
+  }
+  if (authTime < authUser.validSince) {
+    return { ok: false, status: 401, error: "authentication_revoked" };
   }
 
   let accessDocument;
