@@ -25,7 +25,7 @@ const groupDocument = { fields: {
   structureId: encode("structure-a"),
   programId: encode("program-a"),
 } };
-const request = new Request("https://example.test", { headers: { authorization: "Bearer token" } });
+const request = new Request("https://example.test", { headers: { authorization: "Bearer token-token-token-123456" } });
 function setup({ staff = { ok: true, principal }, group = groupDocument, assignments = assignmentDocument, errorCollection = null } = {}) {
   const calls = [];
   return {
