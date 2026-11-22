@@ -50,3 +50,9 @@ test("le portail masque son contenu public après authentification sans référe
   assert.match(portal, /\$\("public"\)\.hidden=true/);
   assert.match(portal, /<section id="workspace"/);
 });
+
+
+test("le portail efface le mot de passe après chaque tentative de connexion", () => {
+  const portal = read("../index.html");
+  assert.match(portal, /finally\{\$\("password"\)\.value="";b\.disabled=false/);
+});
