@@ -12,6 +12,7 @@ on:
       - "finance.html"
       - "wat-brand.css"
       - "tests/finance-syntax.test.mjs"
+      - "tests/finance-table-a11y.test.mjs"
       - "accounting-engine.mjs"
       - "accounting-lettering.mjs"
       - "finance-access-policy.mjs"
