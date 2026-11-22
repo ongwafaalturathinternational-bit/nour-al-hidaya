@@ -172,3 +172,11 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Le registre complet `learningStaffAssignments/{uid}` est validé avant toute décision. Un enregistrement mal formé entraîne un refus global plutôt qu'une sélection partielle parmi des affectations potentiellement corrompues.
 - CI NH-1 : **78 tests réussis, 0 échec** — [run #44978897104](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44978897104), commit `2a41942b1b643bf3e23fa7d47bca96f25318780d`.
 - Le moteur reste isolé des routes. Le schéma de ressources et la matrice des rôles/scopes doivent être validés par WAT; aucune règle distante, donnée, affectation réelle, permission ou déploiement n'a été modifié.
+
+
+## Résolution canonique branchée au contrôle d'accès — 22 novembre 2026
+- `authorizeLearningGroup` utilise désormais `resolveLearningGroup` : groupe, structure, programme et site actif sont vérifiés depuis Firestore avant l'évaluation de l'affectation.
+- Ajout de `authorizeLearningEnrollment`, fondé sur `resolveLearningEnrollment`, avec vérification de l'inscription active et cohérence programme/structure/site/groupe.
+- Les deux contrôles partagent le même moteur : scope explicite, registre complet validé, dates de validité et correspondance stricte de chaque dimension de périmètre. Le contexte transmis par le navigateur n'est pas utilisé.
+- CI NH-1 : **80 tests réussis, 0 échec** — [run #44979263779](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44979263779), commit `a3a5379d8169c89bae460e372d093e6fe5dd2e61`.
+- Ces fonctions restent des primitives isolées : aucune route métier n'est activée, aucune règle distante ni donnée Firestore n'a été modifiée.
