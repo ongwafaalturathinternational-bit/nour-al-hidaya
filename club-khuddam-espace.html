@@ -44,32 +44,36 @@ const $=id=>document.getElementById(id);
 let currentUser = null, authGeneration = 0;
 function say(text,type=""){const el=$("message");el.textContent=text;el.className="message "+type;el.hidden=false}
 function isCurrentSession(user,generation){
- return generation === authGeneration && WATFirebase.auth.currentUser?.uid === user.uid;
+ return !!user && generation === authGeneration && WATFirebase.auth.currentUser?.uid === user.uid;
 }
-function showAuth(){
- authGeneration += 1;
+function clearPrivateView(){
  currentUser = null;
- $("authPanel").hidden = false;
- $("accountPanel").hidden = true;
  $("applicationBox").hidden = true;
+ $("verificationBox").hidden = true;
  $("emailLabel").textContent = "";
  $("statusText").textContent = "";
  $("details").textContent = "";
+ $("status").textContent = "";
+ $("status").className = "status";
+}
+function showAuth(){
+ authGeneration += 1;
+ clearPrivateView();
+ $("authPanel").hidden = false;
+ $("accountPanel").hidden = true;
  say("Connectez-vous pour consulter votre dossier.");
 }
 function statusLabel(value){return ({en_attente:"En attente d’examen",acceptee:"Candidature acceptée",refusee:"Candidature non retenue"})[value]||"État à confirmer";}
 async function loadAccount(user){
  if(WATFirebase.auth.currentUser?.uid !== user.uid)return;
  const generation = ++authGeneration;
+ clearPrivateView();
  currentUser = user;
  $("authPanel").hidden = true;
  $("accountPanel").hidden = false;
  $("welcome").textContent = "Votre dossier Club Khuddam";
  $("emailLabel").textContent = user.email || "";
  $("verificationBox").hidden = !!user.emailVerified;
- $("applicationBox").hidden = true;
- $("details").textContent = "";
- $("statusText").textContent = "";
  if(!user.emailVerified){say("Votre adresse e-mail doit être vérifiée pour consulter votre dossier.","error");return;}
  try{
   await user.getIdToken(true);
