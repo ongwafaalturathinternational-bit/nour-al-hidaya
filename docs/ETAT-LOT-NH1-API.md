@@ -51,3 +51,13 @@ Les routes restent donc toutes désactivées. Même si des variables sont prése
 7. Effectuer une revue de sécurité et présenter les résultats avant tout déploiement.
 
 Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM ou facturation n'a été modifiée. Aucun Worker n'a été téléversé ou déployé.
+
+## Harmonisation du registre central — 22 novembre 2026
+
+- La décision technique NH-1 fixe maintenant les noms canoniques préfixés : `learningBeneficiaries`, `learningBeneficiaryPrivate`, `learningEnrollments`, `learningRegistrationReceipts` et `learningAuditLogs`.
+- L'adaptateur Firestore limite sa liste d'autorisation aux collections `learning*` et à `staffAccess`; les anciens alias génériques comme `beneficiaries` sont refusés.
+- Les tests Firestore ont été adaptés pour vérifier le chemin canonique et le refus des alias génériques.
+- Les documents de plan et d'architecture ont été harmonisés avec cette nomenclature.
+- Les champs définitifs du dossier restent à valider à partir du cahier des charges initial. Aucun schéma de données personnelles n'est inventé à cette étape.
+- Les routes restent en 503. Aucun appel Firestore réel, aucune règle distante modifiée et aucun déploiement.
+- Cette harmonisation vient d'être poussée sur la branche de travail; la validation CI de ce dernier changement reste à confirmer.
