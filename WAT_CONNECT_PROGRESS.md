@@ -7,10 +7,10 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié à la reprise
 
-- HEAD PR #22 : 067bdccdda5bef59576fc59974e74ffe9a1f7be5.
+- HEAD PR #22 avant le test de rejeu complémentaire : 17a5bc02371b399f9b9e7f62687a7c24a7661a2c.
 - PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
 - PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
-- Tests isolés locaux après le correctif Wrangler : 112 réussis, 0 échec.
+- Tests isolés locaux : 113 réussis, 0 échec. Le nouveau test couvre les rejeux update/revoke et les conflits sur patch, expectedVersion et motif sans audit en double.
 - Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
 - Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
 - .firebaserc : défaut demo-wat-connect, alias staging wat-connect-staging, aucun alias de production. Tests Firebase explicitement ciblés sur le projet demo; Android staging cible le projet staging.
@@ -26,6 +26,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - 195853f — ajout du motif d'audit et extension de l'idempotence; tests, documentation et préparation Firebase staging.
 - 6be8c3d — rapport de continuité initial WAT_CONNECT_PROGRESS.md.
 - 067bdcc — correction du bloc previews Wrangler staging, test anti-régression et mise à jour du rapport; CI et Preview réussis.
+- Prochain commit — test d'idempotence update/revoke et nouveau jalon de continuité.
 - CI associée : API run 44990071689 (success), Firestore run 44990071677 (success), Android staging run 44990071687 (success).
 
 ## Tâches terminées
@@ -34,6 +35,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Revue de cohérence de l'architecture WAT Connect et NH-1 : référentiels communs; modules distincts; moindre privilège; séparation des données bénéficiaires privées; routes NH-1 fermées.
 - Contrôle statique des scripts Firebase et Wrangler par environnement.
 - Durcissement des motifs d'audit/idempotence des affectations et tests de rejeu/concurrence.
+- Extension des tests aux rejeux update/revoke avec changement de patch, version et motif.
 - Inventaire Cloudflare staging en lecture seule.
 - Diagnostic Cloudflare du build échoué; correction Wrangler staging, test et Preview validés.
 
@@ -41,7 +43,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 1. Maintenir le blocage Firebase documenté : aucun CLI, identité ni liaison Firebase accessible. Ne pas tenter d'accéder à des comptes réels.
 2. Valider l'identité institutionnelle WAT, le rôle IAM minimal Firestore/Auth et les bindings/secrets staging. État actuel : aucun binding/secrets; pas d'accès Firebase vérifié. Ne pas ouvrir les routes avant preuve des autorisations et de bout en bout.
-3. Étendre l'audit des checks, commentaires, fichiers et dépendances de PR #20/#22; préserver leur séquencement.
+3. PR #20/#22 : les deux sont ouvertes en brouillon, sans revue formelle ni fusion, et GitHub les signale mergeables. PR #22 a six fichiers en commun avec PR #20; le diff de branche reste grand car NH-1 est empilé au-dessus du jalon Lot 8. Ne pas changer la base sans arbitrage ni nécessité technique.
 4. Poursuivre les tests Emulator uniquement avec identités/données fictives; vérifier l'atomicité, la concurrence, la confidentialité et le refus des clients.
 5. Après les garde-fous NH-1, reprendre les modules WAT Connect dans l'ordre de la feuille de route sans fusionner leurs responsabilités.
 
@@ -53,4 +55,4 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## Prochaine action
 
-Auditer précisément le delta de PR #20/#22, confirmer le périmètre du Preview sur le Worker staging et reprendre les modules fonctionnels suivants sans franchir le blocage IAM. Ne jamais fusionner, déployer production, toucher à des comptes/dossiers réels ni ouvrir les routes.
+Pousser et faire valider par CI le test supplémentaire update/revoke; continuer la revue statique des modules et garder la limite Firebase IAM documentée. Ne jamais fusionner, déployer production, toucher à des comptes/dossiers réels ni ouvrir les routes.

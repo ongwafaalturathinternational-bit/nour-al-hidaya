@@ -106,6 +106,39 @@ test("same request replays its receipt, while reusing the request ID with change
   assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 1);
 });
 
+test("update and revoke replays bind patch, expected version and reason without duplicate audit", async () => {
+  const f = fixture();
+  const created = await createLearningStaffAssignment(request, config, grantInput(), f.options);
+  const updateInput = {
+    requestId: "request-update-idempotent", targetUid: "staff-target", assignmentId: created.assignmentId,
+    expectedVersion: 1, reason: "Update mandate details",
+    patch: { scopeGrants: ["learning.groups.read", "learning.groups.manage"] },
+  };
+  const updated = await updateLearningStaffAssignment(request, config, updateInput, f.options);
+  const updateReplay = await updateLearningStaffAssignment(request, config, updateInput, f.options);
+  assert.equal(updateReplay.replayed, true);
+  assert.deepEqual(await updateLearningStaffAssignment(request, config, {
+    ...updateInput, patch: { scopeGrants: ["learning.groups.read"] },
+  }, f.options), { ok: false, status: 409, error: "assignment_request_id_reused" });
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 2);
+
+  const revokeInput = {
+    requestId: "request-revoke-idempotent", targetUid: "staff-target", assignmentId: created.assignmentId,
+    expectedVersion: updated.assignmentVersion, reason: "Close teaching mandate",
+  };
+  const revoked = await revokeLearningStaffAssignment(request, config, revokeInput, f.options);
+  const revokeReplay = await revokeLearningStaffAssignment(request, config, revokeInput, f.options);
+  assert.equal(revokeReplay.replayed, true);
+  assert.deepEqual(await revokeLearningStaffAssignment(request, config, {
+    ...revokeInput, expectedVersion: revokeInput.expectedVersion + 1,
+  }, f.options), { ok: false, status: 409, error: "assignment_request_id_reused" });
+  assert.deepEqual(await revokeLearningStaffAssignment(request, config, {
+    ...revokeInput, reason: "Different revocation reason",
+  }, f.options), { ok: false, status: 409, error: "assignment_request_id_reused" });
+  assert.equal(revoked.assignmentVersion, 3);
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 3);
+});
+
 test("update uses expected assignment version and revoke is a versioned soft revocation", async () => {
   const f = fixture();
   const created = await createLearningStaffAssignment(request, config, grantInput(), f.options);
