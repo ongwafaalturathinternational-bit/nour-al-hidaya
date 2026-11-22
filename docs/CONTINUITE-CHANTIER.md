@@ -434,3 +434,11 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits : portail `32ca496d6aaf222d50d586447a4489843cb1d848`, test final `398c6b81de176846bd54fd93bf6128ead60cb458`.
 - Validations Firestore et APK staging déclenchées sur le nouveau HEAD; résultats à confirmer : [Firestore 45077560922](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077560922) · [APK 45077560842](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077560842).
 - Aucun compte, profil, droit Firebase, donnée réelle, fusion ou déploiement n'a été modifié.
+
+
+## Correction du test de visibilité Nour Al-Hidaya — 22 novembre 2026
+
+- La première exécution CI après le changement de portail a révélé une erreur de syntaxe dans le nouveau test `tests/operational-block.test.mjs` (pas dans le portail lui-même). Les 155 autres tests ont réussi; le fichier de test n'a pas pu être chargé.
+- Le test a été corrigé avec des assertions textuelles simples, vérifiant que le module Nour Al-Hidaya est conditionné par le rôle apprenant et n'apparaît qu'une fois dans la branche équipe.
+- Correctif test : `3ce43c0037b530ba49d400ff66a18fc3ea0d7d1c`. Le workflow Firestore précédent avait échoué à cause de cette syntaxe de test; le workflow APK staging avait réussi.
+- Nouvelle validation CI déclenchée sur le test corrigé. Ne pas considérer la suite validée avant son résultat.
