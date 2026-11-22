@@ -9,8 +9,9 @@ const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 test("WAT Connect déclare un manifeste installable", () => {
   assert.equal(manifest.name, "WAT Connect — ONG Wafa Al-Turath");
   assert.equal(manifest.display, "standalone");
-  assert.ok(manifest.icons.some(icon => icon.sizes === "192x192"));
-  assert.ok(manifest.icons.some(icon => icon.sizes === "512x512"));
+  assert.ok(manifest.icons.length > 0);
+  assert.ok(manifest.icons.every(icon => icon.sizes === "any"));
+  assert.ok(manifest.icons.some(icon => icon.src === "assets/brand/wat/ICONE WC.png"));
 });
 
 test("le portail enregistre le service worker", () => {
@@ -47,7 +48,7 @@ test("les pages WAT chargent la feuille de style officielle", () => {
     const stylesheet = page === "nour-al-hidaya.html" ? "wat-brand-nour.css" : "wat-brand.css";
     assert.ok(head.includes(`href="${stylesheet}"`), page);
   }
-  assert.match(worker, /wat-connect-shell-v5/);
+  assert.match(worker, /wat-connect-shell-v6/);
 });
 
 test("tous les modules métier Firestore utilisent la persistance avant leurs lectures", () => {
