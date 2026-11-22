@@ -61,3 +61,13 @@ Tant que ces points ne sont pas satisfaits, le serveur ne doit accepter aucune i
 ## 6. Limites de cette revue
 
 Cette revue est statique et limitée aux fichiers récupérés sur la branche. Elle ne prouve ni la configuration réelle du compte Cloudflare, ni l'existence de secrets staging, ni l'état des données Firebase. Aucun test d'émulateur, appel d'API, changement de règles, déploiement ou migration n'a été exécuté.
+
+## Audit des autorisations WAT Connect — 22 novembre 2026
+
+L'inspection des règles Firestore héritées confirme que `staffAccess/{uid}` est lisible uniquement par son propriétaire et non modifiable par les clients. Les scopes actuellement présents dans les règles concernent les programmes, activités, présences, membres, projets et bénévoles ; aucun scope `learning.*` n'est encore déclaré. Les collections NH-1 restent donc refusées par la règle globale finale.
+
+Le portail affichait précédemment le raccourci Nour Al-Hidaya à tout compte d'équipe actif, sans scope pédagogique. Le raccourci est maintenant masqué en l'absence d'au moins un scope `learning.*`. Cette mesure n'est qu'un contrôle de navigation, jamais une barrière de sécurité serveur.
+
+L'helper `authorizeStaffScope()` contrôle le scope exact mais ne vérifie pas encore le périmètre par site, mosquée, groupe ou programme. **Le raccordement des routes reste bloqué** jusqu'à la validation d'une matrice rôles/scopes/périmètres, de la lecture des données privées et de tests inter-sites.
+
+Voir `docs/AUDIT-PERMISSIONS-NH1.md`. Aucun scope réel, aucune règle distante et aucune donnée bénéficiaire n'ont été modifiés.
