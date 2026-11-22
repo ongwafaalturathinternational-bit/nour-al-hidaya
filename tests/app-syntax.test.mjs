@@ -27,3 +27,16 @@ test("les zones de réponse et de réflexion respectent la limite des règles Fi
   assert.match(html, /<textarea id="hwt" maxlength="5000"/);
   assert.match(html, /<textarea id="refl" data-a="refl" maxlength="5000"/);
 });
+
+
+test("la session apprenant invalide les chargements Firebase devenus obsolètes", () => {
+  const html = readFileSync(new URL("../nour-al-hidaya.html", import.meta.url), "utf8");
+  assert.match(html, /let firebaseAuthGeneration=0/);
+  assert.match(html, /function isCurrentFirebaseSession\(uid,generation\)/);
+  assert.match(html, /async function enterFirebaseUser\(user,generation\)/);
+  assert.match(html, /if\(!isCurrentFirebaseSession\(id,generation\)\)return false/);
+  assert.match(html, /loadFirebaseProgress\(id,generation\)/);
+  assert.match(html, /loadFirebaseLearning\(id,generation\)/);
+  assert.match(html, /const generation=\+\+firebaseAuthGeneration/);
+  assert.match(html, /if\(!DEMO_MODE\)\{S\.role=null;S\.cur=null;S\.access=null/);
+});
