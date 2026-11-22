@@ -190,7 +190,8 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Les données privées restent dans `learningBeneficiaryPrivate` et sous le scope séparé `learning.beneficiaries.private.read`. Le résolveur privé est appelé seulement après autorisation.
 - Aucun attribut de niveau, langue ou objectif pédagogique n'est inventé; la taxonomie attend une validation WAT.
 - CI du commit `f2fd1b97fbc760a4a468d315db879c7c2d074788` : NH-1 **88 tests réussis, 0 échec** — [workflow #44980249993](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44980249993).
-- Firestore et APK Android de test sont encore en cours de vérification sur ce même commit.
+- Règles Firestore : **succès** — workflow #44981201212. Compilation et tests des règles terminés avec succès.
+- APK Android staging : **succès** — workflow #44981201166. Génération, synchronisation, construction et publication de l'APK de test terminées avec succès.
 - Aucune route métier activée, aucun scope réel attribué, aucune règle distante, donnée réelle ou déploiement de production modifié. PR #22 reste ouverte en brouillon.
 
 
