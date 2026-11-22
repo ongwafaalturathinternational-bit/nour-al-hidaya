@@ -224,3 +224,11 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Tests de régression ajoutés dans les suites syntaxiques Projets/Club, Activités et portail.
 - Commits code : `872a719d746dfffca2cb0662ab8ca191a0db32fa`, `a79fde32813fc2db2e0ffa315c1c44e3552b4b4b`, `9355ec6e05e5a48b737ff31c7fec90c8872d0dd2`, `4465c6d887ac60076c6a8eb0a66213c116fb12f4`. Tests : `9e01660485c00e589dbc345a8299ae276ec28d12`, `d90ec4176b335ffd3939b0a50b4a6af694588bd3`, `1e6707235e1294338eb215302ab65cdbcea40792`, `06a3f13e3bede80fad1b2c7fb5aa8528eaf3eb58`.
 - Validation à suivre sur ce nouveau HEAD; les résultats 145/145 et APK réussis ci-dessus concernent le SHA antérieur `25e51ff`, pas ces ajouts.
+
+
+### Validation du portail et des protections de session — SHA `0316172434bd74763a12900097eb188ca2cb13b6`
+
+- Firestore Emulator / tests applicatifs : **146/146 réussis, 0 échec** ([workflow 45066202340](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066202340)).
+- APK Android debug de staging : **build réussi** ([workflow 45066202405](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45066202405)).
+- Cette validation couvre également le correctif de session du portail principal.
+- Les réinitialisations de formulaires privées ont ensuite été ajoutées; leurs workflows dédiés sur le nouveau HEAD sont en cours et restent à vérifier.
