@@ -132,3 +132,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+## Durcissement des transactions Firestore NH-1 — 22 novembre 2026
+
+- Sur la branche de fondation, le client REST Firestore refuse désormais toute précondition qui ne correspond pas strictement à l'opération : `create` exige `exists:false`; `update` exige un `updateTime` non vide. Les objets de précondition ambigus ou contenant plusieurs critères sont rejetés avant tout appel réseau.
+- Les commits atomiques refusent également deux écritures visant le même document dans une seule transaction. Cela évite les lots ambigus et renforce la garantie d'idempotence pour le registre d'affectations, les reçus et le journal d'audit.
+- Tests ajoutés dans `tests/learning-api-firestore.test.js` pour les préconditions croisées, les critères ambigus et les cibles dupliquées.
+- Commits : correction `4d0bbe77f60867a1cb523b755cd8943b3d14bcc6`; tests `91bd403b7e9de8a06b6d70970e80e0e032855baf`.
+- CI du commit de tests : workflow NH-1 learning API **success** (run [45064716371](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064716371)). Au dernier contrôle, les workflows Firestore rules (run [45064721595](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721595)) et APK Android staging (run [45064721725](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721725)) étaient encore en cours.
+- Aucun endpoint d'inscription n'a été ouvert; aucune donnée réelle, identité de service, clé, permission IAM, secret, binding Cloudflare ou configuration de production n'a été modifié.
