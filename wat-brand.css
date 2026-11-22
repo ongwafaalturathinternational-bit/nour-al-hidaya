@@ -52,3 +52,6 @@ a{ text-underline-offset:3px }
     linear-gradient(35deg,transparent 0 54%,rgba(29,120,143,.25) 54.2% 70%,transparent 70.2%),
     linear-gradient(125deg,transparent 0 76%,rgba(210,183,95,.2) 76.2% 90%,transparent 90.2%);
 }
+
+/* Même comportement accessible pour les registres denses sur petit écran. */
+.table-wrap[role="region"][tabindex="0"]:focus-visible{outline:3px solid var(--wat-gold-light);outline-offset:3px;border-radius:10px}
