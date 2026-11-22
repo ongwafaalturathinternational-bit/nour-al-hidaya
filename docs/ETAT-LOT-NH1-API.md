@@ -7,26 +7,32 @@ Statut : code préparatoire uniquement ; aucun déploiement.
 ## Livré dans cette étape
 
 - `workers/learning-api/src/index.js` : point d'entrée Worker minimal.
-- `tests/learning-api-worker.test.js` : tests du comportement fermé par défaut.
+- `tests/learning-api-worker.test.js` : tests du comportement fermé par défaut et des méthodes HTTP.
 - `package.json` : commande `npm run test:learning-api`.
 
 Le squelette expose uniquement :
 - `GET /health` : indique explicitement que le service n'est pas configuré et n'accepte aucune inscription ;
 - les routes publiques, agent et revue NH-1 : répondent `503 service_not_configured` ;
+- les routes de décision et d'examen des doublons : répondent également `503 service_not_configured` ;
+- une méthode HTTP non autorisée : répond `405 method_not_allowed` avec l'en-tête `Allow` ;
 - toute autre route : répond `404`.
 
 Les réponses utilisent `Cache-Control: no-store` et `X-Content-Type-Options: nosniff`.
 
 ## Tests effectués
 
-Exécution Node.js de la suite correspondant exactement au code ajouté :
-- santé du service : réussi ;
+Suite Node.js exécutée sur le code ajouté :
+- état de santé et en-têtes : réussi ;
+- méthode incorrecte sur `/health` : réussi ;
 - soumission publique refusée : réussi ;
 - soumission agent refusée : réussi ;
 - file de revue non exposée : réussi ;
+- méthode incorrecte sur une route d'inscription : réussi ;
+- route de décision maintenue désactivée : réussi ;
+- route d'examen des doublons maintenue désactivée : réussi ;
 - route inconnue : réussi.
 
-Résultat : **5 tests réussis, 0 échec**.
+Résultat : **9 tests réussis, 0 échec**.
 
 ## Ce qui n'est pas encore activé
 
