@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const club = fs.readFileSync("club-khuddam.html", "utf8");
+const administration = fs.readFileSync("administration.html", "utf8");
 const projects = fs.readFileSync("projets.html", "utf8");
 const activities = fs.readFileSync("activites.html", "utf8");
 const rules = fs.readFileSync("firestore.rules", "utf8");
@@ -60,4 +61,12 @@ test("les fiches bénévoles et historiques opérationnels ne sont pas supprimab
   assert.match(volunteerRules, /allow delete: if false;/);
   const attendanceRules = rules.slice(rules.indexOf("match /attendance/{recordId}"), rules.indexOf("match /volunteers/{volunteerId}"));
   assert.match(attendanceRules, /allow delete: if false;/);
+});
+
+
+test("la création de fiches membres invalide les sessions administratives obsolètes", () => {
+  assert.match(administration, /function isCurrentStaffSession\(account,generation\)/);
+  assert.match(administration, /const actor=currentUser,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.add\(data\)/);
+  assert.match(administration, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
 });
