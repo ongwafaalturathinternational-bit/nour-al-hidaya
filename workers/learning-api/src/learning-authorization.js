@@ -32,9 +32,9 @@ async function loadTrustedGroup(firestore, groupId) {
   const document = await firestore.getDocument("learningGroups", groupId);
   const fields = decodeFields(document?.fields);
   // These links are read from the canonical server-side group record.
-  // Client-supplied site/mosque/program IDs are never accepted.
-  const { siteId, mosqueId, programId } = fields;
-  if (![siteId, mosqueId, programId].every(validResourceId)) {
+  // Client-supplied site/structure/program IDs are never accepted.
+  const { siteId, structureId, programId } = fields;
+  if (![siteId, structureId, programId].every(validResourceId)) {
     throw new Error("learning_resource_perimeter_invalid");
   }
   return Object.freeze({ groupId, siteId, structureId, programId });
