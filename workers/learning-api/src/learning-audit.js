@@ -25,7 +25,7 @@ export async function writeLearningAuditEvent({
   firestore, authorization, action, targetType, targetId, outcome, now = new Date(),
 }) {
   if (!authorization?.ok || !authorization.principal?.uid ||
-      !Array.isArray(authorization.principal.scopes)) {
+      typeof authorization.scope !== "string" || !/^learning\\.[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){0,3}$/.test(authorization.scope)) {
     return { ok: false, error: "learning_audit_authorization_required" };
   }
   if (!firestore || typeof firestore.createDocument !== "function") {
@@ -44,7 +44,7 @@ export async function writeLearningAuditEvent({
       action,
       targetType,
       targetId: requiredId(targetId),
-      scope: authorization.principal.scopes.find((scope) => typeof scope === "string" && scope.startsWith("learning.")) ?? "learning.unknown",
+      scope: authorization.scope,
       outcome,
       occurredAt: now,
     };
