@@ -263,3 +263,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Ajout d'un test de régression sur la syntaxe et les gardes de session du formulaire.
 - Validation CI de ce dernier lot en attente.
 - Aucun dossier réel, compte, règle Firestore, fusion ou déploiement n'a été modifié.
+
+
+## Poursuite — espace personnel du candidat Club Khuddam — 22 novembre 2026
+
+- Audit du parcours candidat privé : le chargement était déjà protégé contre les réponses asynchrones tardives, mais le nettoyage de l'interface lors des transitions de compte était incomplet.
+- Ajout d'une fonction de nettoyage qui efface l'adresse, le statut, les détails de candidature et l'état de vérification lors d'une déconnexion ou d'un changement de compte.
+- Le chargement d'un nouveau compte commence par vider l'ancien état privé ; les contrôles de génération et d'UID continuent de bloquer les réponses de sessions précédentes.
+- Ajout de vérifications de régression dans les tests du portail.
+- La CI a révélé un test devenu obsolète après le durcissement du formulaire de candidature : il attendait les anciens noms de variables. Le test a été ajusté pour accepter les nouveaux noms tout en vérifiant le renouvellement du compte et du jeton.
+- CI à relancer sur le dernier commit ; aucun déploiement ni fusion.
