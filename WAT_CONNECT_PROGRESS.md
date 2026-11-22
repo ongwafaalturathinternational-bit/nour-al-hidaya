@@ -200,3 +200,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - PR #20, HEAD `e3b04361436f32425c86cf3b971e859265162d23` : Firestore Emulator **139/139**, 0 échec, run [45000655220](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655220); Android staging réussi, run [45000655207](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655207).
 - PR #22, HEAD `6ac4bfe0b035547f5670c016094ce3d102a2023e` : Firestore Emulator **144/144**, 0 échec, run [45001987191](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987191); API NH-1 **113/113** au run [45001987229](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987229); Android staging réussi, run [45001987231](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987231).
 - Ces résultats sont ceux des HEAD indiqués; ils ne certifient pas l'intégration réelle Firebase, les rôles IAM, les bindings Cloudflare ou l'ouverture des routes. Les routes NH-1 restent fermées.
+
+
+
+## Alerte d'intégration — divergence confirmée entre PR #20 et #22 — 22 novembre 2026
+
+- Lecture directe de la branche `fix/lot8-club-onboarding-and-access` : HEAD actuel `e3b04361436f32425c86cf3b971e859265162d23`. La base enregistrée de PR #22 reste `fe9f51c88a4e7de58b2712fb4d0aa87b7f6f766d`.
+- Comparaison des références : `diverged`, PR #22 est 201 commits en avance et 22 commits en retard par rapport à la tête actuelle de sa branche cible.
+- Sept chemins touchés dans les deux historiques : `.firebaserc`, `.github/workflows/firestore-rules.yml`, `docs/ARCHITECTURE-INSCRIPTION-UNIVERSELLE.md`, `docs/SEPARATION-ENVIRONNEMENTS-FIREBASE.md`, `index.html`, `scripts/prepare-capacitor-web.mjs`, `wrangler.staging.json`.
+- Le statut GitHub `mergeable=true` des PR ne garantit pas l'absence de divergence logique dans ces fichiers. La réconciliation de #20/#22 est un prérequis d'intégration; les PR #23/#25/#26/#27, empilées sur #22, devront ensuite être reconstruites/rebasées sur le HEAD réconcilié et retestées.
+- Aucune mise à jour automatique de branche ou fusion n'a été lancée : les sept chemins communs comprennent règles, configuration Firebase et pipeline de build; les fusionner sans résolution et revalidation serait risqué. Les cibles des PR sont conservées.
