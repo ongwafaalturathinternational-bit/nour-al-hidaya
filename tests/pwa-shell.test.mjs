@@ -71,7 +71,7 @@ test("la déconnexion des modules membres et programmes passe par le nettoyage s
 
 
 test("toutes les ressources du précache et des manifestes existent", () => {
-  const match = worker.match(/const APP_FILES = \[([\\s\\S]*?)\];/);
+  const match = worker.match(/const APP_FILES = \[([\s\S]*?)\];/);
   assert.ok(match, "la liste APP_FILES doit être déclarée");
   const appFiles = JSON.parse(`[${match[1]}]`);
   for (const resource of appFiles) {
