@@ -291,7 +291,7 @@ async function mutate(action, request, config, input, options = {}) {
           assignmentVersion: response.assignmentVersion, registryVersion } },
       { operation: "create", collection: COLLECTIONS.audits, id: auditId, precondition: { exists: false },
         fields: { actorUid: auth.principal.uid, action, targetType: "staff_assignment",
-          targetId: input.targetUid, assignmentId: targetAssignmentId, scope: ADMIN_SCOPE,
+          targetId: input.targetUid, assignmentId: targetAssignmentId, requestId: input.requestId, scope: ADMIN_SCOPE,
           outcome: "completed", reason: input.reason.trim(), occurredAt: options.now ?? new Date(), registryVersion } },
     ]);
     return response;
