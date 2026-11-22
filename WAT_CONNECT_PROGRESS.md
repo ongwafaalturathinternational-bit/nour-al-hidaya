@@ -143,3 +143,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Test statique dédié `tests/nour-navigation-a11y.test.mjs`; workflow Firestore Emulator déclenché sur la page et le test.
 - CI à attendre. Aucun résultat n'est revendiqué avant lecture des workflows.
 - Aucun logo, icône, formulaire, donnée, scope, règle, route, production, fusion ou déploiement modifié.
+
+
+
+## Validation CI — PR #27 — 22 novembre 2026
+
+- Au commit de code `3796ef1f92af89481a4c722e40d845bcf2ff1d32` et HEAD testé `9a855e68b8f4cd7dadd51048428e827d517737c6`, Firestore Emulator : **133/133 tests réussis, 0 échec, 0 ignoré**, run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472).
+- APK Android staging construit avec succès, run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484). Artefact debug staging ID `14763451503`, 4 372 131 octets, SHA-256 `9c75be9c0d06c0a087ccef1294e45ee97a367799bace485bfa55d762a9579791`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484/artifacts/14763451503).
+- Les deux workflows sont entièrement terminés avec succès. L'APK reste un artefact de test staging, pas un déploiement.
