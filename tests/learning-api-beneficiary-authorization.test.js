@@ -79,7 +79,7 @@ test("rejects missing, inactive and malformed beneficiary records", async () => 
     "learningBeneficiaries/beneficiary-a": { status: "inactive" },
   }), "beneficiary-a", "enrollment-a"));
   await assert.rejects(() => resolveLearningBeneficiary(firestore({
-    "learningBeneficiaries/beneficiary-a": null,
+    "learningBeneficiaries/beneficiary-a": { status: "invalid" },
   }), "beneficiary-a", "enrollment-a"));
   await assert.rejects(() => resolveLearningBeneficiary(firestore(), "../bad", "enrollment-a"));
 });
