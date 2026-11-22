@@ -1,7 +1,7 @@
 import { authorizeStaffScope } from "./staff-auth.js";
 import { evaluateLearningAssignment } from "./assignment-policy.js";
 import { validateLearningAssignmentRecord } from "./learning-schema.js";
-import { resolveLearningGroup, resolveLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile } from "./learning-resource-resolver.js";
+import { resolveLearningGroup, resolveLearningEnrollment, resolvePendingLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile } from "./learning-resource-resolver.js";
 
 function decodeValue(value) {
   if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
@@ -83,6 +83,15 @@ export function authorizeLearningEnrollment(request, config, scope, enrollmentId
   return authorizeResolvedResource(
     request, config, scope, enrollmentId, options,
     options.resolveEnrollment ?? resolveLearningEnrollment, "enrollment",
+  );
+}
+
+/** Pending registrations require a dedicated administrative review grant. */
+export function authorizeLearningEnrollmentReview(request, config, enrollmentId, options = {}) {
+  const scope = "learning.enrollments.review";
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    options.resolvePendingEnrollment ?? resolvePendingLearningEnrollment, "enrollment-review",
   );
 }
 
