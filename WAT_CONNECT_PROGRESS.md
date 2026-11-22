@@ -142,3 +142,16 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Les huit PNG ont été extraits et vérifiés localement; aucun faux fichier image n'a été créé.
 - Limite confirmée : le connecteur GitHub peut écrire des fichiers texte et créer des blobs à partir d'une chaîne base64, mais ne dispose pas d'une action d'upload binaire depuis les fichiers joints locaux. Le clone Git distant est bloqué par l'absence de résolution réseau GitHub dans l'environnement local. L'action de transfert fiable disponible est l'interface GitHub Web « Add file → Upload files » directement sur cette branche.
 - Après l'ajout des huit fichiers originaux dans les deux dossiers, les références du portail, des modules, de Nour, des deux manifests, du cache PWA et du paquet Android pourront être mises à jour et testées. Aucune référence à des fichiers absents n'a été ajoutée.
+
+
+## Intégration des identités graphiques officielles — 22 novembre 2026
+
+- Les huit PNG originaux sont conservés sans conversion dans `assets/brand/wat/` et `assets/brand/nour/`.
+- Portail WAT Connect : logo horizontal officiel ajouté à l'en-tête; favicon relié à l'icône officielle WAT Connect.
+- Nour Al-Hidaya : le logo intégré auparavant en longue chaîne base64 est remplacé par le fichier PNG officiel du dossier Nour; favicon relié à l'icône officielle Nour.
+- Les manifestes PWA WAT Connect et Nour utilisent chacun leur propre icône officielle. Les références déclarent `sizes: any` car les dimensions exactes des deux fichiers icône n'ont pas été confirmées par lecture binaire.
+- Le service worker précache les quatre ressources graphiques nécessaires et passe de `wat-connect-shell-v5` à `wat-connect-shell-v6` pour renouveler le cache des clients.
+- Le script de préparation Capacitor copie maintenant récursivement `assets/brand/` dans `web-dist/assets/brand/`; sans cette étape les logos auraient été absents du paquet Android.
+- Tests statiques ajoutés : présence des quatre logos dans APP_FILES, copie des assets par le build Android et références d'icônes des deux manifestes. **Ces tests n'ont pas encore été exécutés dans cet environnement**; la validation CI doit confirmer le résultat.
+- Les logos institutionnel ONG Wafa Al-Turath et Club Khuddam Al-Turath ne sont pas remplacés par ceux de WAT Connect ou Nour. Ils seront intégrés à leurs emplacements propres lorsque leurs fichiers seront fournis.
+- Modifications effectuées uniquement sur `feature/official-brand-assets`; aucune fusion, aucun déploiement, aucune donnée réelle ni configuration Firebase/Cloudflare modifiée.
