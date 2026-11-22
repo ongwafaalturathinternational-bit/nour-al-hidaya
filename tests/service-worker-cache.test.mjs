@@ -45,3 +45,11 @@ test("le build Android copie les logos officiels dans web-dist", () => {
   const build = readFileSync(new URL("../scripts/prepare-capacitor-web.mjs", import.meta.url), "utf8");
   assert.match(build, /fs\.cp\(path\.join\(root, "assets", "brand"\), path\.join\(output, "assets", "brand"\), \{ recursive: true \}\)/);
 });
+
+
+test("les manifestes PWA utilisent les icônes officielles de chaque produit", () => {
+  const wat = JSON.parse(readFileSync(new URL("../manifest.json", import.meta.url), "utf8"));
+  const nour = JSON.parse(readFileSync(new URL("../manifest-nour.json", import.meta.url), "utf8"));
+  assert.ok(wat.icons.length > 0 && wat.icons.every(icon => icon.src === "assets/brand/wat/ICONE WC.png"));
+  assert.ok(nour.icons.length > 0 && nour.icons.every(icon => icon.src === "assets/brand/nour/ICONE NOUR ALHIDAYA.png"));
+});
