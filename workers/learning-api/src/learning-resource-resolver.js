@@ -4,7 +4,8 @@ import {
   validateLearningSite,
   validateLearningEnrollment,
   validateLearningBeneficiary,
-  validateLearningBeneficiaryPrivate,\n  validateLearningProfile,
+  validateLearningBeneficiaryPrivate,
+  validateLearningProfile,
 } from "./learning-schema.js";
 
 function decodeValue(value) {
