@@ -8,6 +8,7 @@ const projects = fs.readFileSync("projets.html", "utf8");
 const activities = fs.readFileSync("activites.html", "utf8");
 const rules = fs.readFileSync("firestore.rules", "utf8");
 const firebaseInit = fs.readFileSync("firebase-init.js", "utf8");
+const portal = fs.readFileSync("index.html", "utf8");
 
 test("le Club conserve les trois catégories officielles de bénévoles", () => {
   for (const category of ["occasionnel", "engage", "contributeur"]) {
@@ -71,4 +72,11 @@ test("la création de fiches membres invalide les sessions administratives obsol
   assert.match(administration, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
   assert.match(administration, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=currentUser;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
   assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.doc\(id\)\.update/);
+});
+
+
+test("le portail ne propose Nour Al-Hidaya aux membres d'équipe que s'ils ont aussi un profil apprenant", () => {
+  const staffBranch = portal.slice(portal.indexOf("if(staff){"), portal.indexOf("else if(application)"));
+  assert.match(staffBranch, /if\(profile\.role===\\"apprenant\\"\)addModule\(\\"⌂\\"/);
+  assert.doesNotMatch(staffBranch, /addModule\(\\"⌂\\"/g, "le module apprenant ne doit pas être proposé sans profil apprenant");
 });
