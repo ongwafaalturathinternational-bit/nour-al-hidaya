@@ -461,3 +461,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Artefact : `wat-connect-android-staging-debug-apk`, ID `14776440357`, 4 374 693 octets, empreinte SHA-256 `8e35ae72ed7b710961941331511943ba40888da0b76c1e2214a32ccb16c2dd4b`, expiration le **6 décembre 2026**.
 - Le HEAD PR #20 actuel est `b97dbcdb280eae701ef8af2b63ffbf79bb61c4b0`. La comparaison GitHub confirme que son unique commit après le SHA validé modifie uniquement ce journal documentaire; aucun code applicatif n'a changé depuis les validations.
 - La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun compte, dossier réel, configuration Firebase distante ou environnement de production n'a été modifié. La recette sur appareil Android physique reste à faire.
+
+## Garde de session dans le module Programmes — 22 novembre 2026
+
+- Les opérations de création et de changement de statut vérifient maintenant que l'utilisateur connecté, son UID et la génération de session correspondent toujours à la session active, avant et après l'écriture Firestore.
+- Une réponse asynchrone issue d'une ancienne session ne déclenche plus le rechargement de la vue ni un message de succès/erreur destiné à une nouvelle session.
+- Le bouton de soumission n'est réactivé que si la génération de session d'origine est toujours active.
+- Test statique de régression ajouté dans `tests/operational-block.test.mjs`.
+- Validation du HEAD applicatif `fa6c8a293f2545ff7206801aa47183d88cfbe82d` : workflows Firestore/application et Android staging tous deux **réussis** — [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434113) · [APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434099).
+- Artefact APK staging debug : `wat-connect-android-staging-debug-apk`, ID `14776605615`, 4 374 754 octets, expiration le **6 décembre 2026** — [ouvrir le workflow et récupérer l'artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45078434099).
+- La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun compte, dossier réel, secret, configuration distante ni environnement de production n'a été modifié. La recette Android physique reste à faire.
