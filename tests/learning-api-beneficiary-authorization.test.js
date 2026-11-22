@@ -139,3 +139,25 @@ test("private dossier requires the distinct private scope and assignment grant",
   assert.equal(denied.ok, false);
   assert.equal(denied.error, "learning_assignment_scope_denied");
 });
+
+
+test("does not load private beneficiary document before assignment authorization", async () => {
+  let privateReads = 0;
+  const deps = authDeps("learning.beneficiaries.private.read", {
+    resolveBeneficiary: async () => ({
+      beneficiaryId: "beneficiary-a", enrollmentId: "enrollment-a",
+      structureId: "structure-a", siteId: "site-a", groupId: "group-a", programId: "program-a",
+    }),
+    resolveBeneficiaryPrivate: async () => {
+      privateReads += 1;
+      throw new Error("private_read_should_not_happen");
+    },
+  });
+  deps.firestore.getDocument = async (collection) => collection === "learningStaffAssignments"
+    ? doc({ active: true, assignments: [{
+      ...baseAssignment, scopeGrants: ["learning.beneficiaries.read"],
+    }] }) : null;
+  const denied = await authorizeLearningBeneficiaryPrivate(request, {}, "beneficiary-a", "enrollment-a", deps);
+  assert.equal(denied.ok, false);
+  assert.equal(privateReads, 0);
+});
