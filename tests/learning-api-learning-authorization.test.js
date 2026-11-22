@@ -141,14 +141,13 @@ test("denies all assignments when the staff assignment registry is inactive", as
 });
 
 
-test("skips a malformed assignment and selects a later valid assignment", async () => {
+test("rejects a malformed assignment registry instead of partially trusting it", async () => {
   const malformed = { ...assignment, assignmentId: "../invalid" };
-  const valid = { ...assignment, assignmentId: "assign-valid-later" };
-  const multiple = { fields: { active: encode(true), assignments: encode([malformed, valid]) } };
+  const multiple = { fields: { active: encode(true), assignments: encode([malformed, assignment]) } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
     setup({ assignments: multiple }));
-  assert.equal(result.ok, true);
-  assert.equal(result.assignmentId, "assign-valid-later");
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "learning_assignment_invalid");
 });
 
 test("denies a non-array assignment register", async () => {
