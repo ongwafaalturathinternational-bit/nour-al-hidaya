@@ -35,5 +35,10 @@ jobs:
           node --check workers/learning-api/src/firestore-rest.js
           node --check workers/learning-api/src/staff-auth.js
           node --check workers/learning-api/src/turnstile.js
+          node --check workers/learning-api/src/assignment-policy.js
+          node --check workers/learning-api/src/learning-authorization.js
+          node --check workers/learning-api/src/learning-audit.js
+          node --check workers/learning-api/src/learning-schema.js
+          node --check workers/learning-api/src/learning-resource-resolver.js
       - name: Run NH-1 tests
         run: npm run test:learning-api
