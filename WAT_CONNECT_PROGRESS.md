@@ -224,3 +224,10 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - PR #25 après amélioration de la navigation active : Firestore **134/134** (run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302)) et Android staging réussi (run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206)).
 - PR #26 après ajout du lien d'évitement clavier au portail : Firestore **134/134** (run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614)); Android staging run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643) encore en cours au dernier contrôle.
 - PR #27 : Firestore **133/133** (run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323)); Android staging réussi (run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344)).
+
+
+
+## Validation complémentaire — PR #24 et #26 — 22 novembre 2026
+
+- PR #24 : Firestore Emulator **193/193**, 0 échec, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833); accessibilité des neuf registres financiers ajoutée. Build Android non déclenché par cette modification.
+- PR #26 : Firestore Emulator **134/134**, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging réussi, run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Le portail WAT comporte un lien d'évitement clavier.
