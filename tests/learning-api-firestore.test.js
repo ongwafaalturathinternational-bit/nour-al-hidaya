@@ -21,7 +21,7 @@ test("Firestore create sends typed fields to an approved collection", async () =
   const result = await client.createDocument("learningBeneficiaries", "opaque-id", {
     displayName: "Test Beneficiary", active: true, age: 12, optional: null,
   });
-  assert.match(request.url, /documents\/beneficiaries\?documentId=opaque-id$/);
+  assert.match(request.url, /documents\\/learningBeneficiaries\\?documentId=opaque-id$/);
   assert.equal(request.init.method, "POST");
   assert.equal(request.init.headers.authorization, "Bearer ephemeral-test-token");
   const body = JSON.parse(request.init.body);
@@ -39,6 +39,7 @@ test("Firestore client refuses unknown collections and malformed IDs before netw
     fetch: async () => { calls += 1; return new Response("{}", { status: 200 }); },
   });
   await assert.rejects(() => client.getDocument("users", "x"), /collection_not_allowed/);
+  await assert.rejects(() => client.getDocument("beneficiaries", "x"), /collection_not_allowed/);
   await assert.rejects(() => client.getDocument("learningBeneficiaries", "../x"), /document_id_invalid/);
   assert.equal(calls, 0);
 });
