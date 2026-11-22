@@ -145,3 +145,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - CI non encore terminée à ce checkpoint. Aucun résultat de test revendiqué avant lecture du workflow.
 - Limite binaire toujours ouverte : les huit PNG originaux sont extraits localement et contrôlés, mais le connecteur GitHub disponible ne propose que l'écriture UTF-8 pour les fichiers de contenu; la fonction Git Data accepte du base64, mais aucun canal de transfert de fichiers local vers cet appel n'est exposé. Aucun binaire factice ni chemin cassé n'a été committé. Les logos ne sont donc pas encore intégrés au dépôt.
 - Aucun formulaire, rôle, scope, règle Firestore, route métier, donnée réelle, configuration Firebase/Cloudflare, fusion ou déploiement n'a été modifié.
+
+
+
+## Résultat partiel CI — PR #26 — 22 novembre 2026
+
+- Firestore security rules terminé avec succès au HEAD `abbc05b5905e10994f3143433152a2b73f7d32f1` : **133/133 tests réussis, 0 échec, 0 ignoré**, run [45045157000](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157000).
+- APK Android staging toujours en cours au run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005); ne pas annoncer sa réussite avant la fin du job.
+- PR #26 reste ouverte, brouillon, non fusionnée, mergeable=true.
