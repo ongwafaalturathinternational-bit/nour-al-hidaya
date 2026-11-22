@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { authorizeLearningGroup } from "../workers/learning-api/src/learning-authorization.js";
+import { authorizeLearningGroup, authorizeLearningEnrollment } from "../workers/learning-api/src/learning-authorization.js";
 
 const principal = { uid: "staff-1", role: "formateur", scopes: ["learning.beneficiaries.read"] };
 const assignment = {
@@ -185,6 +185,37 @@ test("does not accept a group without every currently required canonical link", 
   const incomplete = { fields: { siteId: encode("site-a"), mosqueId: encode("mosque-a") } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
     setup({ group: incomplete }));
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "learning_resource_unavailable");
+});
+
+
+test("authorizes an enrollment only through canonical resolver output and matching assignment", async () => {
+  const trustedEnrollment = Object.freeze({
+    enrollmentId: "enrollment-a", beneficiaryId: "beneficiary-a",
+    siteId: "site-a", structureId: "structure-a", groupId: "group-a",
+    programId: "program-a", periodId: "period-2026", status: "active",
+  });
+  const deps = setup();
+  const result = await authorizeLearningEnrollment(
+    request, {}, "learning.beneficiaries.read", "enrollment-a",
+    { ...deps, resolveEnrollment: async (_firestore, id) => {
+      assert.equal(id, "enrollment-a");
+      return trustedEnrollment;
+    } },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.resourceKind, "enrollment");
+  assert.equal(result.resource.enrollmentId, "enrollment-a");
+  assert.equal(result.assignmentId, "assign-1");
+});
+
+test("denies enrollment authorization when canonical enrollment resolution fails", async () => {
+  const deps = setup();
+  const result = await authorizeLearningEnrollment(
+    request, {}, "learning.beneficiaries.read", "enrollment-a",
+    { ...deps, resolveEnrollment: async () => { throw new Error("enrollment_not_active"); } },
+  );
   assert.equal(result.ok, false);
   assert.equal(result.error, "learning_resource_unavailable");
 });
