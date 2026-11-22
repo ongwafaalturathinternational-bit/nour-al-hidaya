@@ -114,3 +114,41 @@ test("staff scope authorization fails closed if staff registry is unavailable", 
   assert.equal(result.error, "staff_access_unavailable");
   assert.equal(result.status, 403);
 });
+
+
+test("staff scope authorization rejects malformed scope entries instead of filtering them", async () => {
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({
+    document: { fields: {
+      active: { booleanValue: true },
+      scopes: { arrayValue: { values: [
+        { stringValue: "learning.beneficiaries.read" },
+        { stringValue: "not a valid scope" },
+      ] } },
+    } },
+  }));
+  assert.deepEqual(result, { ok: false, status: 403, error: "staff_access_invalid" });
+});
+
+test("staff scope authorization rejects duplicate scope entries", async () => {
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({
+    document: { fields: {
+      active: { booleanValue: true },
+      scopes: { arrayValue: { values: [
+        { stringValue: "learning.beneficiaries.read" },
+        { stringValue: "learning.beneficiaries.read" },
+      ] } },
+    } },
+  }));
+  assert.deepEqual(result, { ok: false, status: 403, error: "staff_access_invalid" });
+});
+
+test("staff scope authorization rejects oversized scope lists", async () => {
+  const values = Array.from({ length: 101 }, (_, index) => ({ stringValue: "learning.scope" + index }));
+  const result = await authorizeStaffScope(request(), config, "learning.scope0", dependencies({
+    document: { fields: {
+      active: { booleanValue: true },
+      scopes: { arrayValue: { values } },
+    } },
+  }));
+  assert.deepEqual(result, { ok: false, status: 403, error: "staff_access_invalid" });
+});
