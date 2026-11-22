@@ -61,3 +61,12 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Les champs définitifs du dossier restent à valider à partir du cahier des charges initial. Aucun schéma de données personnelles n'est inventé à cette étape.
 - Les routes restent en 503. Aucun appel Firestore réel, aucune règle distante modifiée et aucun déploiement.
 - Cette harmonisation vient d'être poussée sur la branche de travail; la validation CI de ce dernier changement reste à confirmer.
+
+## Vérification des droits d'équipe et du portail — 22 novembre 2026
+
+- Audit des règles Firestore WAT Connect existantes : `staffAccess` est en lecture individuelle seulement ; aucun scope `learning.*` n'existe encore dans les règles héritées.
+- Scopes existants confirmés : `programs.*`, `activities.*`, `attendance.*`, `members.*`, `projects.*`, `volunteers.*`.
+- Le raccourci Nour Al-Hidaya dans le portail est désormais affiché uniquement aux comptes d'équipe possédant un scope `learning.*` ; ce filtrage UI ne remplace pas les contrôles serveur.
+- Les tests d'autorisation utilisent maintenant les scopes granulaires `learning.beneficiaries.read` et `learning.beneficiaries.review`.
+- L'audit `docs/AUDIT-PERMISSIONS-NH1.md` confirme que la matrice de rôles, les scopes NH et les périmètres site/mosquée/groupe/programme doivent être validés avant raccordement des routes.
+- Aucun accès réel NH-1 n'est activé ; les routes restent en 503.
