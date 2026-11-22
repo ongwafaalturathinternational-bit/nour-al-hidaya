@@ -202,3 +202,18 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Ajout de authorizeLearningEnrollmentReview avec le scope préparatoire distinct learning.enrollments.review et le contrôle du périmètre complet de l’affectation.
 - Les tests couvrent la séparation pending/active, les références absentes et le refus d’une affectation hors périmètre.
 - Le scope n’est attribué à aucun compte et aucune route n’est activée. La décision sur la clé d’unicité anti-doublon reste à valider par WAT; aucune création/idempotence métier n’est encore implémentée.
+
+
+## Revue administrative des inscriptions en attente — 22 novembre 2026
+
+- Ajout d'un résolveur serveur réservé aux inscriptions au statut `pending`; le résolveur d'accès ordinaire continue d'accepter uniquement les inscriptions `active`.
+- Ajout de `authorizeLearningEnrollmentReview`, avec le scope distinct `learning.enrollments.review` et contrôle du périmètre à partir des affectations fiables résolues côté serveur.
+- Tests de résolution et d'autorisation ajoutés; les routes restent désactivées et aucune affectation de scope n'est créée.
+- Aucun changement de statut, approbation, rejet, création d'inscription ou lecture de dossier réel n'a été effectué.
+- La clé métier d'unicité/idempotence des inscriptions reste en attente d'une décision WAT; elle n'est pas inventée par le code.
+
+## Dernière validation CI
+
+- Commit de base NH-1 `a5939aa46e492341805d9a1d5bf28644cdfc8b0a` : 91 tests API réussis, règles Firestore réussies, APK Android staging construit et publié.
+- Commit documentaire `66c261c9a98251593cbeaf4de610af6dd60923d2` : contrôles API, Firestore et APK staging tous réussis.
+- Les corrections documentaires qui suivent harmonisent les dimensions d'affectation et les scopes de revue; elles ne changent aucune route ni donnée. Leur CI doit confirmer le dernier HEAD avant toute nouvelle étape.
