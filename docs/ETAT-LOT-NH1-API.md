@@ -79,3 +79,11 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - La PR #21 reste une fondation réutilisable pour le provisionnement central, mais elle n'est pas compatible NH en l'état. Aucun changement n'a été poussé sur sa branche.
 - Décision : ne pas fusionner les PR #21 et #22 en l'état. Préparer une extension coordonnée après validation du modèle d'affectation et des responsabilités d'administration.
 - Les routes NH restent fermées en 503 ; aucun scope, compte, affectation, secret, règle distante ou déploiement n'a été créé ou activé.
+
+## Primitive de contrôle des affectations — 22 novembre 2026
+
+- Ajout de `workers/learning-api/src/assignment-policy.js` : évaluation pure et fail-closed d'une affectation NH, avec vérification du scope exact, de l'état actif, des dates de validité et des identifiants explicites de site/mosquée/groupe/programme présents dans le contexte de la ressource.
+- Une affectation vide, un périmètre absent, un identifiant mal formé, un scope non attribué ou une affectation expirée entraîne un refus. Aucun joker ni accès global implicite n'est accepté.
+- Ajout de `tests/learning-api-assignment-policy.test.js` couvrant l'autorisation concordante, les scopes absents, l'inactivité, les dates, les accès inter-sites/inter-groupes, les périmètres vides et les valeurs mal formées.
+- **Limite importante :** cette primitive est isolée et non raccordée à `staff-auth.js` ni aux routes Worker. Elle ne résout pas encore les relations hiérarchiques entre identifiants (par exemple déterminer qu'une mosquée appartient à un site) ; les identifiants comparés doivent provenir d'une lecture serveur fiable. Les routes restent en 503.
+- Aucun compte, document Firestore, scope réel, secret, règle distante ou déploiement n'a été modifié. La CI du commit `ca19753c0b6fe9dd57ebe702f195c4e4e3e1e9fd` n'est pas encore confirmée.
