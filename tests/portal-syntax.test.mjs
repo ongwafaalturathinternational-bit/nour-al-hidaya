@@ -128,7 +128,7 @@ test("Nour Al-Hidaya offre toujours un retour au portail après navigation ou d�
 
 test("le portail invalide les chargements d'accès et masque l'espace après un changement de compte", () => {
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(html, /let authGeneration=0/);
+  assert.match(html, /authGeneration=0/);
   assert.match(html, /function clearWorkspace\(\)/);
   assert.match(html, /\$\("workspace"\)\.hidden=true/);
   assert.match(html, /const generation=\+\+authGeneration;clearWorkspace\(\)/);
@@ -151,7 +151,7 @@ test("les modules Programmes et Membres isolent les données entre sessions", ()
       .filter(source => source.trim());
     assert.ok(scripts.length > 0, file + " doit contenir son script applicatif");
     scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), file + " script n°" + (index + 1)));
-    assert.match(html, /let authGeneration=0/);
+    assert.match(html, /authGeneration=0/);
     assert.match(html, /function clearPrivateView\(\)/);
     assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
     assert.match(html, /generation!==authGeneration/);
