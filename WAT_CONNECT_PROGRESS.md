@@ -7,17 +7,18 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié à la reprise
 
-- HEAD PR #22 avant l'amélioration de navigation : dbeb90a3e38c290b9f8f24c18fc8a816521c3dfb.
+- HEAD PR #22 : bcaf337c2df6e1e4e4350a747c6784aaab0a4825.
 - PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
 - PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
 - Tests isolés locaux après le correctif d'idempotence : 113 réussis, 0 échec. Après l'amélioration responsive, la suite combinée ciblée passe à 115/115.
+- CI du commit bcaf337 : API 44992433833, Firestore Emulator 44992433789, Android staging 44992433810 — tous réussis; Preview Cloudflare de branche réussi (déploiement preview 5413d640, URL https://5413d640-nour-al-hidaya.ongwafaalturathinternational.workers.dev).
 - CI du commit 52936f8 : API 44992027280, Firestore Emulator 44992027277, Android staging 44992027266 — tous réussis.
 - Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
 - Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
 - .firebaserc : défaut demo-wat-connect, alias staging wat-connect-staging, aucun alias de production. Tests Firebase explicitement ciblés sur le projet demo; Android staging cible le projet staging.
 - Aucun script/workflow Firebase de déploiement production observé. Le chemin Wrangler production reste distinct et n'a pas été lancé.
 - Le build Preview Cloudflare automatique des commits 195853f et 6be8c3d a échoué avant création d'URL : Wrangler signalait le bloc previews manquant dans wrangler.staging.json. Le commit 067bdcc ajoute previews vide dans la seule configuration staging; le test de confinement et le Preview de branche réussissent. Aucun déploiement de production n'a été lancé.
-- PR #22 s'empile volontairement sur la PR #20 non fusionnée; main ne contient pas le fondement Lot 8 nécessaire à cette revue NH-1. Base conservée.
+- PR #22 s'empile sur la PR #20 non fusionnée; main ne contient pas le fondement Lot 8 nécessaire à cette revue NH-1. Le branch target Lot 8 a 3 commits après l'ancêtre commun fe9f51c : règles ISO dates/restauration Firestore, test dates et rapports. Ces fichiers ne sont pas dans le delta PR #22; GitHub la déclare mergeable. Base conservée.
 - Compte Cloudflare connecté en lecture seule. Workers wat-connect-staging et nour-al-hidaya existent; paramètres consultés : bindings, routes et migrations vides. Aucun secret/configuration n'a été modifié.
 - Aucun connecteur Firebase, CLI firebase ou gcloud, ni credential env local détecté; l'identité institutionnelle et l'IAM staging restent impossibles à vérifier dans cette session.
 - Routes métier NH-1 toujours fermées. Aucun compte réel, donnée réelle, configuration de production, merge ou déploiement production modifié/exécuté.
@@ -38,6 +39,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Durcissement des motifs d'audit/idempotence des affectations et tests de rejeu/concurrence.
 - Extension des tests aux rejeux update/revoke avec changement de patch, version et motif.
 - Navigation portail : liens publics conservés sur mobile, retour à la ligne et focus clavier visibles; test de régression dédié.
+- Preview de branche Cloudflare réussie après l'ajout du bloc Wrangler staging; URL publique. Elle est distincte du déploiement production et n'utilise aucun binding. Ne saisir aucune donnée réelle dans l'aperçu.
 - Inventaire Cloudflare staging en lecture seule.
 - Diagnostic Cloudflare du build échoué; correction Wrangler staging, test et Preview validés.
 
