@@ -7,14 +7,15 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié à la reprise
 
-- HEAD PR #22 avant ce correctif : 6be8c3d9042210c9a8d7c8bff21d5bdbf1ec8c47.
+- HEAD PR #22 : 067bdccdda5bef59576fc59974e74ffe9a1f7be5.
 - PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
 - PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
 - Tests isolés locaux après le correctif Wrangler : 112 réussis, 0 échec.
+- Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
 - Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
 - .firebaserc : défaut demo-wat-connect, alias staging wat-connect-staging, aucun alias de production. Tests Firebase explicitement ciblés sur le projet demo; Android staging cible le projet staging.
 - Aucun script/workflow Firebase de déploiement production observé. Le chemin Wrangler production reste distinct et n'a pas été lancé.
-- Le build Preview Cloudflare automatique des commits 195853f et 6be8c3d a échoué avant création d'URL : Wrangler signalait le bloc previews manquant dans wrangler.staging.json. Correctif local ajouté : previews vide dans la seule configuration staging; test de confinement ajouté. Aucun déploiement Preview n'a eu lieu pendant ces échecs.
+- Le build Preview Cloudflare automatique des commits 195853f et 6be8c3d a échoué avant création d'URL : Wrangler signalait le bloc previews manquant dans wrangler.staging.json. Le commit 067bdcc ajoute previews vide dans la seule configuration staging; le test de confinement et le Preview de branche réussissent. Aucun déploiement de production n'a été lancé.
 - PR #22 s'empile volontairement sur la PR #20 non fusionnée; main ne contient pas le fondement Lot 8 nécessaire à cette revue NH-1. Base conservée.
 - Compte Cloudflare connecté en lecture seule. Workers wat-connect-staging et nour-al-hidaya existent; paramètres consultés : bindings, routes et migrations vides. Aucun secret/configuration n'a été modifié.
 - Aucun connecteur Firebase, CLI firebase ou gcloud, ni credential env local détecté; l'identité institutionnelle et l'IAM staging restent impossibles à vérifier dans cette session.
@@ -24,7 +25,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 - 195853f — ajout du motif d'audit et extension de l'idempotence; tests, documentation et préparation Firebase staging.
 - 6be8c3d — rapport de continuité initial WAT_CONNECT_PROGRESS.md.
-- Prochain commit — correction de wrangler.staging.json et test anti-régression du bloc Preview.
+- 067bdcc — correction du bloc previews Wrangler staging, test anti-régression et mise à jour du rapport; CI et Preview réussis.
 - CI associée : API run 44990071689 (success), Firestore run 44990071677 (success), Android staging run 44990071687 (success).
 
 ## Tâches terminées
@@ -34,7 +35,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Contrôle statique des scripts Firebase et Wrangler par environnement.
 - Durcissement des motifs d'audit/idempotence des affectations et tests de rejeu/concurrence.
 - Inventaire Cloudflare staging en lecture seule.
-- Diagnostic Cloudflare du build échoué et correction staging préparée, validée localement.
+- Diagnostic Cloudflare du build échoué; correction Wrangler staging, test et Preview validés.
 
 ## Tâches restantes
 
@@ -52,4 +53,4 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## Prochaine action
 
-Publier le correctif Wrangler staging, confirmer que le build Preview réussit sans liaison à une ressource réelle, puis poursuivre les tests Emulator et l'audit des dépendances PR. Ne jamais fusionner, déployer production, toucher à des comptes/dossiers réels ni ouvrir les routes.
+Auditer précisément le delta de PR #20/#22, confirmer le périmètre du Preview sur le Worker staging et reprendre les modules fonctionnels suivants sans franchir le blocage IAM. Ne jamais fusionner, déployer production, toucher à des comptes/dossiers réels ni ouvrir les routes.
