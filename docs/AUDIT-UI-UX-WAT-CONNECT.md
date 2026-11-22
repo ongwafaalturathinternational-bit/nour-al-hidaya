@@ -188,3 +188,36 @@ La première étape de refonte doit être un système de marque et de composants
 - Revue statique des sources sur PR #22 et des ressources PNG fournies; pas de test graphique en navigateur ni sur appareil réel dans cette étape.
 - Les fichiers binaires ont été extraits et leurs dimensions/modes vérifiés localement; ils ne sont pas encore committés dans GitHub.
 - Le transfert binaire est donc un prérequis pour la PR d'intégration des logos. Les autres audits et tâches de cohérence de l'interface restent indépendants et peuvent continuer.
+
+
+## 10. Revue responsive complémentaire des modules Lot 8 — 22 novembre 2026
+
+### Mesures statiques des registres
+
+| Module | Largeur minimale CSS du tableau | Zones défilantes | Formulaires HTML | Breakpoints principaux |
+|---|---:|---:|---:|---|
+| Administration | 620 px | 1 | 1 | 800 / 600 px |
+| Programmes | 650 px | 1 | 1 | 800 / 600 px |
+| Projets | 650 px | 1 | 2 | 820 / 620 / 600 / 560 / 480 px |
+| Activités | 610 px | 1 | 2 | 800 / 620 / 600 / 560 / 480 px |
+| Club Khuddam | 680 px | 2 | 1 | 820 / 700 / 620 / 600 / 480 / 420 px |
+| Candidature Club | sans tableau | 0 | 3 | 600 px |
+| Espace candidat | sans tableau | 0 | 1 | 600 px |
+
+Les cinq modules de gestion utilisent déjà `overflow:auto` autour des tableaux : les colonnes ne sont pas supprimées sur téléphone, mais un défilement horizontal est nécessaire. Avant le correctif dédié, ces conteneurs n'étaient pas explicitement accessibles par Tab et n'avaient pas de nom de région. PR #25 ajoute `role=region`, `aria-label` et `tabindex=0` aux six zones; elle rend aussi leur focus visible via le socle WAT. Le défilement et les données sont conservés.
+
+### Cohérence responsive
+
+- Administration et Programmes partagent deux seuils, alors que Projets, Activités et Club combinent plusieurs seuils et des règles spécifiques.
+- Les pages publiques d'inscription et d'espace candidat ont une structure plus simple, mais leur contrôle clavier et leurs messages d'erreur méritent une recette distincte.
+- Nour Al-Hidaya utilise un shell responsive spécifique : largeur mobile 520 px, largeur intermédiaire 820 px, puis disposition desktop avec navigation latérale à partir de 1000 px; la navigation inférieure mobile devient une barre latérale sur grand écran. Le choix de thème clair/sombre est déjà pris en charge.
+- L'objectif de la refonte globale n'est pas d'uniformiser arbitrairement tous les breakpoints. Il faut définir des composants communs et des comportements testables, puis conserver les exceptions propres à chaque écran.
+
+### Suite de la refonte UI/UX
+
+1. Stabiliser les en-têtes et la navigation partagés, avec logos WAT/Nour correctement séparés.
+2. Définir les composants de formulaire, cartes, indicateurs, états et messages; appliquer sans réécrire les modules existants.
+3. Normaliser les registres : scroll accessible, actions persistantes, colonnes prioritaires et vue mobile en cartes lorsque cela ne masque aucune information.
+4. Revoir les écrans d'inscription, connexion, détails, tableaux de bord et états vides/erreur.
+5. Recetter les parcours par rôle avec données fictives et tester 360/390/768 px et desktop.
+6. Conserver les validations métier, scopes, contrôles Firestore, exports, impressions et synchronisation hors ligne.
