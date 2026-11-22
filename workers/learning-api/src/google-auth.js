@@ -92,7 +92,7 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
       cachedKeys = body.keys;
       const cacheControl = response.headers.get("cache-control") ?? "";
       const maxAge = Number(cacheControl.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1] ?? 300);
-      cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
+      cachedKeysUntil = now + Math.min(Math.max(maxAge, 0), 3600);
     }
     keys = cachedKeys;
   }
