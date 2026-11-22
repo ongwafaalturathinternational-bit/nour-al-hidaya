@@ -21,8 +21,8 @@ const COLLECTIONS = new Set([
   "learningAuditLogs",
 ]);
 
-function assertDocumentTarget(collection, documentId) {
-  if (!COLLECTIONS.has(collection)) throw new Error("firestore_collection_not_allowed");
+function assertDocumentTarget(collection, documentId, readOnly = false) {
+  if (!(COLLECTIONS.has(collection) || (readOnly && READ_ONLY_COLLECTIONS.has(collection)))) throw new Error("firestore_collection_not_allowed");
   if (typeof documentId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(documentId)) {
     throw new Error("firestore_document_id_invalid");
   }
@@ -105,8 +105,8 @@ export function createFirestoreRestClient(config, options = {}) {
     });
   }
 
-  const documentUrl = (collection, id) => {
-    assertDocumentTarget(collection, id);
+  const documentUrl = (collection, id, readOnly = false) => {
+    assertDocumentTarget(collection, id, readOnly);
     return API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents/" +
       encodeURIComponent(collection) + "/" + encodeURIComponent(id);
   };
