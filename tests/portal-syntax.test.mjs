@@ -54,6 +54,10 @@ test("les scripts de l'espace candidat sont syntaxiquement valides et isolés", 
   scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), "script espace candidat n°" + (index + 1)));
   assert.match(html, /collection\("volunteerApplications"\)/);
   assert.match(html, /doc\(user\.uid\)/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /clearPrivateView\(\)/);
+  assert.match(html, /authGeneration \+= 1/);
+  assert.match(html, /if\(!isCurrentSession\(user,generation\)\)return/);
 });
 
 test("les pages opérationnelles ne référencent pas d'identifiants DOM inexistants", () => {
