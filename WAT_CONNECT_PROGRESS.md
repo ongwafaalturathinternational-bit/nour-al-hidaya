@@ -7,10 +7,10 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié à la reprise
 
-- HEAD PR #22 : 52936f8602b08515d4de5b002ffb6dad0c51e7d4.
+- HEAD PR #22 avant l'amélioration de navigation : dbeb90a3e38c290b9f8f24c18fc8a816521c3dfb.
 - PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
 - PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
-- Tests isolés locaux : 113 réussis, 0 échec. Le test couvre les rejeux grant/update/revoke et les conflits sur motif, patch et expectedVersion sans audit en double.
+- Tests isolés locaux après le correctif d'idempotence : 113 réussis, 0 échec. Après l'amélioration responsive, la suite combinée ciblée passe à 115/115.
 - CI du commit 52936f8 : API 44992027280, Firestore Emulator 44992027277, Android staging 44992027266 — tous réussis.
 - Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
 - Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
@@ -37,6 +37,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Contrôle statique des scripts Firebase et Wrangler par environnement.
 - Durcissement des motifs d'audit/idempotence des affectations et tests de rejeu/concurrence.
 - Extension des tests aux rejeux update/revoke avec changement de patch, version et motif.
+- Navigation portail : liens publics conservés sur mobile, retour à la ligne et focus clavier visibles; test de régression dédié.
 - Inventaire Cloudflare staging en lecture seule.
 - Diagnostic Cloudflare du build échoué; correction Wrangler staging, test et Preview validés.
 
