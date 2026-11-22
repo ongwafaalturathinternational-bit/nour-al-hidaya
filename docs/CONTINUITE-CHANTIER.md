@@ -516,3 +516,11 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - `firebase-init.js` contient les mécanismes de persistance, les indicateurs de connexion/perte de connexion et le chemin de déconnexion sécurisée.
 - **Portée : audit statique uniquement.** Il ne démontre pas la synchronisation réelle, la récupération après extinction, le comportement multi-onglet ni l'effacement complet du stockage sur appareil. Ces scénarios restent à tester avec des comptes fictifs sur téléphone.
 - Aucun code applicatif ni configuration distante n'a été modifié lors de cet audit.
+
+## Reprise du 22 novembre 2026 — contrôle PWA
+
+- Sur le commit `cdad97fa25a0fe5f6ddbd67cb900b69035662dbb`, le build Android debug a réussi ([workflow 45084215873](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45084215873)).
+- Le workflow Firestore a révélé un défaut dans le nouveau test PWA, pas dans les règles : l'expression régulière du test échappait deux fois `\\s` et ne reconnaissait donc pas le tableau `APP_FILES`.
+- Correction du test dans le commit `c15dd8abed263b165a7c578975ac0e0aa3f7a265`. Les validations doivent être relancées sur ce nouveau commit; aucun résultat n'est présumé.
+- Le test vérifie désormais l'existence des ressources précachées et des chemins de démarrage/icônes des deux manifestes.
+- Aucun merge ni déploiement de production effectué.
