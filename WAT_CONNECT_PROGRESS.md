@@ -106,3 +106,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Nouveau test de rejeu concurrent identique sur grant : un appel initial et un replay, même identifiant d'affectation, un seul reçu, une seule version et un seul événement d'audit.
 - Commit de test `106202c0be11c29841c4e6b9d25582213af58e1e`; CI complète réussie : API NH-1 44999694218, Firestore Emulator 44999694234 et APK Android staging 44999694200.
 - Les routes restent fermées; aucun accès Firebase réel, donnée réelle, fusion ou déploiement.
+
+## Sécurité des candidatures et Cloudflare — 22 novembre 2026
+
+- PR #20 : correction des limites contournables côté client pour les tableaux compétences/intérêts des candidatures. Les règles serveur exigent une liste de 0 à 20 valeurs texte, chaque valeur de 1 à 120 caractères, et au plus 500 caractères concaténés par champ. Le registre bénévoles actif conserve ses contrôles d'origine.
+- Le contrôle avait d'abord échoué (138/139) car le helper avait été ajouté sans être relié au match volunteerApplications; le test diagnostique a identifié une compétence de 121 caractères acceptée. Le helper a ensuite été raccordé au bon match, et son application accidentelle aux règles de bénévoles actifs a été annulée.
+- Commit final vérifié sur PR #20 : e3b04361436f32425c86cf3b971e859265162d23. Firestore Emulator **139/139** (run 45000655220) et APK Android staging réussi (run 45000655207).
+- Inventaire Cloudflare strictement GET : identité connectée ongwafaalturathinternational@gmail.com; compte standard, enforce_twofactor=false. Workers wat-connect-staging et nour-al-hidaya : bindings vides, routes vides, sous-domaines workers.dev et previews activés. Derniers déploiements consultés : staging 21 nov. 2026 11:29Z; nour-al-hidaya 18 nov. 2026 22:37Z. Aucun Worker, secret, réglage ou déploiement modifié.
+- État GitHub après calcul : PR #20 et #22 ouvertes, en brouillon, non fusionnées et mergeable=true. #22 conserve sa cible Lot 8; aucune fusion, ouverture de routes, opération Firebase réel ou déploiement production.
