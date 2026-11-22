@@ -145,3 +145,21 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Aucune donnée réelle, règle Firestore, route métier, configuration Firebase/Cloudflare, secret, production, fusion ou déploiement n'a été touché. PR #20, #22 et #12 restent indépendantes et non fusionnées.
 
 - PR documentaire créée : [#23 — Audit UI/UX comparatif WAT Connect](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/23), brouillon ouvert, cible `feature/nour-central-management-foundation`. Comparaison GitHub : 2 commits en avance, 0 en retard, base = HEAD de PR #22 ; vérification ultérieure : `mergeable=true`. Aucune fusion effectuée.
+
+
+## Audit approfondi des identités visuelles et de Nour Al-Hidaya — 22 novembre 2026
+
+- Ouverture et inventaire des deux archives officielles : huit PNG couleur/blanc (logos complets et icônes) vérifiés en RGBA avec transparence. Les fichiers originaux sont conservés sans altération dans l'espace de travail; dimensions consignées dans `docs/AUDIT-UI-UX-WAT-CONNECT.md`.
+- Audit des en-têtes : portail, site institutionnel, Administration, Programmes, Projets, Activités et Club utilisent encore des titres textuels sans logo image. Nour réutilise une seule constante PNG encodée en base64 dans l'en-tête foncé, la connexion claire et les écrans de démarrage; les deux manifestes utilisent les mêmes icônes génériques racine.
+- Le plan d'intégration distingue explicitement les assets WAT et Nour, les versions couleur/blanche, les favicons/manifests et le cache PWA. Aucun chemin d'asset non committé n'a été ajouté et aucun logo n'a été redessiné.
+- Limite technique constatée : l'action de création de fichier GitHub disponible dans ce chantier accepte UTF-8 et ne transmet pas les octets PNG. Les originaux sont prêts localement; une méthode de transfert binaire vers le dépôt reste nécessaire avant leur intégration effective. L'audit et les travaux UI/UX indépendants continuent sans attendre.
+- État PR #24 : Firestore security rules workflow du HEAD `c2541ee055a3fe693689066e1eaae1962991230b` terminé avec succès. Les commentaires du bot Cloudflare sur les commits `1286d11` et `c2541ee` indiquent toutefois deux échecs de build de prévisualisation, sans URL publiée. Ce sont des builds Preview, pas une preuve de déploiement production; aucune opération production n'a été effectuée.
+- PR #20, #22, #12, #23 et #24 vérifiées ouvertes, en brouillon, non fusionnées et mergeable au contrôle du 22 novembre 2026. Leurs branches et cibles sont conservées.
+- Aucun compte/dossier réel, règle métier, route NH-1, IAM, secret, configuration Firebase réelle, fusion ou déploiement de production n'a été modifié.
+
+### Priorités suivantes
+
+1. Finaliser une voie de transfert binaire contrôlée pour committer les huit originaux, puis créer une PR d'intégration des deux identités sur portail, modules WAT et Nour.
+2. Poursuivre l'audit UI/UX des formulaires, tableaux, navigation, densité, états et accessibilité des modules Lot 8, sans recommencer leur développement.
+3. Diagnostiquer séparément les échecs Cloudflare Preview de PR #24; ne pas les confondre avec le workflow Firestore réussi ni avec un déploiement production.
+4. Maintenir l'ordre de la feuille de route initiale et la fermeture des routes NH-1 jusqu'aux validations institutionnelles.
