@@ -40,3 +40,15 @@ test("le formulaire public efface les mots de passe lors de chaque transition de
   assert.match(update, /\$\("loginPassword"\)\.value=""/);
   assert.ok(update.indexOf('authGeneration') < update.indexOf('registerPassword'));
 });
+
+test("l'espace candidat efface le mot de passe et protège les actions asynchrones", () => {
+  const portal = fs.readFileSync(new URL("../club-khuddam-espace.html", import.meta.url), "utf8");
+  assert.match(portal, /\$\("password"\)\.value = ""/);
+  const login = portal.slice(portal.indexOf('$("loginForm")'), portal.indexOf('$("forgot")'));
+  assert.match(login, /generation=authGeneration/);
+  assert.match(login, /finally\{\$\("password"\)\.value="";/);
+  const resend = portal.slice(portal.indexOf('$("resend")'), portal.indexOf('$("refresh")'));
+  assert.match(resend, /isCurrentSession\(user,generation\)/);
+  const reset = portal.slice(portal.indexOf('$("forgot")'), portal.indexOf('$("resend")'));
+  assert.match(reset, /generation===authGeneration/);
+});
