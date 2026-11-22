@@ -481,3 +481,15 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits applicatifs : `c6e0f41e13747553add2ae318d47e2ab90cb64b2` (Projets), `35c6e9a5c1b16a567f898310e553b11dcf9c3e98` (Activités). Test : `15be63f05ec8119748de50fe2460c184e1d300a6`.
 - CI sur le commit de test `15be63f05ec8119748de50fe2460c184e1d300a6` : tests Firestore/application et build Android staging lancés, résultats en attente au moment de cette note — [Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080392825) · [APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080392493).
 - Aucun compte réel, dossier membre, secret ou environnement de production n'a été modifié. PR #20 toujours en brouillon et non fusionnée.
+
+
+## Mise à jour — 22 novembre 2026, sécurisation des sessions Projets / Activités / Club
+
+- **Commit applicatif validé :** `881dd2a2e220fabcc77f5d19818a39bdf3f49c4d`.
+- Les chargements asynchrones des modules Projets, Activités et Club Khuddam vérifient désormais le compte Firebase et la génération de session avant/après les lectures sensibles. Les fiches et historiques ignorent les réponses d'une session devenue obsolète.
+- Les tests de régression ont été ajustés pour vérifier l'identité Firebase réelle en plus du compteur de génération.
+- **Règles Firestore et tests :** [workflow 45080899691 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080899691).
+- **APK Android staging :** [workflow 45080899605 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080899605).
+- **Artefact APK staging debug :** [wat-connect-android-staging-debug-apk — ID 14777455995](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45080899605/artifacts/14777455995), 4 374 852 octets, SHA-256 `95fc9f544029ebb5ad19490925ee38678531151b9b3e5b0b9ae8d669608ccddc`, expiration le **6 décembre 2026 à 23:02 UTC**.
+- Ces validations correspondent au commit applicatif ci-dessus. Elles ne remplacent pas la recette sur téléphone Android réel.
+- PR #20 reste ouverte, en brouillon, non fusionnée et non déployée. Aucun compte, secret ou donnée Firebase réelle n'a été modifié.
