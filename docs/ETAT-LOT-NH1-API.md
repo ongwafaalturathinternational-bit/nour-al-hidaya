@@ -112,3 +112,10 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Le contrôle d'accès reçoit uniquement `groupId` et charge le document `learningGroups/{groupId}` côté serveur. Le test d'intégration unitaire vérifie l'ordre des lectures : `staffAccess`, groupe canonique, puis affectations. Le vérificateur de jeton est explicitement transmis au contrôle d'équipe.
 - La suite `npm run test:learning-api` découvre automatiquement les nouveaux fichiers `tests/learning-api-*.test.js`, dont les tests de contrôle de ressource et d'audit. Le workflow vérifie également les fichiers importés par les tests.
 - Le workflow déclenche une exécution sur chaque push de la branche de travail ; l'outil de consultation disponible ici ne remonte que les exécutions déclenchées par pull request. Une réponse vide ne permet donc pas de conclure que le workflow push n'a pas démarré.
+
+## Durcissement complémentaire des affectations et de l'audit — 22 novembre 2026
+
+- Une affectation pédagogique doit désormais posséder un `assignmentId` opaque et valide ; une affectation sans identifiant ou avec un identifiant mal formé est refusée.
+- Le journal d'audit recoupe maintenant le scope demandé avec la liste `principal.scopes` du compte authentifié et exige l'identifiant de l'affectation utilisée. Un objet d'autorisation incomplet ou incohérent ne peut pas produire de trace réputée fiable.
+- Tests ciblés exécutés localement sur les deux modules concernés : **13 tests réussis, 0 échec**.
+- La validation complète GitHub Actions de la branche reste à confirmer. Les routes demeurent désactivées en 503 ; aucune donnée, règle distante, permission ou configuration de production n'a été modifiée.
