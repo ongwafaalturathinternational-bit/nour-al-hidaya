@@ -133,7 +133,8 @@ test("le registre projets masque et vide les données privées à chaque changem
   assert.match(html, /\$\("app"\)\.hidden=true/);
   assert.match(html, /projects=\[\];programs=\[\];volunteers=\[\];activities=\[\]/);
   assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
-  assert.match(html, /if\(generation!==authGeneration\)return/g);
+  assert.match(html, /function isCurrentAuthAccount\(account,generation\)/);
+  assert.match(html, /await WATFirebase\.persistenceReady;if\(!isCurrentAuthAccount\(account,generation\)\)return/);
   assert.match(html, /async function load\(generation=authGeneration\)/);
   assert.match(html, /async function loadAssignments\(generation=authGeneration\)/);
 });
@@ -161,7 +162,7 @@ test("les historiques de la fiche bénévole ignorent les lectures asynchrones d
 
 test("le registre projets ignore une réponse d'affectations pour un autre projet sélectionné", () => {
   const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
-  assert.match(html, /if\(generation!==authGeneration\|\|\$\("assignmentProject"\)\.value!==id\)return/);
+  assert.match(html, /if\(!isCurrentStaffSession\(user,generation\)\|\|\$\("assignmentProject"\)\.value!==id\)return/);
 });
 
 test("le registre projets efface les formulaires privés au changement de session", () => {
