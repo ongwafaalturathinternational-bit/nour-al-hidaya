@@ -32,3 +32,11 @@ test("le dossier candidat n'est lu qu'après renouvellement du jeton et revalida
   assert.ok(html.indexOf("if(!isCurrentSession(user,generation))return;", tokenRefresh) < documentRead);
   assert.ok(html.indexOf("if(!isCurrentSession(user,generation))return;", documentRead) > documentRead);
 });
+
+test("le formulaire public efface les mots de passe lors de chaque transition de session", () => {
+  const page = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const update = page.slice(page.indexOf("async function updateAccount"), page.indexOf("async function checkExisting"));
+  assert.match(update, /\$\("registerPassword"\)\.value=""/);
+  assert.match(update, /\$\("loginPassword"\)\.value=""/);
+  assert.ok(update.indexOf('authGeneration') < update.indexOf('registerPassword'));
+});
