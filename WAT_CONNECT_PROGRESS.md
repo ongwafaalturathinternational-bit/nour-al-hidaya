@@ -7,10 +7,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié à la reprise
 
-- HEAD PR #22 avant le test de rejeu complémentaire : 17a5bc02371b399f9b9e7f62687a7c24a7661a2c.
+- HEAD PR #22 : 52936f8602b08515d4de5b002ffb6dad0c51e7d4.
 - PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
 - PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
-- Tests isolés locaux : 113 réussis, 0 échec. Le nouveau test couvre les rejeux update/revoke et les conflits sur patch, expectedVersion et motif sans audit en double.
+- Tests isolés locaux : 113 réussis, 0 échec. Le test couvre les rejeux grant/update/revoke et les conflits sur motif, patch et expectedVersion sans audit en double.
+- CI du commit 52936f8 : API 44992027280, Firestore Emulator 44992027277, Android staging 44992027266 — tous réussis.
 - Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
 - Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
 - .firebaserc : défaut demo-wat-connect, alias staging wat-connect-staging, aucun alias de production. Tests Firebase explicitement ciblés sur le projet demo; Android staging cible le projet staging.
@@ -26,7 +27,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - 195853f — ajout du motif d'audit et extension de l'idempotence; tests, documentation et préparation Firebase staging.
 - 6be8c3d — rapport de continuité initial WAT_CONNECT_PROGRESS.md.
 - 067bdcc — correction du bloc previews Wrangler staging, test anti-régression et mise à jour du rapport; CI et Preview réussis.
-- Prochain commit — test d'idempotence update/revoke et nouveau jalon de continuité.
+- 52936f8 — test de rejeu update/revoke et mise à jour du rapport; tests locaux et CI réussis.
 - CI associée : API run 44990071689 (success), Firestore run 44990071677 (success), Android staging run 44990071687 (success).
 
 ## Tâches terminées
