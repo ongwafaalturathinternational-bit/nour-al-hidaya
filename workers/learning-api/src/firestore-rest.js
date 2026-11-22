@@ -150,6 +150,7 @@ export function createFirestoreRestClient(config, options = {}) {
       if (!Array.isArray(writes) || writes.length < 2 || writes.length > 10) {
         throw new Error("firestore_commit_writes_invalid");
       }
+      const targets = new Set();
       const normalized = writes.map((write) => {
         if (!write || !["create", "update"].includes(write.operation) ||
             !["learningStaffAssignments", "learningAssignmentReceipts", "learningAuditLogs"].includes(write.collection)) {
@@ -160,18 +161,24 @@ export function createFirestoreRestClient(config, options = {}) {
         }
         assertDocumentTarget(write.collection, write.id,
           write.operation === "create" ? WRITABLE_COLLECTIONS : UPDATABLE_COLLECTIONS);
-        if (!write.precondition || typeof write.precondition !== "object") {
-          throw new Error("firestore_commit_precondition_required");
+        const target = write.collection + "/" + write.id;
+        if (targets.has(target)) throw new Error("firestore_commit_duplicate_target");
+        targets.add(target);
+        const precondition = write.precondition;
+        if (!precondition || typeof precondition !== "object" || Array.isArray(precondition) ||
+            Object.keys(precondition).length !== 1) {
+          throw new Error("firestore_commit_precondition_invalid");
         }
+        const currentDocument = write.operation === "create" && precondition.exists === false
+          ? { exists: false }
+          : write.operation === "update" && typeof precondition.updateTime === "string" &&
+            precondition.updateTime.length > 0
+            ? { updateTime: precondition.updateTime }
+            : null;
+        if (!currentDocument) throw new Error("firestore_commit_precondition_invalid");
         const fields = encodeFields(write.fields);
         const name = "projects/wat-connect-staging/databases/(default)/documents/" +
           write.collection + "/" + write.id;
-        const currentDocument = write.precondition.exists === false
-          ? { exists: false }
-          : typeof write.precondition.updateTime === "string"
-            ? { updateTime: write.precondition.updateTime }
-            : null;
-        if (!currentDocument) throw new Error("firestore_commit_precondition_invalid");
         return {
           update: { name, fields },
           updateMask: { fieldPaths: Object.keys(fields) },
