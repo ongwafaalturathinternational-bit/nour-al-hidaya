@@ -6,7 +6,7 @@ const encoder = new TextEncoder();
 const base64url = (bytes) => {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 const encodeJson = (value) => base64url(encoder.encode(JSON.stringify(value)));
 const decodeJson = (value) => JSON.parse(atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4)));
