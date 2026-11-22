@@ -9,12 +9,10 @@ const ALLOWED_ACTIONS = new Set([
 const ALLOWED_TARGETS = new Set(["beneficiary", "registration", "staff_assignment"]);
 const ALLOWED_OUTCOMES = new Set(["allowed", "denied", "completed", "failed"]);
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+const SCOPE_PATTERN = /^learning\.[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){0,3}$/;
 
-function requiredId(value) {
-  if (typeof value !== "string" || !ID_PATTERN.test(value)) {
-    throw new Error("learning_audit_identifier_invalid");
-  }
-  return value;
+function isValidId(value) {
+  return typeof value === "string" && ID_PATTERN.test(value);
 }
 
 /**
@@ -24,36 +22,48 @@ function requiredId(value) {
 export async function writeLearningAuditEvent({
   firestore, authorization, action, targetType, targetId, outcome, now = new Date(),
 }) {
-  if (!authorization?.ok || !authorization.principal?.uid ||
-      typeof authorization.scope !== "string" || !/^learning\\.[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){0,3}$/.test(authorization.scope)) {
+  if (!authorization?.ok || !isValidId(authorization.principal?.uid) ||
+      typeof authorization.scope !== "string" || !SCOPE_PATTERN.test(authorization.scope)) {
     return { ok: false, error: "learning_audit_authorization_required" };
   }
   if (!firestore || typeof firestore.createDocument !== "function") {
     return { ok: false, error: "learning_audit_unavailable" };
   }
   if (!ALLOWED_ACTIONS.has(action) || !ALLOWED_TARGETS.has(targetType) ||
-      !ALLOWED_OUTCOMES.has(outcome) || !(now instanceof Date) || !Number.isFinite(now.getTime())) {
+      !ALLOWED_OUTCOMES.has(outcome) || !(now instanceof Date) || !Number.isFinite(now.getTime()) ||
+      !isValidId(targetId) ||
+      (authorization.assignmentId !== undefined && !isValidId(authorization.assignmentId))) {
     return { ok: false, error: "learning_audit_event_invalid" };
   }
 
-  let eventId;
-  try {
-    eventId = crypto.randomUUID();
-    const fields = {
-      actorUid: requiredId(authorization.principal.uid),
-      action,
-      targetType,
-      targetId: requiredId(targetId),
-      scope: authorization.scope,
-      outcome,
-      occurredAt: now,
-    };
-    if (authorization.assignmentId) fields.assignmentId = requiredId(authorization.assignmentId);
-    if (authorization.resource) {
-      for (const key of ["siteId", "mosqueId", "groupId", "programId"]) {
-        if (authorization.resource[key] !== undefined) fields[key] = requiredId(authorization.resource[key]);
-      }
+  const resourceFields = {};
+  if (authorization.resource !== undefined) {
+    if (!authorization.resource || typeof authorization.resource !== "object" || Array.isArray(authorization.resource)) {
+      return { ok: false, error: "learning_audit_event_invalid" };
     }
+    for (const key of ["siteId", "mosqueId", "groupId", "programId"]) {
+      const value = authorization.resource[key];
+      if (value !== undefined && !isValidId(value)) {
+        return { ok: false, error: "learning_audit_event_invalid" };
+      }
+      if (value !== undefined) resourceFields[key] = value;
+    }
+  }
+
+  const fields = {
+    actorUid: authorization.principal.uid,
+    action,
+    targetType,
+    targetId,
+    scope: authorization.scope,
+    outcome,
+    occurredAt: now,
+    ...(authorization.assignmentId ? { assignmentId: authorization.assignmentId } : {}),
+    ...resourceFields,
+  };
+
+  try {
+    const eventId = crypto.randomUUID();
     await firestore.createDocument("learningAuditLogs", eventId, fields);
     return { ok: true, eventId };
   } catch {
