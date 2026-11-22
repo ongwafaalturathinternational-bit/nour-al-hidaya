@@ -27,7 +27,7 @@ function dependencies({ identity = goodIdentity, document, verifyError, firestor
         return document ?? { fields: {
           active: { booleanValue: true },
           role: { stringValue: "formateur" },
-          scopes: { arrayValue: { values: [{ stringValue: "learning.read" }, { stringValue: "learning.manage" }] } },
+          scopes: { arrayValue: { values: [{ stringValue: "learning.beneficiaries.read" }, { stringValue: "learning.beneficiaries.review" }] } },
         } };
       },
     },
@@ -35,44 +35,44 @@ function dependencies({ identity = goodIdentity, document, verifyError, firestor
 }
 
 test("staff scope authorization accepts active verified staff with exact scope", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.read", dependencies());
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies());
   assert.equal(result.ok, true);
   assert.equal(result.principal.uid, "staff-123");
   assert.equal(result.principal.role, "formateur");
 });
 
 test("staff scope authorization rejects missing bearer token", async () => {
-  const result = await authorizeStaffScope(request("Basic xyz"), config, "learning.read", dependencies());
+  const result = await authorizeStaffScope(request("Basic xyz"), config, "learning.beneficiaries.read", dependencies());
   assert.deepEqual(result, { ok: false, status: 401, error: "authentication_required" });
 });
 
 test("staff scope authorization rejects invalid Firebase tokens", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.read", dependencies({ verifyError: new Error("bad token") }));
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({ verifyError: new Error("bad token") }));
   assert.equal(result.error, "authentication_invalid");
   assert.equal(result.status, 401);
 });
 
 test("staff scope authorization requires verified email", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.read", dependencies({ identity: { uid: "staff-123", emailVerified: false } }));
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({ identity: { uid: "staff-123", emailVerified: false } }));
   assert.equal(result.error, "verified_staff_email_required");
 });
 
 test("staff scope authorization rejects inactive staff", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.read", dependencies({
-    document: { fields: { active: { booleanValue: false }, scopes: { arrayValue: { values: [{ stringValue: "learning.read" }] } } } },
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({
+    document: { fields: { active: { booleanValue: false }, scopes: { arrayValue: { values: [{ stringValue: "learning.beneficiaries.read" }] } } } },
   }));
   assert.equal(result.error, "staff_access_inactive");
 });
 
 test("staff scope authorization rejects absent scope even when role exists", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.manage", dependencies({
-    document: { fields: { active: { booleanValue: true }, role: { stringValue: "president" }, scopes: { arrayValue: { values: [{ stringValue: "learning.read" }] } } } },
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.review", dependencies({
+    document: { fields: { active: { booleanValue: true }, role: { stringValue: "president" }, scopes: { arrayValue: { values: [{ stringValue: "learning.beneficiaries.read" }] } } } },
   }));
   assert.equal(result.error, "staff_scope_denied");
 });
 
 test("staff scope authorization fails closed if staff registry is unavailable", async () => {
-  const result = await authorizeStaffScope(request(), config, "learning.read", dependencies({ firestoreError: new Error("unavailable") }));
+  const result = await authorizeStaffScope(request(), config, "learning.beneficiaries.read", dependencies({ firestoreError: new Error("unavailable") }));
   assert.equal(result.error, "staff_access_unavailable");
   assert.equal(result.status, 403);
 });
