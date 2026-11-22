@@ -207,3 +207,25 @@ test("Firestore atomic commit rejects duplicate document targets before network 
   ]), /duplicate_target/);
   assert.equal(calls, 0);
 });
+
+
+test("idempotency receipts are append-only and cannot be updated", async () => {
+  let calls = 0;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { calls += 1; return new Response("{}", { status: 200 }); },
+  });
+  await assert.rejects(() => client.updateDocument("learningAssignmentReceipts", "receipt-a", {
+    requestHash: "replacement-hash",
+  }), /collection_not_allowed/);
+  await assert.rejects(() => client.updateDocument("syncReceipts", "receipt-b", {
+    status: "replayed",
+  }), /collection_not_allowed/);
+  await assert.rejects(() => client.commitDocuments([
+    { operation: "update", collection: "learningAssignmentReceipts", id: "receipt-a",
+      precondition: { updateTime: "2026-11-22T11:00:00Z" }, fields: { requestHash: "replacement-hash" } },
+    { operation: "create", collection: "learningAuditLogs", id: "event-a",
+      precondition: { exists: false }, fields: { action: "receipt.update" } },
+  ]), /receipt_append_only/);
+  assert.equal(calls, 0);
+});
