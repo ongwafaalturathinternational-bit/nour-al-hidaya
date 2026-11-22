@@ -140,7 +140,7 @@ Use append-only events:
 
 Each event records actor UID, target staff UID, assignment ID, event type, timestamp, request ID, reason, and a minimal before/after authorization diff. Never include beneficiary records, private learner details, credentials, or tokens in assignment audit events.
 
-Use a stable audit document key derived from the idempotency request ID (or a dedicated idempotency registry) so a retry cannot create duplicate grants or duplicate audit events. Audit records are append-only: clients and ordinary server paths cannot update or delete them.
+Use a stable idempotency receipt keyed by actor and request ID so a retry cannot create duplicate grants or duplicate audit events. The canonical request hash covers action, target UID, reason, and all operation-specific values (grant draft; or assignment ID, expected version, and update patch). Reusing the request ID with any changed value is a conflict. Each event preserves the normalized reason. Audit records are append-only: clients and ordinary server paths cannot update or delete them.
 
 ## 6. Runtime authorization rules
 

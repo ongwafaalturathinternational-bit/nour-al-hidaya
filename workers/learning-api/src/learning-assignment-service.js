@@ -190,7 +190,7 @@ async function mutate(action, request, config, input, options = {}) {
   }
 
   const body = action === "assignment.grant"
-    ? { action, targetUid: input.targetUid, assignment: input.assignment }
+    ? { action, targetUid: input.targetUid, assignment: input.assignment, reason: input.reason.trim() }
     : { action, targetUid: input.targetUid, assignmentId: input.assignmentId,
       expectedVersion: input.expectedVersion, patch: input.patch, reason: input.reason.trim() };
   const hash = await sha256(body);
@@ -284,7 +284,7 @@ async function mutate(action, request, config, input, options = {}) {
       { operation: "create", collection: COLLECTIONS.audits, id: auditId, precondition: { exists: false },
         fields: { actorUid: auth.principal.uid, action, targetType: "staff_assignment",
           targetId: input.targetUid, assignmentId: targetAssignmentId, scope: ADMIN_SCOPE,
-          outcome: "completed", occurredAt: options.now ?? new Date(), registryVersion } },
+          outcome: "completed", reason: input.reason.trim(), occurredAt: options.now ?? new Date(), registryVersion } },
     ]);
     return response;
   } catch (error) {

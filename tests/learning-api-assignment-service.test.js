@@ -88,6 +88,7 @@ test("grant writes registry, idempotency receipt and audit event in one atomic c
   assert.ok(registry && receipt && audit);
   assert.equal(audit[1].fields.action.stringValue, "assignment.grant");
   assert.equal(audit[1].fields.targetId.stringValue, "staff-target");
+  assert.equal(audit[1].fields.reason.stringValue, grantInput().reason);
 });
 
 test("same request replays its receipt, while reusing the request ID with changed content conflicts", async () => {
@@ -97,10 +98,12 @@ test("same request replays its receipt, while reusing the request ID with change
   const replay = await createLearningStaffAssignment(request, config, input, f.options);
   assert.equal(replay.replayed, true);
   assert.equal(replay.assignmentId, first.assignmentId);
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 1);
   const changed = await createLearningStaffAssignment(request, config, {
-    ...input, assignment: { ...input.assignment, scopeGrants: ["learning.groups.manage"] },
+    ...input, reason: "Different mandate justification",
   }, f.options);
   assert.deepEqual(changed, { ok: false, status: 409, error: "assignment_request_id_reused" });
+  assert.equal([...f.records.keys()].filter((key) => key.startsWith("learningAuditLogs:")).length, 1);
 });
 
 test("update uses expected assignment version and revoke is a versioned soft revocation", async () => {
@@ -117,6 +120,9 @@ test("update uses expected assignment version and revoke is a versioned soft rev
     expectedVersion: 2, reason: "End of teaching mandate",
   }, f.options);
   assert.equal(revoked.assignmentVersion, 3);
+  const events = [...f.records.entries()].filter(([key]) => key.startsWith("learningAuditLogs:")).map(([, value]) => value);
+  assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.update").fields.reason.stringValue, "Role responsibilities updated");
+  assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.reason.stringValue, "End of teaching mandate");
   const registry = f.records.get("learningStaffAssignments:staff-target");
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.active.booleanValue, false);
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.revokedBy.stringValue, "staff-admin");

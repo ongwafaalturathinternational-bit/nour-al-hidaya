@@ -9,7 +9,7 @@
 - Base Firestore : `(default)`.
 - L'environnement `production` et le projet Firebase `wat-connect` sont explicitement rejetés par le validateur NH-1.
 
-Le fichier `.firebaserc` conserve son projet par défaut actuel. Cette préparation ne le modifie pas et ne change aucun ciblage de déploiement.
+Le fichier `.firebaserc` utilise `demo-wat-connect` par défaut, réserve l'alias explicite `staging` à `wat-connect-staging` et ne définit aucun alias de production. Les scripts de développement et de test ciblent le projet Emulator fictif; le script de déploiement Firebase ne fait pas partie de cette préparation.
 
 ## Contrat de configuration
 

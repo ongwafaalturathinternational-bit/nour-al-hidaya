@@ -54,7 +54,8 @@ Le statut Auth désactivé/révoqué doit être vérifié par une source serveur
 Les tests isolés avec des identités et documents fictifs couvrent désormais les opérations internes :
 
 1. Grant, update et révocation douce : registre versionné, reçu et audit.
-2. Même requête rejouée : même résultat sans second événement d'audit.
+2. Même requête rejouée : même résultat, motif conservé, sans second événement d'audit.
+3. Réutilisation du requestId avec un motif différent : conflit, aucun nouvel événement.
 3. Même identifiant avec contenu différent : conflit.
 4. Deux mises à jour concurrentes avec la même version : une seule gagne.
 5. Échec du commit : aucune écriture partielle.
@@ -68,7 +69,8 @@ Les tests isolés avec des identités et documents fictifs couvrent désormais l
 6. Modification avec version obsolète : conflit, aucune écriture.
 7. Deux modifications concurrentes : une seule version gagne; aucune mise à jour silencieuse perdue.
 8. Révocation : affectation conservée avec métadonnées de révocation, accès immédiatement refusé.
-9. Répétition avec le même `requestId` : résultat idempotent, aucun événement d'audit en double.
+9. Répétition avec le même `requestId` et le même contenu : résultat idempotent, motif conservé, aucun événement d'audit en double.
+10. Réutilisation du même `requestId` avec un motif, une cible, une affectation, une version ou un patch différent : conflit, aucune nouvelle mutation ni audit.
 10. Échec d'écriture de l'audit : mutation annulée intégralement.
 11. Suspension WAT : toutes les affectations deviennent inutilisables sans être effacées.
 12. Réactivation WAT : ne réactive aucune affectation révoquée ou expirée.
