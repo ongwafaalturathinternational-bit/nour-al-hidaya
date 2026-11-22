@@ -155,7 +155,7 @@ test("denies a non-array assignment register", async () => {
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
     setup({ assignments: malformed }));
   assert.equal(result.ok, false);
-  assert.equal(result.error, "learning_assignment_inactive");
+  assert.equal(result.error, "learning_assignment_invalid");
 });
 
 test("does not accept a group without every currently required canonical link", async () => {
