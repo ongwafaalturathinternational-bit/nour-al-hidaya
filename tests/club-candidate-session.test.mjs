@@ -56,8 +56,12 @@ test("l'espace candidat efface le mot de passe et protège les actions asynchron
 
 test("les formulaires publics effacent les mots de passe et ignorent les erreurs de session obsolètes", () => {
   const page = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
-  const register = page.slice(page.indexOf('$("registerForm")'), page.indexOf('$("loginForm")'));
-  const login = page.slice(page.indexOf('$("loginForm")'), page.indexOf('$("resend")'));
+  const registerStart = page.indexOf('$("registerForm").addEventListener("submit"');
+  const loginStart = page.indexOf('$("loginForm").addEventListener("submit"');
+  const resendStart = page.indexOf('$("resend").addEventListener("click"');
+  const register = page.slice(registerStart, loginStart);
+  const login = page.slice(loginStart, resendStart);
+  assert.ok(registerStart >= 0 && loginStart > registerStart && resendStart > loginStart);
   assert.match(register, /generation=authGeneration/);
   assert.match(register, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser/);
   assert.match(register, /finally\{\$\("registerPassword"\)\.value=""\}/);
