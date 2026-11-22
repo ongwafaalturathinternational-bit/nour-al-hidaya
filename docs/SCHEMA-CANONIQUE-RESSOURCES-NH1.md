@@ -86,7 +86,7 @@ Affectations professionnelles de l'utilisateur, avec plusieurs mandats possibles
 
 Chaque mandat doit avoir un identifiant stable et unique. Les listes vides ne signifient jamais « accès global ». Un accès national/global, s'il est nécessaire, doit être représenté par une autorisation explicite distincte, approuvée et testée; ne pas l'inférer d'un tableau absent ou vide.
 
-**Compatibilité avec le contrôle d'accès actuel :** le helper existant attend encore `siteIds`, `mosqueIds`, `groupIds`, `programIds`. Ce contrat n'est pas compatible avec le présent modèle neutre `structureIds`. Il doit rester non branché tant que le résolveur et la politique d'affectation n'ont pas été adaptés et testés. Ne pas ajouter artificiellement `mosqueId` à chaque document.
+**Compatibilité avec la politique d'affectation préparée :** `assignment-policy.js` contrôle les dimensions `siteIds`, `structureIds`, `groupIds` et `programIds` lorsqu'elles sont présentes dans le contexte résolu. Il exige une correspondance explicite pour chaque dimension fournie et refuse les périmètres incomplets; aucune dimension `mosqueIds` distincte n'est requise, car la mosquée est représentée par une structure de type `mosque`. Cette politique reste isolée et non raccordée aux routes. Le format des affectations et les scopes doivent encore être validés avec WAT avant tout provisionnement.
 
 ## 3. Références et source de vérité
 
