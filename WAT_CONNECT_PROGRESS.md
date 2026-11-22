@@ -132,3 +132,109 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+## Audit comparatif UI/UX — 22 novembre 2026
+
+- Création de la branche documentaire indépendante `audit/wat-connect-uiux-review`, basée sur le HEAD vérifié de PR #22 : `6ac4bfe0b035547f5670c016094ce3d102a2023e`. Aucun changement sur les branches PR #20, #22 ou #12.
+- Ajout de `docs/AUDIT-UI-UX-WAT-CONNECT.md` (commit `9de03bcd9cfdde3074095f1aae03cc94741e5416`). Audit statique comparatif du portail, site institutionnel, annuaire, programmes, projets, activités, Club, Finances Lot 9 et Nour Al-Hidaya.
+- Écart prioritaire : `finance.html` (branche Lot 9) embarque une palette et des styles autonomes, sans `wat-brand.css`, et affiche un logo textuel « WAT ». La référence visuelle WAT et les pages Lot 8 utilisent les tokens officiels turquoise/or/bleu profond et les motifs facettés mesurés.
+- Autre point UX : les tableaux Finance ont une largeur minimale de 760 px, avec défilement horizontal potentiel sur mobile. Les pages métier présentent des seuils responsive distincts ; une harmonisation contrôlée est recommandée.
+- Le document propose une refonte progressive strictement présentationnelle, sans supprimer formulaires, registres, validations, filtres, exports, impressions, règles d'accès ni audit. Il précise les tests desktop/mobile et non-régression à exiger.
+- Limites explicites : audit HTML/CSS statique, pas de capture navigateur, de test utilisateur ni de certification WCAG ; Nour Al-Hidaya nécessite une revue visuelle dédiée. Le code Lot 9 n'a pas été intégré à cette branche.
+- Aucune donnée réelle, règle Firestore, route métier, configuration Firebase/Cloudflare, secret, production, fusion ou déploiement n'a été touché. PR #20, #22 et #12 restent indépendantes et non fusionnées.
+
+- PR documentaire créée : [#23 — Audit UI/UX comparatif WAT Connect](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/23), brouillon ouvert, cible `feature/nour-central-management-foundation`. Comparaison GitHub : 2 commits en avance, 0 en retard, base = HEAD de PR #22 ; vérification ultérieure : `mergeable=true`. Aucune fusion effectuée.
+
+
+## Audit approfondi des identités visuelles et de Nour Al-Hidaya — 22 novembre 2026
+
+- Ouverture et inventaire des deux archives officielles : huit PNG couleur/blanc (logos complets et icônes) vérifiés en RGBA avec transparence. Les fichiers originaux sont conservés sans altération dans l'espace de travail; dimensions consignées dans `docs/AUDIT-UI-UX-WAT-CONNECT.md`.
+- Audit des en-têtes : portail, site institutionnel, Administration, Programmes, Projets, Activités et Club utilisent encore des titres textuels sans logo image. Nour réutilise une seule constante PNG encodée en base64 dans l'en-tête foncé, la connexion claire et les écrans de démarrage; les deux manifestes utilisent les mêmes icônes génériques racine.
+- Le plan d'intégration distingue explicitement les assets WAT et Nour, les versions couleur/blanche, les favicons/manifests et le cache PWA. Aucun chemin d'asset non committé n'a été ajouté et aucun logo n'a été redessiné.
+- Limite technique constatée : l'action de création de fichier GitHub disponible dans ce chantier accepte UTF-8 et ne transmet pas les octets PNG. Les originaux sont prêts localement; une méthode de transfert binaire vers le dépôt reste nécessaire avant leur intégration effective. L'audit et les travaux UI/UX indépendants continuent sans attendre.
+- État PR #24 : Firestore security rules workflow du HEAD `c2541ee055a3fe693689066e1eaae1962991230b` terminé avec succès. Les commentaires du bot Cloudflare sur les commits `1286d11` et `c2541ee` indiquent toutefois deux échecs de build de prévisualisation, sans URL publiée. Ce sont des builds Preview, pas une preuve de déploiement production; aucune opération production n'a été effectuée.
+- PR #20, #22, #12, #23 et #24 vérifiées ouvertes, en brouillon, non fusionnées et mergeable au contrôle du 22 novembre 2026. Leurs branches et cibles sont conservées.
+- Aucun compte/dossier réel, règle métier, route NH-1, IAM, secret, configuration Firebase réelle, fusion ou déploiement de production n'a été modifié.
+
+### Priorités suivantes
+
+1. Finaliser une voie de transfert binaire contrôlée pour committer les huit originaux, puis créer une PR d'intégration des deux identités sur portail, modules WAT et Nour.
+2. Poursuivre l'audit UI/UX des formulaires, tableaux, navigation, densité, états et accessibilité des modules Lot 8, sans recommencer leur développement.
+3. Diagnostiquer séparément les échecs Cloudflare Preview de PR #24; ne pas les confondre avec le workflow Firestore réussi ni avec un déploiement production.
+4. Maintenir l'ordre de la feuille de route initiale et la fermeture des routes NH-1 jusqu'aux validations institutionnelles.
+
+
+## Revue responsive et PR #25 — 22 novembre 2026
+
+- Mesures statiques ajoutées à l'audit UI/UX : les tableaux Lot 8 ont des largeurs minimales de 610 à 680 px et sont contenus dans des zones `overflow:auto`; les breakpoints varient par module. Le rapport distingue le défilement horizontal conservant toutes les colonnes d'une future présentation mobile plus ergonomique.
+- PR #25 créée : `feature/lot8-table-keyboard-accessibility` vers `feature/nour-central-management-foundation` (empilée sur PR #22). Six zones de tableaux sont maintenant nommées et accessibles au clavier; le focus est visible. Aucune donnée/colonne/action n'est masquée.
+- Head PR #25 : `97b8ffc4d9632d30752e1beb68b3d1a315e59072`. Les workflows « Firestore security rules » (run 45043255230) et « Android staging APK test build » (run 45043255227) ont démarré; ils sont en cours au dernier contrôle. Résultats à compléter après achèvement.
+- PR #25 reste ouverte en brouillon et non fusionnée; la cible de PR #22 n'a pas été modifiée.
+
+
+## Résultats vérifiés de PR #25 — 22 novembre 2026
+
+- PR #25 `feature/lot8-table-keyboard-accessibility` vers PR #22 : ouverte, brouillon, non fusionnée, `mergeable=true` au dernier contrôle.
+- Commit applicatif testé `97b8ffc4d9632d30752e1beb68b3d1a315e59072` : Firestore Emulator **133/133 tests réussis** (run [45043255230](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255230)); APK Android staging réussi (run [45043255227](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227), artefact [14762631201](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043255227/artifacts/14762631201)).
+- Les deux tests de régression ajoutés sont confirmés dans les logs. Les refus PERMISSION_DENIED sont les cas négatifs attendus; aucun échec.
+- Cette PR ne modifie pas les données métier ni les règles. Elle reste un changement de présentation/accessibilité.
+
+
+
+## Reprise intensive — audit Nour, identité visuelle, dépendances et CI — 22 novembre 2026
+
+- Revue statique approfondie de `nour-al-hidaya.html`, `manifest-nour.json`, `manifest.json`, `scripts/prepare-capacitor-web.mjs`, `sw.js` et des documents d'architecture/transition NH-1.
+- Constat vérifié : Nour réutilise une constante `LOGO` encodée en base64 dans les vues en-tête sombre et connexion claire. Son favicon et son manifeste pointent vers les icônes génériques WAT/Nour partagées. La préparation Capacitor copie uniquement `icon-192.png` et `icon-512.png`. Les deux identités ne sont donc pas encore complètement séparées dans les ressources PWA/Android.
+- Les huit PNG officiels ont été extraits des archives et vérifiés (RGBA, transparence, dimensions originales). Ils ne sont pas encore committés : le connecteur GitHub autorise les écritures texte et les blobs base64, mais n'expose pas de transport direct depuis les fichiers locaux de cette session vers l'appel Git Data. Le clone Git local n'est pas possible ici (résolution réseau GitHub indisponible). Aucune image fictive ni référence cassée n'a été ajoutée. Recherche du plugin Cloudflare effectuée : aucun plugin disponible retourné.
+- PR #25 vérifiée : Firestore Emulator **133/133** au run [45043499997](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043499997); Android staging réussi au run [45043502416](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45043502416). L'APK est un artefact de test uniquement.
+- PR #24 vérifiée : workflow Firestore au HEAD `c2541ee055a3fe693689066e1eaae1962991230b`, run [45014620609](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45014620609), terminé avec succès. Le bot Cloudflare signale toutefois deux builds Preview en échec (`1286d11`, `c2541ee`). Les logs Cloudflare nécessitent une session authentifiée au tableau de bord et ne sont pas accessibles depuis les outils disponibles; cause racine non confirmée. Aucun indice ne permet d'affirmer un déploiement production.
+- Nouvelle PR #26 : harmonisation `theme-color` WAT à `#103047` sur portail et modules Lot 8, plus `manifest.json`; Nour conserve son thème `#0F2240`. Test statique dédié et déclencheur Firestore Emulator ajoutés. PR #26 ouverte en brouillon, empilée sur #22. CI en cours au HEAD `abbc05b5905e10994f3143433152a2b73f7d32f1`: Firestore run [45045157000](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157000), Android staging run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005).
+- Dépendances vérifiées : #24 dépend de #12; #25, #26 et #23 sont empilées sur #22; #22 cible la branche source de #20. Attention, la base enregistrée de #22 (`fe9f51c`) est en retard de 22 commits par rapport au HEAD PR #20 (`e3b0436`) selon compare GitHub. Les PR sont marquées mergeable, mais il faudra réconcilier cette divergence avant une intégration. Aucune cible modifiée.
+- Aucune fusion, aucun déploiement, aucune donnée réelle, aucun changement Firebase/Cloudflare, aucune route métier ouverte.
+
+
+
+## Revalidation des bases de Lot 8 — 22 novembre 2026
+
+- PR #20, HEAD `e3b04361436f32425c86cf3b971e859265162d23` : Firestore Emulator **139/139**, 0 échec, run [45000655220](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655220); Android staging réussi, run [45000655207](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45000655207).
+- PR #22, HEAD `6ac4bfe0b035547f5670c016094ce3d102a2023e` : Firestore Emulator **144/144**, 0 échec, run [45001987191](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987191); API NH-1 **113/113** au run [45001987229](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987229); Android staging réussi, run [45001987231](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987231).
+- Ces résultats sont ceux des HEAD indiqués; ils ne certifient pas l'intégration réelle Firebase, les rôles IAM, les bindings Cloudflare ou l'ouverture des routes. Les routes NH-1 restent fermées.
+
+
+
+## Alerte d'intégration — divergence confirmée entre PR #20 et #22 — 22 novembre 2026
+
+- Lecture directe de la branche `fix/lot8-club-onboarding-and-access` : HEAD actuel `e3b04361436f32425c86cf3b971e859265162d23`. La base enregistrée de PR #22 reste `fe9f51c88a4e7de58b2712fb4d0aa87b7f6f766d`.
+- Comparaison des références : `diverged`, PR #22 est 201 commits en avance et 22 commits en retard par rapport à la tête actuelle de sa branche cible.
+- Sept chemins touchés dans les deux historiques : `.firebaserc`, `.github/workflows/firestore-rules.yml`, `docs/ARCHITECTURE-INSCRIPTION-UNIVERSELLE.md`, `docs/SEPARATION-ENVIRONNEMENTS-FIREBASE.md`, `index.html`, `scripts/prepare-capacitor-web.mjs`, `wrangler.staging.json`.
+- Le statut GitHub `mergeable=true` des PR ne garantit pas l'absence de divergence logique dans ces fichiers. La réconciliation de #20/#22 est un prérequis d'intégration; les PR #23/#25/#26/#27, empilées sur #22, devront ensuite être reconstruites/rebasées sur le HEAD réconcilié et retestées.
+- Aucune mise à jour automatique de branche ou fusion n'a été lancée : les sept chemins communs comprennent règles, configuration Firebase et pipeline de build; les fusionner sans résolution et revalidation serait risqué. Les cibles des PR sont conservées.
+
+
+## Résultats CI PR #27 — 22 novembre 2026
+
+- Nour Al-Hidaya : Firestore Emulator **133/133** (run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472)); Android staging APK réussi (run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484)). Le build Android est un artefact de test, pas une publication.
+- Le correctif concerne uniquement la sémantique accessible de la navigation; aucun parcours métier ou rôle n'a changé.
+
+
+
+## Mise à jour des validations UI/UX — 22 novembre 2026
+
+- PR #25 après amélioration de la navigation active : Firestore **134/134** (run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302)) et Android staging réussi (run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206)).
+- PR #26 après ajout du lien d'évitement clavier au portail : Firestore **134/134** (run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614)); Android staging run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643) encore en cours au dernier contrôle.
+- PR #27 : Firestore **133/133** (run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323)); Android staging réussi (run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344)).
+
+
+
+## Validation complémentaire — PR #24 et #26 — 22 novembre 2026
+
+- PR #24 : Firestore Emulator **193/193**, 0 échec, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833); accessibilité des neuf registres financiers ajoutée. Build Android non déclenché par cette modification.
+- PR #26 : Firestore Emulator **134/134**, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging réussi, run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Le portail WAT comporte un lien d'évitement clavier.
+
+
+## Branche d'accueil des logos officiels — 22 novembre 2026
+
+- Branche `feature/official-brand-assets` créée; dossiers `assets/brand/wat/` et `assets/brand/nour/` préparés avec les noms exacts des huit PNG attendus.
+- Canal binaire fiable identifié : GitHub Web, branche sélectionnée, dossier concerné, **Add file → Upload files**. Les outils connectés ne transmettent pas les octets locaux directement au dépôt; aucune image approximative ou référence cassée n'a été utilisée.
+- Après dépôt des huit originaux, l'intégration sera effectuée et vérifiée sur les manifests, favicons, en-têtes, PWA, cache service worker et APK staging.
