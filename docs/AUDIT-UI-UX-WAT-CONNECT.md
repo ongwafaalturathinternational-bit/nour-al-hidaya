@@ -271,3 +271,12 @@ PR #25 apporte l'accessibilité clavier aux six conteneurs de tableaux des cinq 
 6. Diagnostiquer les builds Cloudflare avec les journaux authentifiés ou les paramètres de build accessibles à l'administrateur du compte.
 
 Aucune fusion, publication, activation de route, modification de données réelles ou configuration production n'a été effectuée.
+
+
+
+## 12. Amélioration ciblée de la navigation Nour — PR #27 — 22 novembre 2026
+
+- Le menu inférieur/mobile et latéral/desktop est construit dynamiquement à partir des onglets propres à chaque rôle.
+- Le correctif PR #27 ajoute un nom accessible à la zone de navigation, expose l'onglet actif avec `aria-current="page"` et marque les boutons comme `type="button"`.
+- Les libellés et icônes restent ceux de `ro.tabs`; le correctif ne change ni les rôles, ni les écrans, ni les transitions de navigation.
+- Tests statiques dédiés et workflows Firestore Emulator / Android staging déclenchés sur le HEAD initial `9a855e68b8f4cd7dadd51048428e827d517737c6`. Résultats encore en cours au moment de la rédaction; aucune réussite n'est revendiquée avant lecture des logs.
