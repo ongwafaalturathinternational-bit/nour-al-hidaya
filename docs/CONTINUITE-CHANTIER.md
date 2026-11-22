@@ -282,3 +282,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Ajout d'un test de régression couvrant les deux synchronisations.
 - Les données locales restent stockées dans le navigateur sous des clés propres à l'apprenant ; ce mécanisme n'est pas un coffre chiffré et ne remplace pas une stratégie de protection des appareils partagés.
 - Validation CI du dernier lot en attente.
+
+
+## Poursuite — opérations sensibles du registre Club Khuddam — 22 novembre 2026
+
+- Les actions d'acceptation/refus de candidature et d'ajout/modification d'un bénévole capturent désormais l'UID et la génération de session qui ont initié l'opération.
+- Les transactions et écritures utilisent cet UID capturé au lieu de relire une variable utilisateur globale susceptible d'avoir changé.
+- Les résultats tardifs ne réinitialisent plus le formulaire, ne relancent plus le chargement et n'affichent plus de message dans une session différente.
+- Le gestionnaire d'erreur de l'observateur d'authentification ignore également les erreurs issues d'une ancienne session.
+- Ajout de tests de régression ciblant ces protections.
+- Les opérations Firestore déjà envoyées au serveur ne peuvent pas être annulées rétroactivement par le navigateur ; les règles Firestore restent l'autorité d'accès. Aucune règle ni donnée réelle n'a été modifiée.
