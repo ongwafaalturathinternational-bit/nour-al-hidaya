@@ -170,3 +170,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Suspendre les retouches visuelles et les discussions UI/UX jusqu'à nouvel ordre de l'utilisateur.
 - Priorité : revue fonctionnelle et sécurité de l'authentification/gestion des comptes, permissions Firebase, flux d'inscription, persistance/synchronisation et tests des modules essentiels.
 - Continuer uniquement sur branches et staging avec données fictives. Ne pas ouvrir de routes métier ni utiliser des comptes/dossiers réels avant validation institutionnelle Firebase/IAM. Ne pas fusionner ni déployer en production sans autorisation explicite.
+
+
+## Clarification du provisionnement Firebase par environnement — 22 novembre 2026
+
+- L'audit du parcours de connexion a confirmé une cause importante de confusion possible : les previews Cloudflare de branches et les APK de test utilisent `wat-connect-staging`, tandis que le domaine de production et l'application publiée utilisent `wat-connect`.
+- Un compte créé dans Firebase Authentication sur l'un de ces projets n'existe pas dans l'autre. Sur une preview, un compte uniquement créé dans `wat-connect` peut donc recevoir l'erreur d'identifiants invalides, même si son mot de passe est correct.
+- La documentation `docs/PARCOURS-INSCRIPTION-ET-ACCES.md` a été clarifiée pour imposer des comptes de test dédiés dans staging et préserver les comptes/données réels en production. Commit documentaire : `a67989fce093a5a22a21a187e2658b887fb5e0b8`.
+- Le provisionnement des comptes d'équipe reste volontairement manuel : compte Firebase Authentication + document `staffAccess/{uid}` avec le même UID et scopes explicitement autorisés. Aucun écran public d'auto-attribution des rôles n'est ajouté; l'administration automatisée attend un backend de confiance et une identité serveur staging validée.
