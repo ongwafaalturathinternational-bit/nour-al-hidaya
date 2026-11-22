@@ -152,3 +152,15 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Étape complète de compilation/règles et tests Node : **191 tests réussis, 0 échec**. Le test ajouté vérifiant l'import de `wat-brand.css` et les tokens officiels est inclus dans la suite.
 - Les messages `PERMISSION_DENIED` présents dans les logs correspondent aux tests négatifs de sécurité Firestore ; le job complet est vert et aucun test n'a échoué.
 - PR #24 reste ouverte en brouillon, non fusionnée ; aucune fusion, publication ou opération sur un environnement réel n'a été effectuée.
+
+
+
+## Diagnostic Cloudflare Preview — PR #24 — 22 novembre 2026
+
+- Au HEAD `c2541ee055a3fe693689066e1eaae1962991230b`, le workflow GitHub Actions Firestore security rules est terminé avec succès : run [45014620609](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45014620609), job `firestore-rules` success. La validation des tests au checkpoint précédent est **191/191**.
+- Le bot Cloudflare Workers & Pages a signalé un échec de build Preview pour les commits `1286d118` et `c2541ee`. Les deux notifications sont attachées à la PR et ne fournissent pas le détail de l'erreur dans le commentaire.
+- Les liens « View logs » ouvrent le tableau de bord Cloudflare authentifié, chemin du service `nour-al-hidaya`. L'accès direct depuis cette session est refusé/non disponible et aucun plugin Cloudflare n'a été trouvé. Les journaux de build, paramètres de build, variables et versions Node du compte ne sont donc pas vérifiables ici.
+- La cause racine n'est pas confirmée. Ne pas attribuer l'échec à Wrangler, au script Capacitor, à une dépendance ou aux fichiers PNG sans lecture des logs. Aucune relance ni modification du service Cloudflare n'a été faite.
+- Distinction essentielle : l'annotation du bot est celle du flux Preview PR. Elle n'est pas une preuve de déploiement production. Le workflow GitHub Firestore réussi ne valide pas le build Cloudflare.
+- PR #24 reste ouverte en brouillon, non fusionnée, mergeable=true. Aucun déploiement production, changement de secret, de binding, de route ou de donnée réelle.
+- Action de diagnostic disponible dès qu'un accès authentifié aux logs Cloudflare est fourni : lire la première erreur et le build command, vérifier le répertoire racine, les variables d'environnement et la version Node, corriger uniquement sur la branche Preview, puis attendre un nouveau commentaire Preview réussi. Ne pas toucher au Worker production.
