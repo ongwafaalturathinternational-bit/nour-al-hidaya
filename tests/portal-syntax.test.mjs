@@ -77,9 +77,9 @@ test("les pages opérationnelles ne référencent pas d'identifiants DOM inexist
 
 test("la candidature actualise les informations et le jeton de vérification avant l'envoi", () => {
   const html = readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
-  assert.match(html, /await currentUser\.reload\(\)/);
-  assert.match(html, /await currentUser\.getIdToken\(true\)/);
-  assert.match(html, /currentUser\.emailVerified/);
+  assert.match(html, /await (?:currentUser|actor)\.reload\(\)/);
+  assert.match(html, /await (?:currentUser|active)\.getIdToken\(true\)/);
+  assert.match(html, /(?:currentUser|active)\.emailVerified/);
   assert.match(html, /permission-denied/);
   assert.match(html, /club-khuddam-espace\.html/);
 });
