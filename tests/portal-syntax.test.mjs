@@ -124,3 +124,14 @@ test("Nour Al-Hidaya offre toujours un retour au portail après navigation ou d�
   assert.match(html, /class="portal-link" href="index\.html"/);
   assert.match(html, /location\.assign\("index\.html"\)/);
 });
+
+
+test("le portail invalide les chargements d'accès et masque l'espace après un changement de compte", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /let authGeneration=0/);
+  assert.match(html, /function clearWorkspace\(\)/);
+  assert.match(html, /\$\("workspace"\)\.hidden=true/);
+  assert.match(html, /const generation=\+\+authGeneration;clearWorkspace\(\)/);
+  assert.match(html, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser\?\.uid!==user\.uid/);
+  assert.match(html, /if\(generation===authGeneration\)message/);
+});
