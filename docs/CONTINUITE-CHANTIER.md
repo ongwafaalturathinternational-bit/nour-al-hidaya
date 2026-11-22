@@ -395,3 +395,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Extension du garde-fou aux changements de statut des fiches membres : vérification de la session avant l'écriture, après l'écriture et avant l'affichage du résultat. Test de régression étendu. Commits : correctif complémentaire `5137330`, test `df00787`.
 
 - Le workflow Firestore ne déclenchait pas la suite pour `tests/operational-block.test.mjs`. Ajout de ce fichier à ses chemins surveillés afin que les futurs changements de garde opérationnelle exécutent effectivement la suite complète. Commit workflow `06bf158f63ab2b53ac6f8c42cded901af87f28aa`; les validations déclenchées sur ce commit couvriront le correctif annuaire et son test de régression.
+
+
+## Correction validation e-mail — espace candidat — 22 novembre 2026
+
+- Correction du motif de validation dans le bouton « Mot de passe oublié » de `club-khuddam-espace.html`. Le motif contenait des antislashs doublés dans le JavaScript livré et pouvait rejeter les adresses e-mail ordinaires.
+- Ajout d'un test de régression dans `tests/club-candidate-session.test.mjs` pour vérifier le motif attendu et empêcher le retour de l'échappement incorrect.
+- Commit applicatif et test : `0c57c80d14c64101d6450880f12c6888a19ab5af`.
+- CI Firestore : réussi — [workflow 45075973731](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45075973731).
+- Build APK Android staging : encore en cours au moment de cette entrée — [workflow 45075973650](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45075973650).
+- PR #20 reste ouverte en brouillon et non fusionnée. Aucun compte, dossier réel ou environnement de production n'a été modifié.
