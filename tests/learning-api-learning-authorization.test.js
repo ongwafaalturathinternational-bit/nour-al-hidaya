@@ -5,7 +5,7 @@ import { authorizeLearningGroup } from "../workers/learning-api/src/learning-aut
 const principal = { uid: "staff-1", role: "formateur", scopes: ["learning.beneficiaries.read"] };
 const assignment = {
   assignmentId: "assign-1", active: true,
-  siteIds: ["site-a"], mosqueIds: ["mosque-a"], groupIds: ["group-a"], programIds: ["program-a"],
+  siteIds: ["site-a"], structureIds: ["structure-a"], groupIds: ["group-a"], programIds: ["program-a"],
   scopeGrants: ["learning.beneficiaries.read"],
   validFrom: "2026-11-01T00:00:00Z", validUntil: null,
 };
