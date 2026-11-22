@@ -23,19 +23,49 @@ function decodeFields(fields) {
   return Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, decodeValue(value)]));
 }
 
+function validResourceId(value) {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(value);
+}
+
+async function loadTrustedGroup(firestore, groupId) {
+  if (!validResourceId(groupId)) throw new Error("learning_resource_id_invalid");
+  const document = await firestore.getDocument("learningGroups", groupId);
+  const fields = decodeFields(document?.fields);
+  // These links are read from the canonical server-side group record.
+  // Client-supplied site/mosque/program IDs are never accepted.
+  const { siteId, mosqueId, programId } = fields;
+  if (![siteId, mosqueId, programId].every(validResourceId)) {
+    throw new Error("learning_resource_perimeter_invalid");
+  }
+  return Object.freeze({ groupId, siteId, mosqueId, programId });
+}
+
 /**
- * Server-side authorization composition. The resource argument MUST be loaded
- * from Firestore by trusted server code, never copied from client request data.
+ * Resolve the resource from the server registry before checking assignments.
+ * The caller supplies only a group ID; all perimeter links come from Firestore.
  */
-export async function authorizeLearningAssignment(request, config, scope, resource, options = {}) {
+export async function authorizeLearningGroup(request, config, scope, groupId, options = {}) {
+  const firestore = options.firestore;
+  if (!firestore || typeof firestore.getDocument !== "function") {
+    return { ok: false, status: 403, error: "learning_authorization_unavailable" };
+  }
+
   const staff = await (options.authorizeStaff ?? authorizeStaffScope)(
-    request, config, scope, { ...(options.staffOptions ?? {}), firestore: options.firestore },
+    request, config, scope, { ...(options.staffOptions ?? {}), firestore },
   );
   if (!staff.ok) return staff;
 
+  let resource;
+  try {
+    resource = await loadTrustedGroup(firestore, groupId);
+  } catch {
+    // Do not disclose whether a group exists outside the caller's perimeter.
+    return { ok: false, status: 404, error: "learning_resource_unavailable" };
+  }
+
   let document;
   try {
-    document = await options.firestore.getDocument("learningStaffAssignments", staff.principal.uid);
+    document = await firestore.getDocument("learningStaffAssignments", staff.principal.uid);
   } catch {
     return { ok: false, status: 403, error: "learning_assignment_unavailable" };
   }
@@ -48,13 +78,13 @@ export async function authorizeLearningAssignment(request, config, scope, resour
 
     const now = options.now ?? new Date();
     for (const assignment of fields.assignments) {
-      // Both the institutional staff scope and the dated NH assignment are required.
       const result = evaluateLearningAssignment({ assignment, scope, resource, now });
       if (result.allowed) {
         return {
           ok: true,
           principal: staff.principal,
           assignmentId: assignment.assignmentId,
+          resource,
         };
       }
     }
