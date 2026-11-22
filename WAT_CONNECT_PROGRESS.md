@@ -5,23 +5,19 @@ Branche suivie : feature/nour-central-management-foundation
 PR #20 : ouverte, brouillon, non fusionnée — fix/lot8-club-onboarding-and-access vers audit/wat-connect-lot8-projects-club-khuddam.
 PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-foundation vers fix/lot8-club-onboarding-and-access.
 
-## État vérifié à la reprise
+## État vérifié au 22 novembre 2026
 
-- HEAD PR #22 : bcaf337c2df6e1e4e4350a747c6784aaab0a4825.
-- PR #20 HEAD : d4c96e6dea969b9fce040a8536caade699bb9a9d; CI consultée : règles Firestore et build Android staging réussis.
-- PR #22 CI du HEAD : API, règles Firestore sur l'émulateur fictif demo-wat-connect, et build Android staging réussis.
-- Tests isolés locaux après le correctif d'idempotence : 113 réussis, 0 échec. Après l'amélioration responsive, la suite combinée ciblée passe à 115/115.
-- CI du commit bcaf337 : API 44992433833, Firestore Emulator 44992433789, Android staging 44992433810 — tous réussis; Preview Cloudflare de branche réussi (déploiement preview 5413d640, URL https://5413d640-nour-al-hidaya.ongwafaalturathinternational.workers.dev).
-- CI du commit 52936f8 : API 44992027280, Firestore Emulator 44992027277, Android staging 44992027266 — tous réussis.
-- Après ajout de previews: {}, la prévisualisation Cloudflare du commit 067bdcc a réussi : https://cc1d155c-nour-al-hidaya.ongwafaalturathinternational.workers.dev. Les workflows API, Firestore Emulator et Android staging de ce commit ont tous réussi (runs 44991535426, 44991535467, 44991535427). Le build Cloudflare précédent échouait avant déploiement; le nouveau résultat est une Preview de branche, pas une publication de production.
-- Motif normalisé enregistré sur les audits grant/update/revoke et inclus dans le hash idempotent de chaque demande. Le rejeu identique ne produit pas de deuxième audit; le même identifiant avec un motif modifié entre en conflit.
-- .firebaserc : défaut demo-wat-connect, alias staging wat-connect-staging, aucun alias de production. Tests Firebase explicitement ciblés sur le projet demo; Android staging cible le projet staging.
-- Aucun script/workflow Firebase de déploiement production observé. Le chemin Wrangler production reste distinct et n'a pas été lancé.
-- Le build Preview Cloudflare automatique des commits 195853f et 6be8c3d a échoué avant création d'URL : Wrangler signalait le bloc previews manquant dans wrangler.staging.json. Le commit 067bdcc ajoute previews vide dans la seule configuration staging; le test de confinement et le Preview de branche réussissent. Aucun déploiement de production n'a été lancé.
-- PR #22 s'empile sur la PR #20 non fusionnée; main ne contient pas le fondement Lot 8 nécessaire à cette revue NH-1. Le branch target Lot 8 a 3 commits après l'ancêtre commun fe9f51c : règles ISO dates/restauration Firestore, test dates et rapports. Ces fichiers ne sont pas dans le delta PR #22; GitHub la déclare mergeable. Base conservée.
-- Compte Cloudflare connecté en lecture seule. Workers wat-connect-staging et nour-al-hidaya existent; paramètres consultés : bindings, routes et migrations vides. Aucun secret/configuration n'a été modifié.
-- Aucun connecteur Firebase, CLI firebase ou gcloud, ni credential env local détecté; l'identité institutionnelle et l'IAM staging restent impossibles à vérifier dans cette session.
-- Routes métier NH-1 toujours fermées. Aucun compte réel, donnée réelle, configuration de production, merge ou déploiement production modifié/exécuté.
+- HEAD de la PR #22 : `902f89121300421b05ca9345ac7b920d8c81126a`; PR ouverte, brouillon, non fusionnée.
+- HEAD de la PR #20 : `269c675b2bf9f935366b0c8c6e712b23d9e25671`; PR ouverte, brouillon, non fusionnée. Cible conservée : `audit/wat-connect-lot8-projects-club-khuddam`.
+- PR #22 reste empilée sur `fix/lot8-club-onboarding-and-access`, pas sur `main`. Les métadonnées GitHub de la PR indiquent `mergeable_state=clean` après l’avancement de la base; aucune cible n’a été changée.
+- PR #20, commit final `269c675` : Firestore Emulator **129/129 réussis** (run 44993962097); build Android staging réussi (run 44993962095). Les tests couvrent les dates impossibles, les années bissextiles 2028/2000 et les années communes 2027/1900.
+- Historique des validations du correctif Lot 8 consigné sans masquer les échecs : `ffe59fb` a échoué à l’analyse à cause d’une ligne tronquée; `725413e` a passé 127/129, l’année bissextile étant encore erronée, Android a réussi; deux tentatives intermédiaires ont aussi échoué à cause d’un fichier de règles dupliqué. Le commit `269c675` repart du fichier intact d4c96e6, corrige le motif et passe les 129 tests.
+- `.firebaserc` aux têtes PR #20 et #22 : défaut `demo-wat-connect`, alias staging `wat-connect-staging`; aucun alias production. La base de PR #20 sélectionnait `wat-connect` et a été sécurisée. Le test Firestore CI cible explicitement demo; le workflow APK fixe l’environnement staging.
+- Inventaire des workflows/scripts PR #20 : aucun déploiement Firebase production n’est défini. Le processus de production n’a été ni exécuté ni modifié; il devra toujours choisir explicitement son projet. Les workflows Cloudflare staging restent distincts du Wrangler production.
+- PR #22 code applicatif : les tests ciblés locaux étaient 115/115; CI du commit `bcaf337` : API 44992433833, Firestore Emulator 44992433789, Android staging 44992433810 — tous réussis. Preview de branche Cloudflare réussie (5413d640). Le commit `902f891` actualise le rapport; ne pas le présenter comme une nouvelle validation de code.
+- Auth Firebase staging toujours non vérifiable : aucun CLI Firebase/gcloud, connecteur ni identité de service accessible. Aucun test contre Firebase réel. Permissions IAM/bindings non validés; routes API métier toujours fermées.
+- Cloudflare consulté en lecture seule. Compte associé à `ongwafaalturathinternational@gmail.com`; le compte a `enforce_twofactor=false`. Workers `wat-connect-staging` et `nour-al-hidaya` présents; leurs bindings et routes sont vides. Ce lien institutionnel et la protection 2FA restent à confirmer par WAT. Aucun réglage ni secret n’a été modifié.
+- Aucun compte réel, dossier réel, configuration de production, fusion ou déploiement production modifié/exécuté.
 
 ## Commits vérifiables
 
@@ -59,4 +55,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## Prochaine action
 
-Pousser et faire valider par CI le test supplémentaire update/revoke; continuer la revue statique des modules et garder la limite Firebase IAM documentée. Ne jamais fusionner, déployer production, toucher à des comptes/dossiers réels ni ouvrir les routes.
+1. Poursuivre l’audit statique de la feuille de route et des dépendances de modules depuis les documents du dépôt; effectuer les corrections indépendantes avec données fictives.
+2. Maintenir la demande de validation institutionnelle Firebase staging (propriétaire, identité de service et IAM minimal) et garder les routes fermées jusque-là.
+3. Demander à WAT de confirmer le compte Cloudflare institutionnel et le mécanisme d’application de 2FA; inventaire distant maintenu en lecture seule.
+4. Suivre les contrôles CI/mergeabilité des PR #20/#22 après chaque commit. Ne jamais fusionner, déployer production, toucher aux comptes/dossiers réels ni ouvrir les routes.
