@@ -168,3 +168,8 @@ test("le registre projets efface les formulaires privés au changement de sessio
  const html=readFileSync(new URL("../projets.html",import.meta.url),"utf8");
  assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("projectForm"\)\.reset\(\);\$\("assignmentForm"\)\.reset\(\)/);
 });
+
+test("le registre Club efface le formulaire privé au changement de session", () => {
+ const html=readFileSync(new URL("../club-khuddam.html",import.meta.url),"utf8");
+ assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("volunteerForm"\)\.reset\(\)/);
+});
