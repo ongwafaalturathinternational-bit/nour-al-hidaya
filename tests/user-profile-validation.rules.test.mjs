@@ -60,4 +60,13 @@ test("les champs de profil invalides sont refusés à la création et à la mise
     await assertFails(updateDoc(user.profileRef, { ...patch, updatedAt: serverTimestamp() }));
   }
   await assertFails(updateDoc(user.profileRef, { displayName: "Sans horodatage" }));
+  await assertFails(updateDoc(user.profileRef, {
+    role: "administrateur",
+    updatedAt: serverTimestamp()
+  }));
+  const otherUser = fixture("profile-other-user-test");
+  await assertFails(updateDoc(doc(otherUser.db, "users", user.uid), {
+    displayName: "Autre utilisateur",
+    updatedAt: serverTimestamp()
+  }));
 });
