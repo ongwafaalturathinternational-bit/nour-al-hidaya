@@ -87,3 +87,12 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Ajout de `tests/learning-api-assignment-policy.test.js` couvrant l'autorisation concordante, les scopes absents, l'inactivité, les dates, les accès inter-sites/inter-groupes, les périmètres vides et les valeurs mal formées.
 - **Limite importante :** cette primitive est isolée et non raccordée à `staff-auth.js` ni aux routes Worker. Elle ne résout pas encore les relations hiérarchiques entre identifiants (par exemple déterminer qu'une mosquée appartient à un site) ; les identifiants comparés doivent provenir d'une lecture serveur fiable. Les routes restent en 503.
 - Aucun compte, document Firestore, scope réel, secret, règle distante ou déploiement n'a été modifié. La CI du commit `ca19753c0b6fe9dd57ebe702f195c4e4e3e1e9fd` n'est pas encore confirmée.
+
+## Composition du contrôle des affectations — 22 novembre 2026
+
+- Ajout de `workers/learning-api/src/learning-authorization.js` : composition de l'authentification et du scope d'équipe (`staffAccess/{uid})) avec la lecture de l'affectation pédagogique (`learningStaffAssignments/{uid})).
+- L'accès n'est accordé que si le compte d'équipe est déjà autorisé pour le scope demandé **et** si au moins une affectation active, datée et dotée du même scope correspond au périmètre de la ressource.
+- L'indisponibilité du registre d'affectations, un document absent/mal formé, une affectation expirée ou un périmètre discordant entraînent un refus.
+- Ajout de `tests/learning-api-learning-authorization.test.js` pour vérifier l'intersection des droits, les accès inter-sites, l'absence d'affectation et le refus des données privées sans grant explicite.
+- **Frontière de confiance :** l'argument `resource` de cette fonction doit provenir d'une lecture Firestore effectuée côté serveur. Il ne doit jamais être construit à partir de `siteId`, `groupId` ou autres champs envoyés par le navigateur.
+- **Non raccordé :** le Worker continue de répondre 503 sur les routes d'inscription. Aucun endpoint n'utilise encore cette fonction ; aucune règle Firestore ni aucun compte réel n'a été modifié. Les tests doivent être exécutés par la CI avant de considérer le code validé.
