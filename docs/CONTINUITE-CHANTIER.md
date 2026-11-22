@@ -505,3 +505,14 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Ces validations concernent exactement le HEAD indiqué. Elles ne remplacent pas les essais hors connexion sur téléphone Android réel.
 - PR #20 toujours ouverte, en brouillon, non fusionnée. Aucun déploiement de production ni changement de données réelles.
 
+
+
+## Contrôle statique complémentaire du shell PWA — 22 novembre 2026
+
+- Relecture de `sw.js`, des deux manifestes, de `firebase-init.js` et des tests PWA.
+- Les **19 entrées** de `APP_FILES` existent toutes dans l'arbre du dépôt au HEAD contrôlé; aucune ressource précachée manquante.
+- Les deux manifestes pointent vers des pages de démarrage existantes et vers les icônes 192 × 192 et 512 × 512 présentes dans le dépôt.
+- Le service worker limite ses réponses aux ressources explicitement autorisées de même origine et aux trois SDK Firebase statiques versionnés; il ne met pas en cache les requêtes non-GET ni les URL métier non listées.
+- `firebase-init.js` contient les mécanismes de persistance, les indicateurs de connexion/perte de connexion et le chemin de déconnexion sécurisée.
+- **Portée : audit statique uniquement.** Il ne démontre pas la synchronisation réelle, la récupération après extinction, le comportement multi-onglet ni l'effacement complet du stockage sur appareil. Ces scénarios restent à tester avec des comptes fictifs sur téléphone.
+- Aucun code applicatif ni configuration distante n'a été modifié lors de cet audit.
