@@ -221,3 +221,53 @@ Les cinq modules de gestion utilisent déjà `overflow:auto` autour des tableaux
 4. Revoir les écrans d'inscription, connexion, détails, tableaux de bord et états vides/erreur.
 5. Recetter les parcours par rôle avec données fictives et tester 360/390/768 px et desktop.
 6. Conserver les validations métier, scopes, contrôles Firestore, exports, impressions et synchronisation hors ligne.
+
+
+
+## 11. Vérification de cohérence PWA, dépendances et workflows — 22 novembre 2026
+
+### 11.1 Séparation actuelle des deux applications
+
+- Le portail WAT charge `manifest.json`, `icon-192.png` et `icon-512.png`; son `theme-color` a été aligné sur `#103047` dans une branche dédiée PR #26.
+- Nour charge `manifest-nour.json`, mais son favicon et les deux entrées du manifeste utilisent encore les mêmes chemins génériques `icon-192.png` / `icon-512.png`. La distinction des manifests et des couleurs ne suffit donc pas à garantir la distinction des icônes.
+- `scripts/prepare-capacitor-web.mjs` copie les deux manifests et les deux icônes génériques vers `web-dist`, mais ne prévoit pas encore de ressources de marque séparées.
+- Dans `nour-al-hidaya.html`, une constante `LOGO` contient une image PNG encodée en base64 et sert à la fois à l'en-tête sombre et à l'écran de connexion clair. Le même asset ne permet pas de sélectionner la variante blanche/couleur selon le fond.
+- Les ressources PNG officielles WAT et Nour ont été extraites et leur format RGBA, dimensions et transparence ont été vérifiés. Elles ne sont pas encore présentes dans GitHub; aucune référence cassée n'est ajoutée.
+
+### 11.2 Mesures sans dépendance aux binaires
+
+PR #26 harmonise le thème navigateur WAT : `#103047` dans les huit pages de portail/modules et dans `manifest.json`. Le site institutionnel utilisait déjà cette valeur. Le manifeste Nour conserve son thème propre `#0F2240`. Un test statique couvre les neuf pages WAT et vérifie que les deux manifests restent distincts.
+
+PR #25 apporte l'accessibilité clavier aux six conteneurs de tableaux des cinq modules Lot 8, sans supprimer de colonnes ou d'actions. La validation CI observée sur son HEAD est Firestore **133/133** et Android staging réussi.
+
+### 11.3 Dépendances de PR observées
+
+| PR | Branche cible | Relation constatée |
+|---|---|---|
+| #20 | `audit/wat-connect-lot8-projects-club-khuddam` | Lot 8, branche source des parcours Club et modules |
+| #22 | `fix/lot8-club-onboarding-and-access` | NH-1 empilé sur le jalon Lot 8 |
+| #25 | `feature/nour-central-management-foundation` | amélioration accessibilité des registres, empilée sur #22 |
+| #26 | `feature/nour-central-management-foundation` | cohérence du thème WAT, empilée sur #22 |
+| #23 | `feature/nour-central-management-foundation` | audit documentaire comparatif, empilé sur #22 |
+| #12 | `audit/wat-connect-lot8-projects-club-khuddam` | Lot 9 Finances, sur la base d'audit Lot 8 |
+| #24 | `audit/wat-connect-lot9-finances` | harmonisation Finances empilée sur #12 |
+
+Un écart de SHA est à surveiller : la base enregistrée de PR #22 est `fe9f51c88a4e7de58b2712fb4d0aa87b7f6f766d`, alors que le HEAD de PR #20 est `e3b04361436f32425c86cf3b971e859265162d23`. La comparaison GitHub indique 22 commits d'avance de ce HEAD sur la base de #22. Les PR restent marquées mergeable, mais leur historique doit être réconcilié avant toute stratégie de fusion. Aucune cible ni branche n'a été modifiée dans cette revue.
+
+### 11.4 CI et prévisualisations
+
+- PR #24 : le workflow GitHub Actions Firestore au HEAD `c2541ee` est terminé avec succès; job complet réussi, suite de tests précédemment lue à **191/191**.
+- PR #25 : Firestore Emulator **133/133** et APK Android staging réussi au HEAD `a43c7f7`; l'APK est un artefact de test, pas une publication.
+- PR #26 : Firestore Emulator et APK Android staging ont démarré au HEAD `abbc05b`; leurs résultats sont en attente au moment de cette mise à jour.
+- PR #24 : le bot Cloudflare a signalé deux échecs de builds de prévisualisation sur `1286d11` et `c2541ee`. Les liens de logs pointent vers le tableau de bord Cloudflare authentifié, inaccessible avec les outils disponibles dans cette session. La cause racine n'est donc pas confirmée. Ces notifications sont des builds Preview du flux PR; elles ne prouvent pas un déploiement de production. Aucun déploiement n'a été lancé par cette revue.
+
+### 11.5 Suite technique ordonnée
+
+1. Réconcilier les historiques des branches empilées en préservant les cibles et les PR ouvertes.
+2. Finaliser le transfert binaire des PNG officiels puis intégrer les assets séparés dans le portail, les modules, Nour, les deux manifests, le cache PWA et la préparation Android.
+3. Appliquer un shell de navigation et des composants communs aux pages WAT; garder un thème Nour distinct.
+4. Auditer et tester les parcours Nour par rôle avant tout changement de gestion ou d'authentification.
+5. Reprendre le Lot 9 Finances après la cohérence des modules, puis poursuivre la feuille de route sans supprimer de fonctions métier.
+6. Diagnostiquer les builds Cloudflare avec les journaux authentifiés ou les paramètres de build accessibles à l'administrateur du compte.
+
+Aucune fusion, publication, activation de route, modification de données réelles ou configuration production n'a été effectuée.
