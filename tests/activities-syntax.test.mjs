@@ -134,7 +134,8 @@ test("le registre Activités et Présences efface les données privées au chang
   assert.match(html, /function clearPrivateView\(\)/);
   assert.match(html, /activities=\[\];attendanceRecords=\[\];clubVolunteers=\[\];linkedProjects=\[\]/);
   assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
-  assert.match(html, /if\(generation!==authGeneration\)return/g);
+  assert.match(html, /function isCurrentAuthAccount\(account,generation\)/);
+  assert.match(html, /await WATFirebase\.persistenceReady;if\(!isCurrentAuthAccount\(account,generation\)\)return/);
   assert.match(html, /async function load\(generation=authGeneration\)/);
   assert.match(html, /async function loadAttendance\(generation=authGeneration\)/);
 });
@@ -142,7 +143,7 @@ test("le registre Activités et Présences efface les données privées au chang
 
 test("le registre des présences ignore une réponse liée à une ancienne activité sélectionnée", () => {
   const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
-  assert.match(html, /if\(generation!==authGeneration\|\|\$\("selectedActivity"\)\.value!==id\)return/);
+  assert.match(html, /if\(!isCurrentStaffSession\(user,generation\)\|\|\$\("selectedActivity"\)\.value!==id\)return/);
 });
 
 test("le registre Activités efface les formulaires privés au changement de session", () => {
