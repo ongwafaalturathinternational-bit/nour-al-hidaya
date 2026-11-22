@@ -1,5 +1,5 @@
 const DIMENSIONS = Object.freeze(["siteIds", "structureIds", "groupIds", "programIds"]);
-const SCOPE_PATTERN = /^learning\\.[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){0,3}$/;
+const SCOPE_PATTERN = /^learning\.[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){0,3}$/;
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 function validIdList(value) {
@@ -10,7 +10,7 @@ function validIdList(value) {
 
 function validTimestamp(value) {
   if (value === null) return true;
-  if (typeof value !== "string" || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$/.test(value)) return false;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(value)) return false;
   return Number.isFinite(Date.parse(value));
 }
 
@@ -50,9 +50,6 @@ export function evaluateLearningAssignment({ assignment, scope, resource, now = 
     const assignedIds = assignment[dimension];
     const resourceHasDimension = resourceId !== undefined && resourceId !== null;
     const assignmentHasDimension = assignedIds !== undefined && assignedIds !== null;
-
-    // Both sides must describe exactly the dimensions relevant to this resource.
-    // An assignment cannot silently widen access by adding an unresolvable dimension.
     if (resourceHasDimension !== assignmentHasDimension) {
       return { allowed: false, reason: "resource_perimeter_incomplete" };
     }
