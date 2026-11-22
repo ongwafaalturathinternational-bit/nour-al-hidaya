@@ -236,3 +236,21 @@ test("grant rejects client-supplied server-owned assignment fields and inactive 
   const inactive = await createLearningStaffAssignment(request, config, grantInput("inactive-wat"), f.options);
   assert.equal(inactive.error, "assignment_target_staff_inactive");
 });
+
+test("grant rejects impossible calendar dates while accepting leap-day validity", async () => {
+  const invalidFixture = fixture();
+  const invalid = await createLearningStaffAssignment(request, config, {
+    ...grantInput("invalid-calendar-date"),
+    assignment: { ...grantInput().assignment, validFrom: "2026-02-30T00:00:00Z" },
+  }, invalidFixture.options);
+  assert.deepEqual(invalid, { ok: false, status: 400, error: "assignment_dates_invalid" });
+  assert.equal([...invalidFixture.records.keys()].some((key) =>
+    key.startsWith("learningAuditLogs:") || key.startsWith("learningAssignmentReceipts:")), false);
+
+  const leapFixture = fixture();
+  const valid = await createLearningStaffAssignment(request, config, {
+    ...grantInput("valid-leap-day"),
+    assignment: { ...grantInput().assignment, validFrom: "2028-02-29T00:00:00Z" },
+  }, leapFixture.options);
+  assert.equal(valid.ok, true);
+});
