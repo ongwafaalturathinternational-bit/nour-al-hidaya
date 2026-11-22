@@ -194,3 +194,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Ce correctif applique à Finance le même modèle d'accessibilité que PR #25; il ne transforme pas la structure métier ni les colonnes en cartes et ne masque aucune donnée.
 - CI à attendre sur le HEAD mis à jour. Aucun résultat n'est revendiqué avant lecture du workflow.
 - Aucun calcul, validation, registre, filtre, export, impression, permission, règle Firestore, route ou donnée réelle modifié.
+
+
+
+## Validation CI — accessibilité des tableaux Finance — PR #24 — 22 novembre 2026
+
+- HEAD testé `8bd9f49ec3e6da796232ef09908ad6a3563c9f40` : workflow Firestore security rules terminé avec succès, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833).
+- Suite de tests : **193/193 réussis, 0 échec, 0 ignoré**. Les deux tests de Finance et le nouveau contrôle des neuf tableaux accessibles sont inclus.
+- Aucun workflow Android n'a été déclenché par cette modification de page Finance; le build APK staging n'est donc pas revalidé sur ce HEAD.
+- Les erreurs `PERMISSION_DENIED` dans les logs sont les refus attendus par les tests négatifs de règles Firestore. Le job global est vert.
+- PR #24 reste ouverte, brouillon, non fusionnée, mergeable=true. Les échecs Cloudflare du flux PR restent à diagnostiquer dans les logs authentifiés; le succès Firestore ne les résout pas.
