@@ -356,3 +356,18 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 2. Poursuivre l'audit des modules opérationnels et de leurs transitions d'état.
 3. Garder l'inscription universelle Nour Al-Hidaya et les notifications comme chantiers distincts; ne pas les déclarer livrés.
 4. Ne pas fusionner la PR, déployer en production ou toucher aux données et comptes réels sans autorisation explicite.
+
+
+## Audit complémentaire — modules Projets, Activités et Club — 22 novembre 2026
+
+Contrôle statique effectué sur `projets.html`, `activites.html`, `club-khuddam.html` et les règles Firestore correspondantes :
+
+- Les trois modules invalident les chargements lorsqu'une nouvelle session commence et vérifient la génération de session après les lectures asynchrones principales.
+- Les actions d'écriture vérifient le compte courant et le scope attendu avant l'opération; les erreurs ne sont affichées que si la session reste courante.
+- Le module Activités distingue les scopes Activités et Présences. L'écran commun refuse explicitement l'accès à un compte Présences seul; aucun scope n'est ajouté automatiquement.
+- Le registre Club sépare la lecture des candidatures (`volunteers.read`) de leur traitement (`volunteers.manage`). L'acceptation crée la fiche bénévole et clôt la candidature dans une transaction; les règles Firestore imposent aussi une décision unique depuis l'état en attente.
+- Le module Projets exige un scope projet et un scope Club pour consulter ou gérer les affectations nominatives. La règle serveur empêche de réactiver une affectation si le bénévole est inactif ou absent.
+
+**Résultat :** aucun élargissement de permission ni défaut bloquant supplémentaire n'a été identifié dans ce contrôle statique. Les tests automatisés CI du HEAD de branche restent réussis (workflows 45070114394 et 45070114420). Les scénarios multi-comptes, révocation en cours d'utilisation, transactions concurrentes et usage hors connexion restent à tester avec des comptes fictifs et sur appareil réel.
+
+**Dernier commit documentaire après cet audit :** à actualiser après enregistrement de cette entrée.
