@@ -210,3 +210,9 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Sept chemins touchés dans les deux historiques : `.firebaserc`, `.github/workflows/firestore-rules.yml`, `docs/ARCHITECTURE-INSCRIPTION-UNIVERSELLE.md`, `docs/SEPARATION-ENVIRONNEMENTS-FIREBASE.md`, `index.html`, `scripts/prepare-capacitor-web.mjs`, `wrangler.staging.json`.
 - Le statut GitHub `mergeable=true` des PR ne garantit pas l'absence de divergence logique dans ces fichiers. La réconciliation de #20/#22 est un prérequis d'intégration; les PR #23/#25/#26/#27, empilées sur #22, devront ensuite être reconstruites/rebasées sur le HEAD réconcilié et retestées.
 - Aucune mise à jour automatique de branche ou fusion n'a été lancée : les sept chemins communs comprennent règles, configuration Firebase et pipeline de build; les fusionner sans résolution et revalidation serait risqué. Les cibles des PR sont conservées.
+
+
+## Résultats CI PR #27 — 22 novembre 2026
+
+- Nour Al-Hidaya : Firestore Emulator **133/133** (run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472)); Android staging APK réussi (run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484)). Le build Android est un artefact de test, pas une publication.
+- Le correctif concerne uniquement la sémantique accessible de la navigation; aucun parcours métier ou rôle n'a changé.
