@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate,
+  resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile,
 } from "../workers/learning-api/src/learning-resource-resolver.js";
 import {
-  authorizeLearningBeneficiary, authorizeLearningBeneficiaryPrivate,
+  authorizeLearningBeneficiary, authorizeLearningBeneficiaryPrivate, authorizeLearningProfile,
 } from "../workers/learning-api/src/learning-authorization.js";
 
 const encode = (value) => {
@@ -17,7 +17,7 @@ const encode = (value) => {
 const doc = (value) => ({ fields: Object.fromEntries(Object.entries(value).map(([k, v]) => [k, encode(v)])) });
 const records = {
   "learningBeneficiaries/beneficiary-a": { status: "active" },
-  "learningBeneficiaryPrivate/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active", phone: "private" },
+  "learningBeneficiaryPrivate/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active", phone: "private" },\n  "learningProfiles/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "active" },
   "learningEnrollments/enrollment-a": {
     beneficiaryId: "beneficiary-a", programId: "program-a", structureId: "structure-a",
     siteId: "site-a", groupId: "group-a", periodId: "period-a", status: "active",
@@ -164,4 +164,47 @@ test("does not load private beneficiary document before assignment authorization
   const denied = await authorizeLearningBeneficiaryPrivate(request, {}, "beneficiary-a", "enrollment-a", deps);
   assert.equal(denied.ok, false);
   assert.equal(privateReads, 0);
+});
+
+
+test("resolves pedagogical profile only for its beneficiary and active enrollment", async () => {
+  const result = await resolveLearningProfile(firestore(), "beneficiary-a", "enrollment-a");
+  assert.equal(result.profileId, "beneficiary-a");
+  assert.equal(result.enrollmentId, "enrollment-a");
+  assert.equal("phone" in result, false);
+  await assert.rejects(() => resolveLearningProfile(firestore({
+    "learningProfiles/beneficiary-a": { beneficiaryId: "beneficiary-b", status: "active" },
+  }), "beneficiary-a", "enrollment-a"));
+  await assert.rejects(() => resolveLearningProfile(firestore({
+    "learningProfiles/beneficiary-a": {
+      beneficiaryId: "beneficiary-a", enrollmentId: "enrollment-b", status: "active",
+    },
+  }), "beneficiary-a", "enrollment-a"));
+  await assert.rejects(() => resolveLearningProfile(firestore({
+    "learningProfiles/beneficiary-a": { beneficiaryId: "beneficiary-a", status: "inactive" },
+  }), "beneficiary-a", "enrollment-a"));
+});
+
+test("pedagogical profile access requires a dedicated scope and matching assignment", async () => {
+  const deps = authDeps("learning.profiles.read", {
+    resolveProfile: async () => ({
+      profileId: "beneficiary-a", profileStatus: "active", beneficiaryId: "beneficiary-a",
+      enrollmentId: "enrollment-a", structureId: "structure-a", siteId: "site-a",
+      groupId: "group-a", programId: "program-a",
+    }),
+  });
+  deps.firestore.getDocument = async (collection) => collection === "learningStaffAssignments"
+    ? doc({ active: true, assignments: [{
+      ...baseAssignment, scopeGrants: ["learning.profiles.read"],
+    }] }) : null;
+  const allowed = await authorizeLearningProfile(request, {}, "beneficiary-a", "enrollment-a", deps);
+  assert.equal(allowed.ok, true);
+  assert.equal(allowed.resourceKind, "learning-profile");
+  const denied = await authorizeLearningProfile(request, {}, "beneficiary-a", "enrollment-a", {
+    ...deps,
+    firestore: { getDocument: async () => doc({ active: true, assignments: [{
+      ...baseAssignment, scopeGrants: ["learning.beneficiaries.read"],
+    }] }) },
+  });
+  assert.equal(denied.ok, false);
 });
