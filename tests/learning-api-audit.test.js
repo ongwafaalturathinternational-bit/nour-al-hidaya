@@ -42,8 +42,8 @@ test("accepts valid learning scopes and rejects malformed scopes", async () => {
   const firestore = { createDocument: async () => ({}) };
   for (const scope of ["learning.read", "learning.private.read", "learning.registration.review"]) {
     const result = await writeLearningAuditEvent({
-      authorization: { ...authorization, scope }, action: "beneficiary.update",
-      targetType: "beneficiary", targetId: "b-1", outcome: "completed", now, firestore,
+      authorization: { ...authorization, scope, principal: { ...authorization.principal, scopes: [scope] } },
+      action: "beneficiary.update", targetType: "beneficiary", targetId: "b-1", outcome: "completed", now, firestore,
     });
     assert.equal(result.ok, true, scope);
   }
@@ -88,6 +88,10 @@ test("rejects unapproved actions, outcomes and malformed identifiers before stor
   assert.equal((await writeLearningAuditEvent({
     authorization: { ...authorization, assignmentId: "../assignment" }, action: "beneficiary.update",
     targetType: "beneficiary", targetId: "b-1", outcome: "allowed", now, firestore,
-  })).error, "learning_audit_event_invalid");
+  })).error, "learning_audit_authorization_required");
+  assert.equal((await writeLearningAuditEvent({
+    authorization: { ...authorization, principal: { ...authorization.principal, scopes: ["learning.beneficiaries.read"] } },
+    action: "beneficiary.update", targetType: "beneficiary", targetId: "b-1", outcome: "allowed", now, firestore,
+  })).error, "learning_audit_authorization_required");
   assert.equal(writes, 0);
 });
