@@ -24,6 +24,8 @@ on:
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
+      - ".firebaserc"
+      - "tests/firebase-project-isolation.test.mjs"
       - "sw.js"
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"
