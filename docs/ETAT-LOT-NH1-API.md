@@ -119,3 +119,12 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Le journal d'audit recoupe maintenant le scope demandé avec la liste `principal.scopes` du compte authentifié et exige l'identifiant de l'affectation utilisée. Un objet d'autorisation incomplet ou incohérent ne peut pas produire de trace réputée fiable.
 - Tests ciblés exécutés localement sur les deux modules concernés : **13 tests réussis, 0 échec**.
 - La validation complète GitHub Actions de la branche reste à confirmer. Les routes demeurent désactivées en 503 ; aucune donnée, règle distante, permission ou configuration de production n'a été modifiée.
+
+
+## Audit du schéma des groupes et tests négatifs complémentaires — 22 novembre 2026
+
+- Recherche dans les fichiers et le code indexés du dépôt : aucune définition canonique exploitable de learningGroups, ni source confirmant les champs siteId, mosqueId et programId, n'a été retrouvée.
+- Le helper reste donc volontairement non raccordé. Son hypothèse de schéma est explicite et ne doit pas être traitée comme un modèle validé.
+- Ajout de tests négatifs couvrant : affectation mal formée suivie d'une affectation valide, registre assignments de type incorrect et groupe dépourvu d'un lien de périmètre requis.
+- Ces tests viennent d'être ajoutés au dépôt ; leur exécution locale et la CI du nouveau commit restent à confirmer. Aucun résultat de test n'est revendiqué à ce stade.
+- Prochaine dépendance : retrouver le référentiel réel des sites/mosquées/groupes/programmes dans le projet WAT Connect source ou faire valider formellement le schéma cible avant de modifier le résolveur.
