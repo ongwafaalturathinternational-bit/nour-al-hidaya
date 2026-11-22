@@ -7,7 +7,7 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 
 ## État vérifié au 22 novembre 2026
 
-- HEAD de la PR #22 : `5c2f0d0629ce00bd68819095a46269e9b2381f64` (checkpoint documentaire; CI réussie); PR ouverte, brouillon, non fusionnée.
+- Dernier commit de code testé sur PR #22 : `b884bcd94cff790ca30f60d4cdc89d322f316f81`; PR toujours ouverte, brouillon, non fusionnée. Le rapport possède ensuite son propre commit documentaire.
 - HEAD de la PR #20 : `655b90d0d34a915e36f65f7d4d79c11da4ae30e2`; PR ouverte, brouillon, non fusionnée. Cible conservée : `audit/wat-connect-lot8-projects-club-khuddam`.
 - PR #22 reste empilée sur `fix/lot8-club-onboarding-and-access`, pas sur `main`. Après l’ajout du test sur les deux branches, GitHub a signalé `dirty`; l’analyse a isolé le conflit add/add sur le même chemin. Le test Lot 8 a été renommé, les deux tests sont conservés, et l’API GitHub indique de nouveau `mergeable_state=clean`. Aucune cible n’a été changée.
 - PR #20, commit `269c675` : Firestore Emulator **129/129 réussis** (run 44993962097); build Android staging réussi (run 44993962095). Le commit `2899a93` ajoute trois tests de confinement Firebase : **132/132** (run 44994507222), build Android staging (run 44994507277). Le commit `6c03c9d` renomme le nouveau test pour éviter un conflit d’ajout avec le test existant de PR #22; revalidation **132/132** (run 44994890261) et Android staging (run 44994890246). Le correctif des règles de profil passe **134/134** tests (run 44996446023), Android staging réussi (run 44996446014). Le commit `91ff040` ajoute `maxlength=120` sur le formulaire et son test; suite **135/135** (run 44997248739). Le commit `655b90d` borne les entrées pédagogiques et aligne réponses/réflexions à 5 000 caractères : suite finale **138/138** (run 44997952811), Android staging réussi (run 44997952844). Les tests couvrent les dates impossibles, les années bissextiles 2028/2000 et les années communes 2027/1900.
@@ -83,3 +83,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - État GitHub relu : PR #22 ouverte, brouillon, non fusionnée, `mergeable=true`, base Lot 8 conservée; PR #20 ouverte, brouillon, non fusionnée, `mergeable=true`. Aucune revue formelle sur la PR #22.
 - Le rapport précédent indiquait encore des résultats antérieurs (API 111, Firestore 138) et un ancien HEAD; cette actualisation corrige ces éléments pour le commit vérifié.
 - Aucun accès Firebase réel, changement de compte ou de données, ouverture de route, fusion, déploiement ou modification production n'a eu lieu.
+
+## Correctif de validation des dates d'affectation — 22 novembre 2026
+
+- L'audit de learning-assignment-service.js a révélé que Date.parse acceptait des jours impossibles par normalisation (ex. 30 février). Le validateur vérifie maintenant mois/jour, heures, secondes et années bissextiles selon le calendrier grégorien.
+- Tests ajoutés : 30 février rejeté sans reçu ni événement d'audit; 29 février 2028 accepté. Commit code/test : 29085c89ff60b466443a242d72b56d990a1ce994 / b884bcd94cff790ca30f60d4cdc89d322f316f81.
+- CI du dernier commit de code b884bcd observée réussie : API NH-1 [run 44998802975](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998802975), Firestore Emulator [run 44998802992](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998802992), APK staging [run 44998802961](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44998802961). Les jobs API, règles et build sont tous au statut success.
+- .firebaserc vérifié : défaut demo-wat-connect, alias staging wat-connect-staging. package.json et le workflow Firestore lancent explicitement l'émulateur sur demo-wat-connect; le build Android CI force staging. Cette vérification statique n'exécute aucun processus de publication production.
+- La PR #22 conserve sa cible fix/lot8-club-onboarding-and-access, état GitHub mergeable=true, ouverte et brouillon; PR #20 reste aussi ouverte, brouillon et mergeable sur sa cible prévue. Aucun changement de cible.
+- Routes métier fermées. Aucun accès Firebase réel/IAM validé, compte/dossier réel touché, changement de production, merge ou déploiement.
