@@ -273,3 +273,12 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Ajout de vérifications de régression dans les tests du portail.
 - La CI a révélé un test devenu obsolète après le durcissement du formulaire de candidature : il attendait les anciens noms de variables. Le test a été ajusté pour accepter les nouveaux noms tout en vérifiant le renouvellement du compte et du jeton.
 - CI à relancer sur le dernier commit ; aucun déploiement ni fusion.
+
+
+## Poursuite — synchronisation hors connexion Nour Al-Hidaya — 22 novembre 2026
+
+- Les files locales de progression et de travaux pédagogiques sont propres à chaque UID, mais leurs boucles de synchronisation ne revérifiaient pas la session après chaque écriture asynchrone.
+- Ajout de contrôles de génération/UID avant et après chaque écriture Firestore. Si le compte change, la boucle s'arrête et ne réécrit pas la file locale avec un état partiel.
+- Ajout d'un test de régression couvrant les deux synchronisations.
+- Les données locales restent stockées dans le navigateur sous des clés propres à l'apprenant ; ce mécanisme n'est pas un coffre chiffré et ne remplace pas une stratégie de protection des appareils partagés.
+- Validation CI du dernier lot en attente.
