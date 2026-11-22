@@ -132,3 +132,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+
+## Préparation du transfert fiable des PNG officiels — 22 novembre 2026
+
+- Branche d'accueil dédiée créée : `feature/official-brand-assets`, basée sur le HEAD PR #22 `6ac4bfe0b035547f5670c016094ce3d102a2023e`.
+- Dossiers préparés : `assets/brand/wat/` et `assets/brand/nour/`, chacun avec un README indiquant les quatre noms originaux attendus.
+- Les huit PNG ont été extraits et vérifiés localement; aucun faux fichier image n'a été créé.
+- Limite confirmée : le connecteur GitHub peut écrire des fichiers texte et créer des blobs à partir d'une chaîne base64, mais ne dispose pas d'une action d'upload binaire depuis les fichiers joints locaux. Le clone Git distant est bloqué par l'absence de résolution réseau GitHub dans l'environnement local. L'action de transfert fiable disponible est l'interface GitHub Web « Add file → Upload files » directement sur cette branche.
+- Après l'ajout des huit fichiers originaux dans les deux dossiers, les références du portail, des modules, de Nour, des deux manifests, du cache PWA et du paquet Android pourront être mises à jour et testées. Aucune référence à des fichiers absents n'a été ajoutée.
