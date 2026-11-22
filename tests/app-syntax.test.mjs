@@ -58,3 +58,17 @@ test("les candidatures Club Khuddam sont isolées entre sessions", () => {
   assert.match(html, /const actor=currentUser,generation=authGeneration/);
   assert.match(html, /if\(!isCurrentSession\(active,generation\)\)return/);
 });
+
+
+test("les synchronisations hors connexion de Nour Al-Hidaya s'arrêtent au changement de compte", () => {
+  const html = readFileSync(new URL("../nour-al-hidaya.html", import.meta.url), "utf8");
+  for (const name of ["syncPendingProgress", "syncPendingLearning"]) {
+    const start = html.indexOf("async function " + name + "(");
+    assert.notEqual(start, -1, name + " doit exister");
+    const next = html.indexOf("\nasync function ", start + 1);
+    const body = html.slice(start, next < 0 ? html.length : next);
+    assert.match(body, /generation=firebaseAuthGeneration/);
+    assert.match(body, /isCurrentFirebaseSession\(uid,generation\)/);
+    assert.match(body, /if\(!isCurrentFirebaseSession\(uid,generation\)\)return synced/);
+  }
+});
