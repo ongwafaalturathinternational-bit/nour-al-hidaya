@@ -77,6 +77,6 @@ test("la création de fiches membres invalide les sessions administratives obsol
 
 test("le portail ne propose Nour Al-Hidaya aux membres d'équipe que s'ils ont aussi un profil apprenant", () => {
   const staffBranch = portal.slice(portal.indexOf("if(staff){"), portal.indexOf("else if(application)"));
-  assert.match(staffBranch, /if\(profile\.role===\\"apprenant\\"\)addModule\(\\"⌂\\"/);
-  assert.doesNotMatch(staffBranch, /addModule\(\\"⌂\\"/g, "le module apprenant ne doit pas être proposé sans profil apprenant");
+  assert.ok(staffBranch.includes('if(profile.role==="apprenant")addModule("⌂"));
+  assert.equal((staffBranch.match(/addModule\("⌂"/g) || []).length, 1);
 });
