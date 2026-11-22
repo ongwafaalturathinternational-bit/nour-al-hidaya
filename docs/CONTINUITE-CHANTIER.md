@@ -415,3 +415,12 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits : règles `8640dac368c26f18a3f87dbc3abae374ee4c3c08`, test `2e58b50a9162a1a23f5243f2940b6e86695ba758`.
 - Les validations Firestore et APK Android staging du nouveau HEAD doivent être contrôlées avant de déclarer ce correctif validé.
 - Aucun document, compte ou profil réel n'a été modifié; aucune fusion ni publication en production.
+
+
+## Validation et audit de suivi — 22 novembre 2026
+
+- Le commit applicatif/test `2e58b50a9162a1a23f5243f2940b6e86695ba758` a obtenu les validations Firestore et Android staging : [Firestore 45076496819](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45076496819) et [APK staging 45076496829](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45076496829). Les étapes de préparation Firebase staging, vérification du routage, compilation et publication de l'artefact ont toutes réussi.
+- La PR #20 a ensuite reçu le commit documentaire `834f19889a24e5608ca33ae630eb266a57485a1f`; elle reste ouverte, en brouillon et non fusionnée.
+- Audit statique complémentaire de `administration.html` : lecture des fiches réservée à `members.read` ou `members.manage`; création et changement de statut réservés à `members.manage`; identité de l'agent capturée avant écriture; génération et UID vérifiés après les opérations; nettoyage de l'annuaire et du formulaire lors des transitions d'authentification. Les valeurs affichées sont échappées avant insertion HTML.
+- Aucun défaut bloquant supplémentaire n'a été relevé dans ce contrôle statique. Il ne remplace pas les essais multi-comptes et révocation avec comptes fictifs.
+- Aucun compte, document réel, permission de production, déploiement ou fusion n'a été modifié.
