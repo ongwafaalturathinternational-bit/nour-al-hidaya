@@ -405,8 +405,8 @@ service cloud.firestore {
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.category in ["occasionnel", "engage", "contributeur"]
-        && request.resource.data.skills is list && request.resource.data.skills.size() <= 20
-        && request.resource.data.interests is list && request.resource.data.interests.size() <= 20
+        && validApplicationTextList(request.resource.data.skills)
+        && validApplicationTextList(request.resource.data.interests)
         && request.resource.data.availability is string && request.resource.data.availability.size() <= 300
         && request.resource.data.privacyConsent == true
         && request.resource.data.consentAt == request.time
