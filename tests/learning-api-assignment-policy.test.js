@@ -7,14 +7,14 @@ const base = {
   assignmentId: "assign-1",
   active: true,
   siteIds: ["site-a"],
-  mosqueIds: ["mosque-a"],
+  structureIds: ["structure-a"],
   groupIds: ["group-a"],
   programIds: ["program-a"],
   scopeGrants: ["learning.beneficiaries.read", "learning.private.read"],
   validFrom: "2026-11-01T00:00:00Z",
   validUntil: null,
 };
-const resource = { siteId: "site-a", mosqueId: "mosque-a", groupId: "group-a", programId: "program-a" };
+const resource = { siteId: "site-a", structureId: "structure-a", groupId: "group-a", programId: "program-a" };
 const evaluate = (assignment = base, scope = "learning.beneficiaries.read", target = resource) =>
   evaluateLearningAssignment({ assignment, scope, resource: target, now });
 
