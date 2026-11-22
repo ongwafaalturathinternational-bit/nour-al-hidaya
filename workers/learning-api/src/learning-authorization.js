@@ -1,7 +1,7 @@
 import { authorizeStaffScope } from "./staff-auth.js";
 import { evaluateLearningAssignment } from "./assignment-policy.js";
 import { validateLearningAssignmentRecord } from "./learning-schema.js";
-import { resolveLearningGroup } from "./learning-resource-resolver.js";
+import { resolveLearningGroup, resolveLearningEnrollment } from "./learning-resource-resolver.js";
 
 function decodeValue(value) {
   if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
@@ -23,8 +23,7 @@ function decodeFields(fields) {
   return Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, decodeValue(value)]));
 }
 
-/** Server-side group authorization. Resource context is resolved from canonical Firestore records. */
-export async function authorizeLearningGroup(request, config, scope, groupId, options = {}) {
+async function authorizeResolvedResource(request, config, scope, resourceId, options, resolver, resourceKind) {
   const firestore = options.firestore;
   if (!firestore || typeof firestore.getDocument !== "function") {
     return { ok: false, status: 403, error: "learning_authorization_unavailable" };
@@ -37,7 +36,7 @@ export async function authorizeLearningGroup(request, config, scope, groupId, op
 
   let resource;
   try {
-    resource = await (options.resolveGroup ?? resolveLearningGroup)(firestore, groupId);
+    resource = await resolver(firestore, resourceId);
   } catch {
     return { ok: false, status: 404, error: "learning_resource_unavailable" };
   }
@@ -59,11 +58,30 @@ export async function authorizeLearningGroup(request, config, scope, groupId, op
     for (const assignment of registry.assignments) {
       const result = evaluateLearningAssignment({ assignment, scope, resource, now });
       if (result.allowed) {
-        return { ok: true, principal: staff.principal, assignmentId: assignment.assignmentId, scope, resource };
+        return {
+          ok: true, principal: staff.principal, assignmentId: assignment.assignmentId,
+          scope, resource, resourceKind,
+        };
       }
     }
     return { ok: false, status: 403, error: "learning_assignment_scope_denied" };
   } catch {
     return { ok: false, status: 403, error: "learning_assignment_invalid" };
   }
+}
+
+/** Server-side authorization using canonical, Firestore-resolved group context. */
+export function authorizeLearningGroup(request, config, scope, groupId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, groupId, options,
+    options.resolveGroup ?? resolveLearningGroup, "group",
+  );
+}
+
+/** Server-side authorization using canonical, Firestore-resolved active enrollment context. */
+export function authorizeLearningEnrollment(request, config, scope, enrollmentId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    options.resolveEnrollment ?? resolveLearningEnrollment, "enrollment",
+  );
 }
