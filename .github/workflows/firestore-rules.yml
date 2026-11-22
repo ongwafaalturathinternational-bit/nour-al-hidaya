@@ -27,6 +27,7 @@ on:
       - ".firebaserc"
       - "tests/firebase-default-project.test.mjs"
       - "tests/user-profile-validation.rules.test.mjs"
+      - "tests/learner-private-learning.rules.test.mjs"
       - "sw.js"
       - "firebase-init.js"
       - "tests/pwa-shell.test.mjs"

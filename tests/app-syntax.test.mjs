@@ -21,3 +21,9 @@ test("le champ prénom ou pseudonyme respecte la limite des règles Firestore", 
   assert.ok(input, "le champ de profil doit exister");
   assert.match(input[0], /\bmaxlength="120"/);
 });
+
+test("les zones de réponse et de réflexion respectent la limite des règles Firestore", () => {
+  const html = readFileSync(new URL("../nour-al-hidaya.html", import.meta.url), "utf8");
+  assert.match(html, /<textarea id="hwt" maxlength="5000"/);
+  assert.match(html, /<textarea id="refl" data-a="refl" maxlength="5000"/);
+});

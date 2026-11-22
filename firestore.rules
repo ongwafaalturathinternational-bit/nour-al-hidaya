@@ -467,7 +467,9 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(["kind", "itemId", "value", "date", "updatedAt"])
         && request.resource.data.kind in ["reflection", "practice", "submission"]
         && request.resource.data.itemId is string
-        && request.resource.data.date is string
+        && request.resource.data.itemId.size() >= 1
+        && request.resource.data.itemId.size() <= 120
+        && validIsoDate(request.resource.data.date)
         && request.resource.data.updatedAt == request.time
         && (
           (request.resource.data.kind in ["reflection", "submission"]
