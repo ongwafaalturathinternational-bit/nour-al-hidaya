@@ -10,6 +10,8 @@ on:
       - "projets.html"
       - "club-khuddam.html"
       - "finance.html"
+      - "wat-brand.css"
+      - "tests/finance-syntax.test.mjs"
       - "accounting-engine.mjs"
       - "accounting-lettering.mjs"
       - "finance-access-policy.mjs"
