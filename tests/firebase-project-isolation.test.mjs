@@ -6,6 +6,7 @@ const firebaseRc = JSON.parse(readFileSync(new URL("../.firebaserc", import.meta
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const firestoreWorkflow = readFileSync(new URL("../.github/workflows/firestore-rules.yml", import.meta.url), "utf8");
 const webBuild = readFileSync(new URL("../scripts/prepare-capacitor-web.mjs", import.meta.url), "utf8");
+const stagingWorker = JSON.parse(readFileSync(new URL("../wrangler.staging.json", import.meta.url), "utf8"));
 
 test("Firebase CLI defaults to a demo project and exposes staging only through an explicit alias", () => {
   assert.equal(firebaseRc.projects.default, "demo-wat-connect");
@@ -26,4 +27,6 @@ test("Cloudflare local preview explicitly uses staging config and Firebase stagi
   assert.match(packageJson.scripts["preview:cloudflare"], /build:staging:web/);
   assert.match(packageJson.scripts["preview:cloudflare"], /--config wrangler\.staging\.json/);
   assert.match(webBuild, /process\.argv\.includes\("--staging"\)/);
+  assert.equal(stagingWorker.name, "wat-connect-staging");
+  assert.deepEqual(stagingWorker.previews, {});
 });

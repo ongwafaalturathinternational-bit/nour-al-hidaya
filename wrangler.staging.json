@@ -4,5 +4,6 @@
   "assets": {
     "directory": "./web-dist"
   },
+  "previews": {},
   "workers_dev": true
 }
