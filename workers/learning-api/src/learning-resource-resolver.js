@@ -3,6 +3,8 @@ import {
   validateLearningStructure,
   validateLearningSite,
   validateLearningEnrollment,
+  validateLearningBeneficiary,
+  validateLearningBeneficiaryPrivate,
 } from "./learning-schema.js";
 
 function decodeValue(value) {
@@ -116,5 +118,44 @@ export async function resolveLearningEnrollment(firestore, enrollmentId) {
     ...(enrollment.groupId ? { groupId: enrollment.groupId } : {}),
     periodId: enrollment.periodId,
     status: enrollment.status,
+  });
+}
+
+
+/**
+ * Resolves a beneficiary only through a trusted active enrollment. The enrollment
+ * ID is a selector, not proof of access; its beneficiary link is checked here.
+ * Private data is loaded only on the separate private resolver path.
+ */
+export async function resolveLearningBeneficiary(firestore, beneficiaryId, enrollmentId) {
+  if (!firestore || typeof firestore.getDocument !== "function") throw new Error("resource_resolver_unavailable");
+  if (!validId(beneficiaryId)) throw new Error("resource_reference_invalid");
+  const beneficiary = await read(firestore, "learningBeneficiaries", beneficiaryId);
+  const check = validateLearningBeneficiary(beneficiary);
+  if (!check.ok || beneficiary.status !== "active") throw new Error("beneficiary_not_active");
+  const enrollment = await resolveLearningEnrollment(firestore, enrollmentId);
+  if (enrollment.beneficiaryId !== beneficiaryId) throw new Error("beneficiary_enrollment_mismatch");
+  return Object.freeze({
+    beneficiaryId,
+    beneficiaryStatus: beneficiary.status,
+    enrollmentId: enrollment.enrollmentId,
+    programId: enrollment.programId,
+    structureId: enrollment.structureId,
+    ...(enrollment.siteId ? { siteId: enrollment.siteId } : {}),
+    ...(enrollment.groupId ? { groupId: enrollment.groupId } : {}),
+  });
+}
+
+export async function resolveLearningBeneficiaryPrivate(firestore, beneficiaryId, enrollmentId) {
+  const beneficiary = await resolveLearningBeneficiary(firestore, beneficiaryId, enrollmentId);
+  const privateRecord = await read(firestore, "learningBeneficiaryPrivate", beneficiaryId);
+  const check = validateLearningBeneficiaryPrivate(privateRecord, beneficiaryId);
+  if (!check.ok || privateRecord.status !== "active") throw new Error("beneficiary_private_unavailable");
+  // Deliberately return only the validated identity link and status. A route
+  // must fetch/serialize private fields only after this authorization succeeds.
+  return Object.freeze({
+    ...beneficiary,
+    privateRecordId: beneficiaryId,
+    privateRecordStatus: privateRecord.status,
   });
 }
