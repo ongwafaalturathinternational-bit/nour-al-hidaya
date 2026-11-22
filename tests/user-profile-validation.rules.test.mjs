@@ -10,39 +10,44 @@ const env = await initializeTestEnvironment({
 });
 after(async () => env.cleanup());
 
-const uid = "profile-learner-test";
-const email = "profile-learner@example.org";
-const db = env.authenticatedContext(uid, { email, email_verified: true }).firestore();
-const profileRef = doc(db, "users", uid);
-
-function profile() {
+function fixture(uid) {
+  const email = uid + "@example.org";
+  const db = env.authenticatedContext(uid, { email, email_verified: true }).firestore();
   return {
+    uid,
     email,
-    displayName: "Apprenante de test",
-    role: "apprenant",
-    country: "BJ",
-    interest: "C",
-    mosque: "",
-    learningMode: "seul",
-    createdAt: serverTimestamp()
+    db,
+    profileRef: doc(db, "users", uid),
+    profile: () => ({
+      email,
+      displayName: "Apprenante de test",
+      role: "apprenant",
+      country: "BJ",
+      interest: "C",
+      mosque: "",
+      learningMode: "seul",
+      createdAt: serverTimestamp()
+    })
   };
 }
 
 test("un apprenant peut créer puis mettre à jour son profil valide", async () => {
-  await assertSucceeds(setDoc(profileRef, profile()));
-  await assertSucceeds(updateDoc(profileRef, {
+  const user = fixture("profile-valid-test");
+  await assertSucceeds(setDoc(user.profileRef, user.profile()));
+  await assertSucceeds(updateDoc(user.profileRef, {
     displayName: "Profil de test actualisé",
     updatedAt: serverTimestamp()
   }));
 });
 
 test("les champs de profil invalides sont refusés à la création et à la mise à jour", async () => {
-  await assertFails(setDoc(doc(db, "users", "profile-name-too-long"), {
-    ...profile(),
+  const user = fixture("profile-invalid-test");
+  await assertFails(setDoc(user.profileRef, {
+    ...user.profile(),
     displayName: "N".repeat(121)
   }));
 
-  await assertSucceeds(setDoc(profileRef, profile()));
+  await assertSucceeds(setDoc(user.profileRef, user.profile()));
   const invalidUpdates = [
     { displayName: ["valeur", "invalide"] },
     { displayName: "N".repeat(121) },
@@ -52,7 +57,7 @@ test("les champs de profil invalides sont refusés à la création et à la mise
     { learningMode: "sans-limite" }
   ];
   for (const patch of invalidUpdates) {
-    await assertFails(updateDoc(profileRef, { ...patch, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(user.profileRef, { ...patch, updatedAt: serverTimestamp() }));
   }
-  await assertFails(updateDoc(profileRef, { displayName: "Sans horodatage" }));
+  await assertFails(updateDoc(user.profileRef, { displayName: "Sans horodatage" }));
 });
