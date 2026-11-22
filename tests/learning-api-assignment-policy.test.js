@@ -44,7 +44,7 @@ test("denies absent, empty and incomplete perimeters rather than inferring globa
 test("denies malformed dates, identifiers, scopes and invalid clock", () => {
   assert.equal(evaluate({ ...base, validFrom: "tomorrow" }).reason, "assignment_dates_invalid");
   assert.equal(evaluate({ ...base, validFrom: "2026-02-30T00:00:00Z" }).reason, "assignment_dates_invalid");
-  assert.equal(evaluate({ ...base, validFrom: "2028-02-29T00:00:00Z" }).allowed, true);
+  assert.equal(evaluate({ ...base, validFrom: "2028-02-29T00:00:00Z" }).reason, "assignment_not_yet_valid");
   assert.equal(evaluate({ ...base, groupIds: ["*"] }).reason, "resource_perimeter_invalid");
   assert.equal(evaluate(base, "learning.*").reason, "scope_invalid");
   assert.equal(evaluate(base, undefined, resource).allowed, true);
