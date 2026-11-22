@@ -186,3 +186,13 @@ Ce schéma est une proposition construite à partir des documents et règles pr�
 - Le scope de consultation est distinct : `learning.profiles.read`. Il doit être accordé dans le registre du personnel et dans une affectation active couvrant le périmètre canonique.
 - Les attributs pédagogiques détaillés (langue, niveaux de lecture/arabe/coran, objectifs, évaluations) ne sont pas imposés ici : leurs taxonomies et règles de visibilité doivent être validées par WAT avant de les ajouter.
 - Les helpers sont isolés; aucune route, donnée Firestore, règle ou permission réelle n'est activée.
+
+
+## 12. Inscriptions en attente — résolution et revue administrative préparatoires
+
+- Le statut pending est résolu par une primitive dédiée resolvePendingLearningEnrollment; le résolveur ordinaire resolveLearningEnrollment continue de refuser toute inscription qui n’est pas active.
+- La revue utilise le scope proposé et non attribué learning.enrollments.review, distinct de la consultation des inscriptions et des dossiers bénéficiaires.
+- Le contexte de revue est reconstruit côté serveur à partir de l’inscription, du programme, de la structure, du site et du groupe éventuels; les mêmes contrôles de cohérence s’appliquent.
+- authorizeLearningEnrollmentReview vérifie le scope du personnel puis une affectation active couvrant toutes les dimensions présentes. Une inscription hors périmètre ou un registre incomplet est refusé.
+- Cette primitive ne valide, ne rejette, ne crée et ne modifie aucune inscription. Elle prépare uniquement une future lecture de la file de revue; aucune route n’est raccordée.
+- La clé métier anti-doublon d’une inscription reste volontairement indéfinie jusqu’à validation WAT (notamment la combinaison bénéficiaire/programme/période/groupe). Aucun identifiant déterministe ou mécanisme de déduplication ne doit être présenté comme définitif avant cet arbitrage.
