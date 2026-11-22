@@ -108,7 +108,7 @@ export function createFirestoreRestClient(config, options = {}) {
   }
 
   const documentUrl = (collection, id, readOnly = false) => {
-    assertDocumentTarget(collection, id, readOnly);
+    assertDocumentTarget(collection, id, readOnly ? COLLECTIONS : UPDATABLE_COLLECTIONS);
     return API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents/" +
       encodeURIComponent(collection) + "/" + encodeURIComponent(id);
   };
