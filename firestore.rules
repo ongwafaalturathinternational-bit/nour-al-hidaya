@@ -123,6 +123,7 @@ service cloud.firestore {
         && request.resource.data.code.size() >= 2
         && request.resource.data.code.size() <= 40
         && request.resource.data.description is string
+        && request.resource.data.description.size() >= 1
         && request.resource.data.description.size() <= 1500
         && request.resource.data.category in ["education", "social", "humanitaire", "formation", "autre"]
         && request.resource.data.status in ["planifie", "actif", "suspendu", "termine"]
@@ -148,6 +149,7 @@ service cloud.firestore {
         && request.resource.data.code.size() >= 2
         && request.resource.data.code.size() <= 40
         && request.resource.data.description is string
+        && request.resource.data.description.size() >= 1
         && request.resource.data.description.size() <= 1500
         && request.resource.data.category in ["education", "social", "humanitaire", "formation", "autre"]
         && request.resource.data.status in ["planifie", "actif", "suspendu", "termine"]
