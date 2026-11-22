@@ -139,3 +139,30 @@ test("denies all assignments when the staff assignment registry is inactive", as
   assert.equal(result.ok, false);
   assert.equal(result.error, "learning_assignment_inactive");
 });
+
+
+test("skips a malformed assignment and selects a later valid assignment", async () => {
+  const malformed = { ...assignment, assignmentId: "../invalid" };
+  const valid = { ...assignment, assignmentId: "assign-valid-later" };
+  const multiple = { fields: { active: encode(true), assignments: encode([malformed, valid]) } };
+  const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
+    setup({ assignments: multiple }));
+  assert.equal(result.ok, true);
+  assert.equal(result.assignmentId, "assign-valid-later");
+});
+
+test("denies a non-array assignment register", async () => {
+  const malformed = { fields: { active: encode(true), assignments: encode("not-an-array") } };
+  const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
+    setup({ assignments: malformed }));
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "learning_assignment_inactive");
+});
+
+test("does not accept a group without every currently required canonical link", async () => {
+  const incomplete = { fields: { siteId: encode("site-a"), mosqueId: encode("mosque-a") } };
+  const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",
+    setup({ group: incomplete }));
+  assert.equal(result.ok, false);
+  assert.equal(result.error, "learning_resource_unavailable");
+});
