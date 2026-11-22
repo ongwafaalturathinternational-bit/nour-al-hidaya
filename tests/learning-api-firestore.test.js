@@ -108,3 +108,17 @@ test("canonical resource collections are read-only and never become writable thr
   await assert.rejects(() => client.updateDocument("programs", "program-a", { name: "Y" }), /collection_not_allowed/);
   assert.equal(calls, 3);
 });
+
+test("staff access is read-only and audit logs are append-only", async () => {
+  let calls = 0;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { calls += 1; return new Response(JSON.stringify({ fields: {} }), { status: 200 }); },
+  });
+  await client.getDocument("staffAccess", "staff-a");
+  await assert.rejects(() => client.createDocument("staffAccess", "staff-b", { active: true }), /collection_not_allowed/);
+  await assert.rejects(() => client.updateDocument("staffAccess", "staff-a", { active: false }), /collection_not_allowed/);
+  await client.createDocument("learningAuditLogs", "event-a", { action: "registration.review" });
+  await assert.rejects(() => client.updateDocument("learningAuditLogs", "event-a", { action: "changed" }), /collection_not_allowed/);
+  assert.equal(calls, 2);
+});
