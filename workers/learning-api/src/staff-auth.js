@@ -14,7 +14,7 @@ function stringArrayField(fields, name) {
   if (!Array.isArray(values) || values.length > 100) return null;
   const scopes = values.map((item) => item?.stringValue);
   if (scopes.some((scope) => typeof scope !== "string" ||
-      !/^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*){1,4}$/.test(scope))) return null;
+      !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,4}$/.test(scope))) return null;
   if (new Set(scopes).size !== scopes.length) return null;
   return scopes;
 }
