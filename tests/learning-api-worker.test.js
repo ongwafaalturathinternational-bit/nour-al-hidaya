@@ -13,6 +13,14 @@ test("health endpoint reports that registration is disabled", async () => {
   });
 });
 
+test("health endpoint rejects unsupported methods", async () => {
+  const response = await worker.fetch(new Request("https://example.test/health", {
+    method: "POST",
+  }));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("allow"), "GET");
+});
+
 test("public registration fails closed with 503", async () => {
   const response = await worker.fetch(new Request(
     "https://example.test/api/learning/registrations/public",
@@ -36,6 +44,31 @@ test("agent registration fails closed with 503", async () => {
 test("review endpoint does not expose a public queue", async () => {
   const response = await worker.fetch(new Request(
     "https://example.test/api/learning/registrations/review",
+  ));
+  assert.equal(response.status, 503);
+});
+
+test("registration endpoints reject unsupported methods", async () => {
+  const response = await worker.fetch(new Request(
+    "https://example.test/api/learning/registrations/public",
+    { method: "GET" },
+  ));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("allow"), "POST");
+});
+
+test("decision routes remain disabled until secured configuration exists", async () => {
+  const response = await worker.fetch(new Request(
+    "https://example.test/api/learning/registrations/beneficiary-123/decision",
+    { method: "POST" },
+  ));
+  assert.equal(response.status, 503);
+});
+
+test("duplicate-review routes remain disabled until secured configuration exists", async () => {
+  const response = await worker.fetch(new Request(
+    "https://example.test/api/learning/registrations/beneficiary-123/duplicate-review",
+    { method: "POST" },
   ));
   assert.equal(response.status, 503);
 });
