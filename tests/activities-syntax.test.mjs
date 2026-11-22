@@ -144,3 +144,8 @@ test("le registre des présences ignore une réponse liée à une ancienne activ
   const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
   assert.match(html, /if\(generation!==authGeneration\|\|\$\("selectedActivity"\)\.value!==id\)return/);
 });
+
+test("le registre Activités efface les formulaires privés au changement de session", () => {
+ const html=readFileSync(new URL("../activites.html",import.meta.url),"utf8");
+ assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("activityForm"\)\.reset\(\);\$\("attendanceForm"\)\.reset\(\)/);
+});
