@@ -14,3 +14,10 @@ test("les scripts JavaScript de Nour Al-Hidaya sont syntaxiquement valides", () 
     assert.doesNotThrow(() => new vm.Script(source), "script Nour Al-Hidaya n°" + (index + 1));
   });
 });
+
+test("le champ prénom ou pseudonyme respecte la limite des règles Firestore", () => {
+  const html = readFileSync(new URL("../nour-al-hidaya.html", import.meta.url), "utf8");
+  const input = html.match(/<input id="sn"[^>]*>/);
+  assert.ok(input, "le champ de profil doit exister");
+  assert.match(input[0], /\bmaxlength="120"/);
+});

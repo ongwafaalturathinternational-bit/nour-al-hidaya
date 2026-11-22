@@ -1062,7 +1062,7 @@ function loginView(){
  ${langBar()}
  <div class="free"><b>Gratuit pour tous, partout dans le monde.</b><br>Sans paiement, sans publicité. Vos données ne sont jamais vendues.</div>
  ${reg?`<div class="card"><h3>Créer mon espace</h3><div class="list" style="margin-top:10px">
-  <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
+  <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" maxlength="120" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
   <div><label class="lbl" for="sc">Mon pays</label><select id="sc">${CCS.map(c=>`<option value="${c}">${esc(country(c))}</option>`).join("")}<option value="XX">Autre</option></select></div>
   <div><label class="lbl" for="sx">Je suis</label><select id="sx"><option value="F">Une femme</option><option value="M">Un homme</option></select></div>
   <div><label class="lbl" for="sa">Mon âge</label><select id="sa">${AGES.map(a=>`<option value="${a[0]}" ${a[0]==="26-40"?"selected":""}>${a[1]}</option>`).join("")}</select></div>
