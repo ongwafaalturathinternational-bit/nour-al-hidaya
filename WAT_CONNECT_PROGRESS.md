@@ -155,3 +155,18 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Tests statiques ajoutés : présence des quatre logos dans APP_FILES, copie des assets par le build Android et références d'icônes des deux manifestes. **Ces tests n'ont pas encore été exécutés dans cet environnement**; la validation CI doit confirmer le résultat.
 - Les logos institutionnel ONG Wafa Al-Turath et Club Khuddam Al-Turath ne sont pas remplacés par ceux de WAT Connect ou Nour. Ils seront intégrés à leurs emplacements propres lorsque leurs fichiers seront fournis.
 - Modifications effectuées uniquement sur `feature/official-brand-assets`; aucune fusion, aucun déploiement, aucune donnée réelle ni configuration Firebase/Cloudflare modifiée.
+
+
+## Validation technique de l'intégration des logos — 22 novembre 2026
+
+- La première exécution CI a mis en évidence deux assertions obsolètes dans `tests/pwa-shell.test.mjs` : anciennes tailles d'icônes 192x192/512x512 alors que les PNG officiels déclarent `sizes: any`, et ancien nom de cache v5 alors que le service worker utilise v6.
+- Correctif limité aux assertions de test, sans modifier les ressources, les règles Firestore ni les fonctionnalités métier : commit `3447d2530a3610c84c54f97d6d1385d2956bb440`.
+- CI vérifiée sur ce SHA : Firestore security rules **success** (run [45062196002](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45062196002)); Android staging APK **success** (run [45062195986](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45062195986)). Le build Android a terminé toutes les étapes et publié l'artefact `wat-connect-android-staging-debug-apk` (12 399 654 octets), disponible jusqu'au 6 décembre 2026.
+- PR #28 reste ouverte, brouillon et non fusionnée. Les contrôles réussis concernent uniquement les tests/emulateurs et l'APK debug de staging; ils ne constituent ni une validation de production ni une autorisation de fusion.
+- Aucune donnée réelle, compte Firebase, permission IAM, secret ou configuration de production n'a été touché. Aucun déploiement manuel ou fusion effectué.
+
+## Priorité de reprise — fonctionnement avant UI/UX
+
+- Suspendre les retouches visuelles et les discussions UI/UX jusqu'à nouvel ordre de l'utilisateur.
+- Priorité : revue fonctionnelle et sécurité de l'authentification/gestion des comptes, permissions Firebase, flux d'inscription, persistance/synchronisation et tests des modules essentiels.
+- Continuer uniquement sur branches et staging avec données fictives. Ne pas ouvrir de routes métier ni utiliser des comptes/dossiers réels avant validation institutionnelle Firebase/IAM. Ne pas fusionner ni déployer en production sans autorisation explicite.
