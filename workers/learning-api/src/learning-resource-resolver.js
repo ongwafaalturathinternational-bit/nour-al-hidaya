@@ -4,7 +4,7 @@ import {
   validateLearningSite,
   validateLearningEnrollment,
   validateLearningBeneficiary,
-  validateLearningBeneficiaryPrivate,
+  validateLearningBeneficiaryPrivate,\n  validateLearningProfile,
 } from "./learning-schema.js";
 
 function decodeValue(value) {
@@ -157,5 +157,27 @@ export async function resolveLearningBeneficiaryPrivate(firestore, beneficiaryId
     ...beneficiary,
     privateRecordId: beneficiaryId,
     privateRecordStatus: privateRecord.status,
+  });
+}
+
+
+/**
+ * Resolves a non-private pedagogical profile through its beneficiary and active
+ * enrollment. No client-provided pedagogical perimeter is accepted.
+ */
+export async function resolveLearningProfile(firestore, beneficiaryId, enrollmentId) {
+  const beneficiary = await resolveLearningBeneficiary(firestore, beneficiaryId, enrollmentId);
+  const profile = await read(firestore, "learningProfiles", beneficiaryId);
+  const check = validateLearningProfile(profile, beneficiaryId, enrollmentId);
+  if (!check.ok || profile.status !== "active") throw new Error("learning_profile_unavailable");
+  return Object.freeze({
+    profileId: beneficiaryId,
+    profileStatus: profile.status,
+    beneficiaryId: beneficiary.beneficiaryId,
+    enrollmentId: beneficiary.enrollmentId,
+    programId: beneficiary.programId,
+    structureId: beneficiary.structureId,
+    ...(beneficiary.siteId ? { siteId: beneficiary.siteId } : {}),
+    ...(beneficiary.groupId ? { groupId: beneficiary.groupId } : {}),
   });
 }
