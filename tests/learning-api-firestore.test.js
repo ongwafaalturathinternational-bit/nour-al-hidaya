@@ -92,3 +92,19 @@ test("Firestore access token is reused within its validity window", async () => 
   assert.equal(tokenCalls, 1);
   assert.equal(fetchCalls, 2);
 });
+
+
+test("canonical resource collections are read-only and never become writable through the allowlist", async () => {
+  let calls = 0;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken: async () => token,
+    fetch: async () => { calls += 1; return new Response(JSON.stringify({ fields: {} }), { status: 200 }); },
+  });
+  await client.getDocument("programs", "program-a");
+  await client.getDocument("learningStructures", "structure-a");
+  await client.getDocument("learningSites", "site-a");
+  assert.equal(calls, 3);
+  await assert.rejects(() => client.createDocument("learningStructures", "structure-b", { name: "X" }), /collection_not_allowed/);
+  await assert.rejects(() => client.updateDocument("programs", "program-a", { name: "Y" }), /collection_not_allowed/);
+  assert.equal(calls, 3);
+});
