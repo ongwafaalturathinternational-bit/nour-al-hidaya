@@ -61,6 +61,9 @@ test("validates assignment registry and rejects duplicate or empty perimeter IDs
   assert.equal(validateLearningAssignmentRecord(valid).ok, true);
   assert.equal(validateLearningAssignmentRecord({ ...valid, assignments: [valid.assignments[0], valid.assignments[0]] }).ok, false);
   assert.equal(validateLearningAssignmentRecord({ ...valid, assignments: [{ ...valid.assignments[0], structureIds: [] }] }).ok, false);
+  assert.equal(validateLearningAssignmentRecord({ ...valid, assignments: [{
+    ...valid.assignments[0], structureIds: Array.from({ length: 201 }, (_, i) => "structure-" + i),
+  }] }).ok, false);
 });
 
 test("resolves group using trusted records and returns only canonical perimeter", async () => {
