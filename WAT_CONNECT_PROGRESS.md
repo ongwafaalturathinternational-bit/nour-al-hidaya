@@ -154,3 +154,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - APK Android staging toujours en cours au run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005); ne pas annoncer sa réussite avant la fin du job.
 - PR #26 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - APK Android staging terminé avec succès au même HEAD : run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005). Artefact debug staging ID `14763202306`, 4 372 112 octets, empreinte SHA-256 `e6ada076a0dcad1f0c6bc1a6d9d0d4e4a4eb02143d33eeccb1b7051ff41b4778`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005/artifacts/14763202306). Aucun déploiement.
+
+
+
+## Portail WAT — accès clavier direct au contenu — 22 novembre 2026
+
+- Ajout d'un lien d'évitement « Aller au contenu principal » dans `index.html`, avec cible `main#main` et état de focus visible. Le lien n'apparaît qu'au focus clavier.
+- Test statique ajouté dans `tests/wat-brand-theme.test.mjs`. Le changement ne modifie pas les liens de navigation, l'authentification ni les fonctions du portail.
+- La PR #26 déclenche une nouvelle validation CI sur le HEAD actualisé; les résultats précédents 133/133 et Android staging ne couvrent pas encore cette dernière modification.
