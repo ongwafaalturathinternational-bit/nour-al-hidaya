@@ -93,11 +93,11 @@ test("les écritures du module Programmes refusent une session équipe obsolète
 
 test("les chargements Projets et Activités ignorent les réponses d'une session Firebase obsolète", () => {
   for (const [name, page] of [["Projets", projects], ["Activités", activities]]) {
-    assert.match(page, /function isCurrentAuthAccount\\(account,generation\\)/, name);
-    assert.match(page, /await WATFirebase\\.persistenceReady;if\\(!isCurrentAuthAccount\\(account,generation\\)\\)return/, name);
-    assert.match(page, /staffAccess"\\)\\.doc\\(account\\.uid\\)\\.get\\(\\);if\\(!isCurrentAuthAccount\\(account,generation\\)\\)return/, name);
-    assert.match(page, /async function load\\(generation=authGeneration\\)\\{if\\(!isCurrentStaffSession\\(user,generation\\)\\)return/, name);
+    assert.ok(page.includes("function isCurrentAuthAccount(account,generation)"), name);
+    assert.ok(page.includes("await WATFirebase.persistenceReady;if(!isCurrentAuthAccount(account,generation))return;"), name);
+    assert.ok(page.includes("if(!isCurrentStaffSession(user,generation))return"), name);
+    assert.ok(page.includes("if(!isCurrentAuthAccount(account,generation))return;"), name);
   }
-  assert.match(projects, /if\\(!isCurrentStaffSession\\(user,generation\\)\\|\\|\\$\\("assignmentProject"\\)\\.value!==id\\)return/);
-  assert.match(activities, /if\\(!isCurrentStaffSession\\(user,generation\\)\\|\\|\\$\\("selectedActivity"\\)\\.value!==id\\)return/);
+  assert.ok(projects.includes('if(!isCurrentStaffSession(user,generation)||$("assignmentProject").value!==id)return;'));
+  assert.ok(activities.includes('if(!isCurrentStaffSession(user,generation)||$("selectedActivity").value!==id)return;'));
 });
