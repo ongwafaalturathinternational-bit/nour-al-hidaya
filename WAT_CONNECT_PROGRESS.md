@@ -163,3 +163,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 2. Poursuivre l'audit UI/UX des formulaires, tableaux, navigation, densité, états et accessibilité des modules Lot 8, sans recommencer leur développement.
 3. Diagnostiquer séparément les échecs Cloudflare Preview de PR #24; ne pas les confondre avec le workflow Firestore réussi ni avec un déploiement production.
 4. Maintenir l'ordre de la feuille de route initiale et la fermeture des routes NH-1 jusqu'aux validations institutionnelles.
+
+
+## Revue responsive et PR #25 — 22 novembre 2026
+
+- Mesures statiques ajoutées à l'audit UI/UX : les tableaux Lot 8 ont des largeurs minimales de 610 à 680 px et sont contenus dans des zones `overflow:auto`; les breakpoints varient par module. Le rapport distingue le défilement horizontal conservant toutes les colonnes d'une future présentation mobile plus ergonomique.
+- PR #25 créée : `feature/lot8-table-keyboard-accessibility` vers `feature/nour-central-management-foundation` (empilée sur PR #22). Six zones de tableaux sont maintenant nommées et accessibles au clavier; le focus est visible. Aucune donnée/colonne/action n'est masquée.
+- Head PR #25 : `97b8ffc4d9632d30752e1beb68b3d1a315e59072`. Les workflows « Firestore security rules » (run 45043255230) et « Android staging APK test build » (run 45043255227) ont démarré; ils sont en cours au dernier contrôle. Résultats à compléter après achèvement.
+- PR #25 reste ouverte en brouillon et non fusionnée; la cible de PR #22 n'a pas été modifiée.
