@@ -451,3 +451,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Commits : portail `54e40f1c985c593e2c26330386d090a6bc28a9c1`, test `563bd85bae8d5b757fdd6ca64f10da2ad65ca13a`.
 - La validation CI du correctif précédent a été relancée après correction de la syntaxe du test de visibilité. Les nouveaux contrôles pour le nettoyage du mot de passe sont également déclenchés sur le dernier HEAD.
 - Aucune donnée réelle, aucun compte ni configuration de production touchés.
+
+
+## Validation finale — 22 novembre 2026, contrôle de la connexion
+
+- HEAD applicatif validé : `563bd85bae8d5b757fdd6ca64f10da2ad65ca13a`.
+- Tests Firestore / application : **164 réussis, 0 échec, 0 ignoré** — [workflow 45077812680](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077812680).
+- APK Android **staging debug** : préparation Firebase staging, contrôle du routage, compilation et publication réussis — [workflow 45077812782](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077812782).
+- Artefact : `wat-connect-android-staging-debug-apk`, ID `14776440357`, 4 374 693 octets, empreinte SHA-256 `8e35ae72ed7b710961941331511943ba40888da0b76c1e2214a32ccb16c2dd4b`, expiration le **6 décembre 2026**.
+- Le HEAD PR #20 actuel est `b97dbcdb280eae701ef8af2b63ffbf79bb61c4b0`. La comparaison GitHub confirme que son unique commit après le SHA validé modifie uniquement ce journal documentaire; aucun code applicatif n'a changé depuis les validations.
+- La PR #20 reste ouverte, en brouillon et non fusionnée. Aucun compte, dossier réel, configuration Firebase distante ou environnement de production n'a été modifié. La recette sur appareil Android physique reste à faire.
