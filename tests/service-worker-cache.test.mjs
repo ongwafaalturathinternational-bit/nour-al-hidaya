@@ -10,6 +10,10 @@ test("le service worker ne met en cache que des ressources statiques expliciteme
   const files = [...match[1].matchAll(/"([^"]+)"/g)].map(([, value]) => value);
   assert.ok(files.includes("./index.html"));
   assert.ok(files.includes("./firebase-init.js"));
+  assert.ok(files.includes("./assets/brand/wat/WC copie.png"));
+  assert.ok(files.includes("./assets/brand/wat/ICONE WC.png"));
+  assert.ok(files.includes("./assets/brand/nour/logo nour alhidaya.png"));
+  assert.ok(files.includes("./assets/brand/nour/ICONE NOUR ALHIDAYA.png"));
   assert.ok(files.every(file => file.startsWith("./") && !file.includes("?")));
   assert.doesNotMatch(match[1], /firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com/);
 });
@@ -34,4 +38,18 @@ test("les requêtes métier et API non listées ne sont pas interceptées comme 
   assert.match(sw, /if \(url\.origin !== scope\.origin\) return;/);
   assert.match(sw, /if \(!appUrls\.has\(url\.href\)\) return;/);
   assert.doesNotMatch(sw, /caches\.put\(request,\s*response\)/);
+});
+
+
+test("le build Android copie les logos officiels dans web-dist", () => {
+  const build = readFileSync(new URL("../scripts/prepare-capacitor-web.mjs", import.meta.url), "utf8");
+  assert.match(build, /fs\.cp\(path\.join\(root, "assets", "brand"\), path\.join\(output, "assets", "brand"\), \{ recursive: true \}\)/);
+});
+
+
+test("les manifestes PWA utilisent les icônes officielles de chaque produit", () => {
+  const wat = JSON.parse(readFileSync(new URL("../manifest.json", import.meta.url), "utf8"));
+  const nour = JSON.parse(readFileSync(new URL("../manifest-nour.json", import.meta.url), "utf8"));
+  assert.ok(wat.icons.length > 0 && wat.icons.every(icon => icon.src === "assets/brand/wat/ICONE WC.png"));
+  assert.ok(nour.icons.length > 0 && nour.icons.every(icon => icon.src === "assets/brand/nour/ICONE NOUR ALHIDAYA.png"));
 });

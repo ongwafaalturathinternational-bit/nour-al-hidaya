@@ -132,3 +132,57 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+
+## Préparation du transfert fiable des PNG officiels — 22 novembre 2026
+
+- Branche d'accueil dédiée créée : `feature/official-brand-assets`, basée sur le HEAD PR #22 `6ac4bfe0b035547f5670c016094ce3d102a2023e`.
+- Dossiers préparés : `assets/brand/wat/` et `assets/brand/nour/`, chacun avec un README indiquant les quatre noms originaux attendus.
+- Les huit PNG ont été extraits et vérifiés localement; aucun faux fichier image n'a été créé.
+- Limite confirmée : le connecteur GitHub peut écrire des fichiers texte et créer des blobs à partir d'une chaîne base64, mais ne dispose pas d'une action d'upload binaire depuis les fichiers joints locaux. Le clone Git distant est bloqué par l'absence de résolution réseau GitHub dans l'environnement local. L'action de transfert fiable disponible est l'interface GitHub Web « Add file → Upload files » directement sur cette branche.
+- Après l'ajout des huit fichiers originaux dans les deux dossiers, les références du portail, des modules, de Nour, des deux manifests, du cache PWA et du paquet Android pourront être mises à jour et testées. Aucune référence à des fichiers absents n'a été ajoutée.
+
+
+## Intégration des identités graphiques officielles — 22 novembre 2026
+
+- Les huit PNG originaux sont conservés sans conversion dans `assets/brand/wat/` et `assets/brand/nour/`.
+- Portail WAT Connect : logo horizontal officiel ajouté à l'en-tête; favicon relié à l'icône officielle WAT Connect.
+- Nour Al-Hidaya : le logo intégré auparavant en longue chaîne base64 est remplacé par le fichier PNG officiel du dossier Nour; favicon relié à l'icône officielle Nour.
+- Les manifestes PWA WAT Connect et Nour utilisent chacun leur propre icône officielle. Les références déclarent `sizes: any` car les dimensions exactes des deux fichiers icône n'ont pas été confirmées par lecture binaire.
+- Le service worker précache les quatre ressources graphiques nécessaires et passe de `wat-connect-shell-v5` à `wat-connect-shell-v6` pour renouveler le cache des clients.
+- Le script de préparation Capacitor copie maintenant récursivement `assets/brand/` dans `web-dist/assets/brand/`; sans cette étape les logos auraient été absents du paquet Android.
+- Tests statiques ajoutés : présence des quatre logos dans APP_FILES, copie des assets par le build Android et références d'icônes des deux manifestes. **Ces tests n'ont pas encore été exécutés dans cet environnement**; la validation CI doit confirmer le résultat.
+- Les logos institutionnel ONG Wafa Al-Turath et Club Khuddam Al-Turath ne sont pas remplacés par ceux de WAT Connect ou Nour. Ils seront intégrés à leurs emplacements propres lorsque leurs fichiers seront fournis.
+- Modifications effectuées uniquement sur `feature/official-brand-assets`; aucune fusion, aucun déploiement, aucune donnée réelle ni configuration Firebase/Cloudflare modifiée.
+
+
+## Validation technique de l'intégration des logos — 22 novembre 2026
+
+- La première exécution CI a mis en évidence deux assertions obsolètes dans `tests/pwa-shell.test.mjs` : anciennes tailles d'icônes 192x192/512x512 alors que les PNG officiels déclarent `sizes: any`, et ancien nom de cache v5 alors que le service worker utilise v6.
+- Correctif limité aux assertions de test, sans modifier les ressources, les règles Firestore ni les fonctionnalités métier : commit `3447d2530a3610c84c54f97d6d1385d2956bb440`.
+- CI vérifiée sur ce SHA : Firestore security rules **success** (run [45062196002](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45062196002)); Android staging APK **success** (run [45062195986](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45062195986)). Le build Android a terminé toutes les étapes et publié l'artefact `wat-connect-android-staging-debug-apk` (12 399 654 octets), disponible jusqu'au 6 décembre 2026.
+- PR #28 reste ouverte, brouillon et non fusionnée. Les contrôles réussis concernent uniquement les tests/emulateurs et l'APK debug de staging; ils ne constituent ni une validation de production ni une autorisation de fusion.
+- Aucune donnée réelle, compte Firebase, permission IAM, secret ou configuration de production n'a été touché. Aucun déploiement manuel ou fusion effectué.
+
+## Priorité de reprise — fonctionnement avant UI/UX
+
+- Suspendre les retouches visuelles et les discussions UI/UX jusqu'à nouvel ordre de l'utilisateur.
+- Priorité : revue fonctionnelle et sécurité de l'authentification/gestion des comptes, permissions Firebase, flux d'inscription, persistance/synchronisation et tests des modules essentiels.
+- Continuer uniquement sur branches et staging avec données fictives. Ne pas ouvrir de routes métier ni utiliser des comptes/dossiers réels avant validation institutionnelle Firebase/IAM. Ne pas fusionner ni déployer en production sans autorisation explicite.
+
+
+## Clarification du provisionnement Firebase par environnement — 22 novembre 2026
+
+- L'audit du parcours de connexion a confirmé une cause importante de confusion possible : les previews Cloudflare de branches et les APK de test utilisent `wat-connect-staging`, tandis que le domaine de production et l'application publiée utilisent `wat-connect`.
+- Un compte créé dans Firebase Authentication sur l'un de ces projets n'existe pas dans l'autre. Sur une preview, un compte uniquement créé dans `wat-connect` peut donc recevoir l'erreur d'identifiants invalides, même si son mot de passe est correct.
+- La documentation `docs/PARCOURS-INSCRIPTION-ET-ACCES.md` a été clarifiée pour imposer des comptes de test dédiés dans staging et préserver les comptes/données réels en production. Commit documentaire : `a67989fce093a5a22a21a187e2658b887fb5e0b8`.
+- Le provisionnement des comptes d'équipe reste volontairement manuel : compte Firebase Authentication + document `staffAccess/{uid}` avec le même UID et scopes explicitement autorisés. Aucun écran public d'auto-attribution des rôles n'est ajouté; l'administration automatisée attend un backend de confiance et une identité serveur staging validée.
+
+
+## Revalidation CI du HEAD de la branche des identités officielles — 22 novembre 2026
+
+- HEAD contrôlé : `8d07825d218545c379b050f7e693ce8de5b29c3e` (PR #28, branche `feature/official-brand-assets`). Contrairement au point précédent, les workflows associés à ce HEAD sont maintenant terminés : Firestore security rules **success** (run [45063835377](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45063835377)) et Android staging APK **success** (run [45063835364](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45063835364)). Les étapes de préparation avec Firebase staging, contrôle du routage staging, synchronisation Capacitor, build APK et publication de l'artefact sont toutes au statut success.
+- Revalidation du socle NH-1 sur le HEAD de la branche fondation `6ac4bfe0b035547f5670c016094ce3d102a2023e` : tests Worker/OAuth/Firestore/autorisation **success** (run [45001987229](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987229)); Firestore security rules **success** (run [45001987191](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987191)); APK Android staging **success** (run [45001987231](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45001987231)).
+- État PR #28 relu : ouverte, brouillon, non fusionnée, base `feature/nour-central-management-foundation`, HEAD inchangé. Les validations portent sur CI/emulateur et APK debug staging uniquement; elles ne valident pas la production et n'autorisent aucune fusion.
+- Aucun compte ou dossier réel, secret, IAM, binding, route métier, configuration de production, fusion ou déploiement de production n'a été modifié.

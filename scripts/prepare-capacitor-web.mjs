@@ -34,6 +34,9 @@ for (const file of files) {
   await fs.copyFile(source, target);
 }
 
+// Les logos officiels sont des ressources statiques nécessaires au portail et à Nour.
+await fs.cp(path.join(root, "assets", "brand"), path.join(output, "assets", "brand"), { recursive: true });
+
 // Le build APK de test peut forcer staging sans modifier les sources de production.
 if (process["env"].WAT_FIREBASE_ENV === "staging" || process.argv.includes("--staging")) {
   const firebaseInit = path.join(output, "firebase-init.js");
@@ -64,4 +67,4 @@ for (const file of htmlFiles) {
   }
   await fs.writeFile(target, html);
 }
-console.log(`Préparation Capacitor terminée : ${files.length} ressources web et ${sdkFiles.length} SDK Firebase locaux copiés dans web-dist.`);
+console.log(`Préparation Capacitor terminée : ${files.length} ressources web, les identités graphiques officielles et ${sdkFiles.length} SDK Firebase locaux copiés dans web-dist.`);
