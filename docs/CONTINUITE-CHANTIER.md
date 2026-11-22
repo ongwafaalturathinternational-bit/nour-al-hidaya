@@ -424,3 +424,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Audit statique complémentaire de `administration.html` : lecture des fiches réservée à `members.read` ou `members.manage`; création et changement de statut réservés à `members.manage`; identité de l'agent capturée avant écriture; génération et UID vérifiés après les opérations; nettoyage de l'annuaire et du formulaire lors des transitions d'authentification. Les valeurs affichées sont échappées avant insertion HTML.
 - Aucun défaut bloquant supplémentaire n'a été relevé dans ce contrôle statique. Il ne remplace pas les essais multi-comptes et révocation avec comptes fictifs.
 - Aucun compte, document réel, permission de production, déploiement ou fusion n'a été modifié.
+
+
+## Correction du routage des modules apprenants — 22 novembre 2026
+
+- L'audit du portail principal et de `nour-al-hidaya.html` a révélé que le portail affichait le module Nour Al-Hidaya à tout compte d'équipe actif, alors que la page pédagogique exige un profil Firebase de rôle `apprenant`. Un membre d'équipe sans ce profil voyait donc un raccourci qui conduisait à un refus d'accès et à une déconnexion.
+- Le portail n'affiche désormais ce raccourci aux membres d'équipe que si leur profil possède aussi le rôle apprenant. Les comptes à double usage restent compatibles; aucun droit supplémentaire n'est accordé.
+- Test de régression ajouté à `tests/operational-block.test.mjs`.
+- Commits : portail `32ca496d6aaf222d50d586447a4489843cb1d848`, test final `398c6b81de176846bd54fd93bf6128ead60cb458`.
+- Validations Firestore et APK staging déclenchées sur le nouveau HEAD; résultats à confirmer : [Firestore 45077560922](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077560922) · [APK 45077560842](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45077560842).
+- Aucun compte, profil, droit Firebase, donnée réelle, fusion ou déploiement n'a été modifié.
