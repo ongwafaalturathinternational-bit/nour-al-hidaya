@@ -259,7 +259,7 @@ Un écart de SHA est à surveiller : la base enregistrée de PR #22 est `fe9f51c
 - PR #24 : le workflow GitHub Actions Firestore au HEAD `c2541ee` est terminé avec succès; job complet réussi, suite de tests précédemment lue à **191/191**.
 - PR #25 : Firestore Emulator **133/133** et APK Android staging réussi au HEAD `a43c7f7`; l'APK est un artefact de test, pas une publication.
 - PR #26 : Firestore Emulator et APK Android staging ont démarré au HEAD `abbc05b`; leurs résultats sont en attente au moment de cette mise à jour.
-- PR #24 : le bot Cloudflare a signalé deux échecs de builds de prévisualisation sur `1286d11` et `c2541ee`. Les liens de logs pointent vers le tableau de bord Cloudflare authentifié, inaccessible avec les outils disponibles dans cette session. La cause racine n'est donc pas confirmée. Ces notifications sont des builds Preview du flux PR; elles ne prouvent pas un déploiement de production. Aucun déploiement n'a été lancé par cette revue.
+- PR #24 : le bot Cloudflare, dans un commentaire intitulé « Deploying Preview to Cloudflare », signale deux builds échoués sur `1286d11` et `c2541ee`, sans URL de déploiement. Les liens de logs pointent vers le tableau de bord authentifié, inaccessible avec les outils disponibles. Leur chemin contient toutefois `/workers/services/view/nour-al-hidaya/production/builds/`; l'environnement exact est donc ambigu. Classification prudente : build en échec du flux PR, environnement Cloudflare non confirmé. Il n'est justifié ni de le qualifier de Preview staging réussi, ni de conclure à un déploiement production. La cause racine reste inconnue et aucun déploiement n'a été lancé.
 
 ### 11.5 Suite technique ordonnée
 
