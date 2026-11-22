@@ -51,6 +51,7 @@ function clearPrivateView(){
  $("applicationBox").hidden = true;
  $("verificationBox").hidden = true;
  $("emailLabel").textContent = "";
+ $("password").value = "";
  $("statusText").textContent = "";
  $("details").textContent = "";
  $("status").textContent = "";
@@ -96,11 +97,11 @@ async function loadAccount(user){
   say("Impossible de charger votre dossier. Vérifiez votre connexion puis réessayez.","error");
  }
 }
-$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("loginButton");b.disabled=true;try{await WATFirebase.auth.signInWithEmailAndPassword($("email").value.trim().toLowerCase(),$("password").value);say("Connexion réussie.","success");}catch(err){console.error(err);say(err.code==="auth/invalid-credential"?"Adresse e-mail ou mot de passe incorrect.":"Connexion impossible. Vérifiez vos identifiants et votre connexion.","error");}finally{b.disabled=false;}});
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("loginButton"),generation=authGeneration;b.disabled=true;try{const credential=await WATFirebase.auth.signInWithEmailAndPassword($("email").value.trim().toLowerCase(),$("password").value);if(WATFirebase.auth.currentUser?.uid===credential.user.uid)say("Connexion réussie.","success");}catch(err){if(generation!==authGeneration||WATFirebase.auth.currentUser)return;console.error(err);say(err.code==="auth/invalid-credential"?"Adresse e-mail ou mot de passe incorrect.":"Connexion impossible. Vérifiez vos identifiants et votre connexion.","error");}finally{$("password").value="";b.disabled=false;}});
 $("forgot").addEventListener("click",async()=>{const email=$("email").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){say("Saisissez d’abord votre adresse e-mail.","error");return;}try{await WATFirebase.auth.sendPasswordResetEmail(email);say("Si cette adresse possède un compte, un lien de réinitialisation a été envoyé.","success");}catch(e){say("Impossible d’envoyer le lien pour le moment.","error");}});
 $("resend").addEventListener("click",async()=>{
  const user=currentUser,generation=authGeneration;
- if(!user)return;
+ if(!isCurrentSession(user,generation))return;
  try{await user.sendEmailVerification();if(isCurrentSession(user,generation))say("Lien de vérification renvoyé.","success");}
  catch(e){if(isCurrentSession(user,generation))say("Impossible de renvoyer le lien. Réessayez plus tard.","error");}
 });
