@@ -139,3 +139,31 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Configuration distincte `wrangler.staging.json` et workflow manuel de staging ajoutés. Le déploiement staging n'a pas été lancé; le workflow ne sera déclenchable qu'une fois présent sur la branche par défaut et les secrets de l'environnement staging configurés.
 - Validation du commit `d8e69f541103cf0292a93be6a6da1c98d9a73d94` : [126 tests Firestore réussis](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44913155480) et [APK Android staging construit avec succès](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44913155562). Artefact : `wat-connect-android-staging-debug-apk`, disponible jusqu'au 5 décembre 2026.
 - PR #20 reste ouverte en brouillon. Aucun merge, aucun déploiement staging ou production, aucune publication publique. La production Firebase et son Worker n'ont pas été modifiés.
+
+
+## Mise à jour — 22 novembre 2026, validation des dates métier
+
+- **HEAD PR #20 vérifié :** 46ea6cc77594f9a53124d88d2838fd6679691e34 ; branche fix/lot8-club-onboarding-and-access, base audit/wat-connect-lot8-projects-club-khuddam.
+- **Firestore / tests applicatifs :** [workflow 44970329271 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44970329271) — **129 tests réussis, 0 échec, 0 ignoré**.
+- **Android staging debug :** [workflow 44970329267 réussi](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44970329267). L'étape de préparation et le contrôle de routage Firebase staging ont réussi avant la compilation.
+- **Artefact :** [wat-connect-android-staging-debug-apk — ID 14733133717](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/44970329267/artifacts/14733133717), 4 371 944 octets, expiration le **6 décembre 2026**.
+- Les deux workflows correspondent au même SHA exact ci-dessus. Aucun test physique Android n'est déclaré.
+
+### Travail ajouté
+
+- Les règles Firestore vérifient désormais le format ISO YYYY-MM-DD des dates Programmes, Projets et Activités.
+- Les dates facultatives des Programmes et Projets sont validées ensemble; lorsque début et fin existent, la règle impose début inférieur ou égal à fin.
+- Les trois nouveaux tests Emulator couvrent les dates mal formées, les périodes inversées et les mises à jour directes.
+- La limite calendaire est documentée : la règle valide le format et l'ordre, mais ne calcule pas les jours impossibles d'un mois. Les formulaires utilisent des champs HTML de type date.
+
+### Historique technique à interpréter correctement
+
+- Le commit intermédiaire 0d6abf203114c8df525a4073fffe7f15a91415fb a été immédiatement suivi d'un commit correctif fast-forward 46ea6cc, qui restaure le fichier de règles complet puis applique les changements attendus. Aucun force push ni réécriture d'historique n'a été effectué.
+- **Seul le HEAD 46ea6cc est validé par les workflows ci-dessus.** Le commit intermédiaire n'est pas un état de référence.
+
+### Point de reprise
+
+- Poursuivre l'audit des requêtes, scopes croisés et transitions d'état des modules Lot 8.
+- Continuer la recette PWA/synchronisation et vérifier la cohérence des ressources staging Android.
+- Garder la conception du registre universel au stade documentaire tant que le cahier des charges initial n'a pas été confronté à l'architecture.
+- La PR #20 reste ouverte, en brouillon et non fusionnée. Les PR #10, #11 et #12 restent inchangées; le Lot 9 Finance demeure suspendu jusqu'à validation explicite du Lot 8.

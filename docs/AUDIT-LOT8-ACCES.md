@@ -77,3 +77,18 @@ Un test de règles supplémentaire verrouille les trois cas de lecture des sous-
 - volunteers.read seul : lecture refusée.
 
 Le test utilise des comptes fictifs et des documents de test. Il confirme que les noms de bénévoles présents dans les affectations ne sont pas révélés par un seul des deux périmètres. La règle Firestore existante reste inchangée; cette évolution renforce sa couverture de tests.
+
+ 
+## 10. Format des dates et cohérence des périodes — 22 novembre 2026
+
+L'audit a relevé que les règles vérifiaient principalement une longueur de dix caractères pour les dates. Cette contrainte acceptait des valeurs mal formées lorsqu'une écriture contournait les formulaires HTML. Les formulaires Programmes contrôlaient l'ordre début-fin côté interface, mais les règles Firestore ne garantissaient pas cet ordre.
+
+Correctif appliqué dans la branche :
+- ajout d'un contrôle partagé du format YYYY-MM-DD dans les règles Firestore ;
+- application aux dates facultatives des programmes et projets, avec contrôle serveur de l'ordre début-fin lorsque les deux dates existent ;
+- application aux dates obligatoires des activités, à la création comme à la mise à jour ;
+- ajout de trois tests Emulator couvrant les formats invalides et les périodes inversées, y compris les mises à jour.
+
+**Limite explicite :** le contrôle serveur valide la forme ISO et la longueur, mais ne calcule pas le calendrier grégorien. Une valeur telle que 2027-02-31 conserve une forme correcte et n'est pas rejetée par cette seule règle. Les formulaires utilisent des champs HTML de type date ; une validation calendaire serveur plus complète pourra être ajoutée si les dates deviennent des données critiques pour des traitements automatisés.
+
+Validation automatisée du HEAD 46ea6cc77594f9a53124d88d2838fd6679691e34 : 129 tests Firestore/applicatifs réussis, 0 échec, 0 ignoré. La construction APK staging a également réussi; elle ne constitue pas un test sur téléphone physique.
