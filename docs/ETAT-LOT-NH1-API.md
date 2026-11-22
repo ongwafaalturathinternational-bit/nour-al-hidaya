@@ -138,3 +138,16 @@ Aucune configuration Wrangler, règle Firestore, donnée réelle, identité IAM 
 - Conclusion : l'hypothèse `learningGroups/{groupId}` avec `siteId`, `mosqueId`, `programId` est non fondée et reste bloquante. Aucun basculement vers l'ancienne collection `groups` n'est fait car elle n'est pas davantage validée.
 - Audit détaillé enregistré dans `docs/AUDIT-SCHEMA-RESSOURCES-NH1.md`, avec sources, différences, conséquence pour le contrôle d'accès et décisions nécessaires.
 - Le helper demeure isolé et les routes restent en 503. Aucune donnée réelle, règle Firestore, permission, secret ou déploiement n'a été modifié.
+
+
+## Schéma canonique proposé des ressources — 22 novembre 2026
+
+- Création de `docs/SCHEMA-CANONIQUE-RESSOURCES-NH1.md`.
+- Le modèle propose une entité neutre `learningStructures/{structureId}` avec un type explicite (mosquée, centre, école, partenaire, autre), au lieu d'imposer une hiérarchie site/mosquée non prouvée.
+- `learningSites` est facultatif et ne sera créé que si WAT confirme un besoin métier distinct.
+- `learningGroups` référence un programme et une structure; les apprenants sont reliés au groupe par `learningEnrollments`, pas par une liste redondante dans le groupe.
+- `learningEnrollments` devient la relation métier datée entre bénéficiaire, programme, structure, groupe facultatif, site facultatif et période.
+- Le modèle d'affectation proposé utilise `structureIds[]` au lieu de supposer `mosqueIds[]`. Le helper actuel n'est donc pas compatible et reste explicitement isolé; il faudra adapter et tester sa politique avant tout raccordement.
+- Contrat serveur détaillé : résolution des références depuis Firestore, cohérence groupe/programme/structure/site, refus fermé, idempotence et journalisation.
+- Sept arbitrages institutionnels sont listés avant implémentation. Aucune collection, règle Firestore, permission, donnée, secret ou environnement n'a été modifié.
+- Aucun test ni résultat CI n'est revendiqué pour ce changement documentaire. Routes toujours fermées en 503; PR maintenue en brouillon.
