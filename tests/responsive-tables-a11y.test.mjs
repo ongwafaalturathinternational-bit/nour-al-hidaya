@@ -13,7 +13,7 @@ const pages = new Map([
 test("les registres défilants des modules WAT sont accessibles au clavier", () => {
   for (const [file, expected] of pages) {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
-    const wrappers = [...html.matchAll(/<div\\b[^>]*class=["'][^"']*\\btable-wrap\\b[^"']*["'][^>]*>/gi)]
+    const wrappers = [...html.matchAll(/<div\b[^>]*class=["'][^"']*\btable-wrap\b[^"']*["'][^>]*>/gi)]
       .map(match => match[0]);
     assert.equal(wrappers.length, expected, file + " conserve ses zones de tableau attendues");
     for (const wrapper of wrappers) {
@@ -26,6 +26,6 @@ test("les registres défilants des modules WAT sont accessibles au clavier", () 
 
 test("le focus des zones de tableau est visible dans le socle WAT", () => {
   const css = readFileSync(new URL("../wat-brand.css", import.meta.url), "utf8");
-  assert.match(css, /\\.table-wrap\\[role=["']region["']\\]\\[tabindex=["']0["']\\]:focus-visible/);
-  assert.match(css, /outline:3px solid var\\(--wat-gold-light\\)/);
+  assert.match(css, /\.table-wrap\[role=["']region["']\]\[tabindex=["']0["']\]:focus-visible/);
+  assert.match(css, /outline:3px solid var\(--wat-gold-light\)/);
 });
