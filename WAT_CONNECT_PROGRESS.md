@@ -132,3 +132,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+## Lot 8 — accessibilité clavier des registres sur mobile — 22 novembre 2026
+
+- Branche dédiée `feature/lot8-table-keyboard-accessibility`, basée sur le HEAD vérifié de PR #22 (`6ac4bfe0b035547f5670c016094ce3d102a2023e`). PR #22 et sa cible restent inchangées.
+- Les zones de défilement des tableaux dans Administration, Programmes, Projets, Activités et Club Khuddam sont maintenant nommées comme régions accessibles (`role=region`, `aria-label`) et atteignables au clavier (`tabindex=0`). Les tableaux, colonnes, données, filtres et actions ne sont pas masqués ou supprimés.
+- Le socle `wat-brand.css` ajoute un contour de focus visible pour ces zones. Le défilement horizontal existant est conservé; aucun comportement métier, règle Firestore, formulaire ou permission n'est modifié.
+- Test statique ajouté : `tests/responsive-tables-a11y.test.mjs`, qui vérifie le nombre de zones, leur nom accessible, le focus clavier et le style de focus.
+- Validation CI à attendre sur la PR dédiée; aucun résultat de test n'est revendiqué avant lecture des workflows.
+- Aucun compte/dossier réel, configuration Firebase réelle, route métier, fusion, déploiement ou changement production n'a été touché.
