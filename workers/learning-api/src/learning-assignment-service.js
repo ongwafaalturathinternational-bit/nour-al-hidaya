@@ -52,6 +52,21 @@ async function sha256(value) {
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
+function auditAssignmentSnapshot(assignment) {
+  return {
+    assignmentId: assignment.assignmentId,
+    active: assignment.active,
+    scopeGrants: assignment.scopeGrants,
+    structureIds: assignment.structureIds ?? [],
+    siteIds: assignment.siteIds ?? [],
+    groupIds: assignment.groupIds ?? [],
+    programIds: assignment.programIds ?? [],
+    validFrom: assignment.validFrom,
+    validUntil: assignment.validUntil,
+    version: assignment.version,
+  };
+}
+
 function validRequest(input) {
   return input && typeof input === "object" && ID.test(input.requestId ?? "") &&
     typeof input.targetUid === "string" && ID.test(input.targetUid) &&
@@ -87,6 +102,7 @@ function validateDraft(draft) {
     if (draft[key] === undefined) continue;
     hasPerimeter = true;
     if (!Array.isArray(draft[key]) || !draft[key].length ||
+        draft[key].length > 200 ||
         !draft[key].every((id) => typeof id === "string" && ID.test(id)) ||
         new Set(draft[key]).size !== draft[key].length) {
       return { ok: false, error: "assignment_perimeter_invalid" };
@@ -223,6 +239,7 @@ async function mutate(action, request, config, input, options = {}) {
       return { ok: false, status: 409, error: "assignment_registry_inactive_or_invalid" };
     }
     let assignment;
+    let previousAssignment = null;
     let targetAssignmentId;
     if (action === "assignment.grant") {
       const draft = input.assignment;
@@ -245,6 +262,7 @@ async function mutate(action, request, config, input, options = {}) {
       const index = registry.assignments.findIndex((item) => item.assignmentId === input.assignmentId);
       if (index < 0) return { ok: false, status: 404, error: "assignment_not_found" };
       const current = registry.assignments[index];
+      previousAssignment = current;
       const currentVersion = Number.isSafeInteger(current.version) && current.version > 0 ? current.version : 1;
       if (!current.active || currentVersion !== input.expectedVersion) {
         return { ok: false, status: 409, error: "assignment_version_conflict" };
@@ -292,7 +310,11 @@ async function mutate(action, request, config, input, options = {}) {
       { operation: "create", collection: COLLECTIONS.audits, id: auditId, precondition: { exists: false },
         fields: { actorUid: auth.principal.uid, action, targetType: "staff_assignment",
           targetId: input.targetUid, assignmentId: targetAssignmentId, requestId: input.requestId, scope: ADMIN_SCOPE,
-          outcome: "completed", reason: input.reason.trim(), occurredAt: options.now ?? new Date(), registryVersion } },
+          outcome: "completed", reason: input.reason.trim(), occurredAt: options.now ?? new Date(), registryVersion,
+          authorizationChange: {
+            before: previousAssignment ? auditAssignmentSnapshot(previousAssignment) : null,
+            after: auditAssignmentSnapshot(assignment),
+          } } },
     ]);
     return response;
   } catch (error) {
