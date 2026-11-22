@@ -308,3 +308,13 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Le premier passage CI après le durcissement du traitement des candidatures a signalé une assertion historique qui recherchait encore `reviewedBy:user.uid`.
 - Le code utilise désormais l'identité capturée `actor.uid`, précisément pour éviter qu'un changement de compte modifie l'auteur d'une opération en cours.
 - L'assertion a été mise à jour pour vérifier cette identité capturée. Les validations du commit correctif sont en cours.
+
+
+## Poursuite — sécurisation des formulaires Club — 22 novembre 2026
+
+- Les deux workflows du commit précédent `14de9a7d5f2cfbe5f0d0245f552bedba16c836c8` sont réussis : règles Firestore et APK Android staging.
+- Audit complémentaire du formulaire public Club : les champs mot de passe de création de compte et de connexion sont maintenant vidés à chaque transition de session Firebase, notamment après connexion et déconnexion. Cela évite de laisser un secret saisi dans un champ masqué ou réutilisable après changement de compte.
+- Test de régression ajouté dans `tests/club-candidate-session.test.mjs`.
+- Commits de cette correction : `0c5bc002` (page) et `5371a0fb` (test). Les validations CI de ce nouvel état doivent encore être confirmées.
+- L'espace personnel candidat reste distinct du registre interne; aucun droit d'équipe n'est accordé par cette correction.
+- Aucun compte, dossier réel, paramètre Firebase, merge ou déploiement de production n'a été touché.
