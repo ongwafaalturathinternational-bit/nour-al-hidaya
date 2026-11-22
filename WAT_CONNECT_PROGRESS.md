@@ -143,3 +143,12 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Périmètre strictement visuel : aucun formulaire, registre, filtre, rapport, export CSV, impression, calcul, collection Firestore, règle, permission ou route modifié. Le logo textuel « WAT » reste provisoire : aucun fichier de logo officiel exploitable n'a été trouvé dans les fichiers modifiés de PR #20 ; ne pas inventer un logo.
 - CI non encore exécutée à ce checkpoint ; la PR dédiée déclenchera les contrôles. Aucun résultat de test n'est revendiqué avant lecture des runs.
 - Aucun accès/donnée réelle, secret, Firebase réel, IAM, Cloudflare, production, fusion ou déploiement touché.
+
+
+## Vérification CI — PR #24 — 22 novembre 2026
+
+- HEAD testé : `1286d1185693f30e40031aa19e58132756834c04`.
+- GitHub Actions : workflow « Firestore security rules », run [45014451322](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45014451322), terminé avec succès.
+- Étape complète de compilation/règles et tests Node : **191 tests réussis, 0 échec**. Le test ajouté vérifiant l'import de `wat-brand.css` et les tokens officiels est inclus dans la suite.
+- Les messages `PERMISSION_DENIED` présents dans les logs correspondent aux tests négatifs de sécurité Firestore ; le job complet est vert et aucun test n'a échoué.
+- PR #24 reste ouverte en brouillon, non fusionnée ; aucune fusion, publication ou opération sur un environnement réel n'a été effectuée.
