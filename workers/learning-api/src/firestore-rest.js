@@ -7,9 +7,16 @@ const COLLECTIONS = new Set([
   "beneficiaryPrivate",
   "beneficiaryEnrollments",
   "beneficiaryAccess",
+  "learningProfiles",
+  "learningGroups",
+  "learningStaffAssignments",
+  "learningSessions",
+  "learningAttendance",
+  "learningAssessments",
+  "learningResults",
   "staffDevices",
   "syncReceipts",
-  "auditEvents",
+  "learningAuditLogs",
 ]);
 
 function assertDocumentTarget(collection, documentId) {
@@ -73,8 +80,15 @@ export function createFirestoreRestClient(config, options = {}) {
 
   async function authorizedRequest(url, init = {}) {
     const now = Math.floor(Date.now() / 1000);
-    if (!cachedToken || cachedToken.expiresAt <= now + 60) cachedToken = await tokenProvider();
+    if (!cachedToken || cachedToken.expiresAt <= now + 60) {
+      cachedToken = await tokenProvider();
+      if (typeof cachedToken?.accessToken !== "string" || !cachedToken.accessToken ||
+          !Number.isFinite(cachedToken.expiresAt) || cachedToken.expiresAt <= now) {
+        throw new Error("firestore_access_token_invalid");
+      }
+    }
     return fetcher(url, {
+      redirect: "error",
       ...init,
       headers: {
         authorization: "Bearer " + cachedToken.accessToken,
