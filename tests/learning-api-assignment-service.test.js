@@ -90,6 +90,11 @@ test("grant writes registry, idempotency receipt and audit event in one atomic c
   assert.equal(audit[1].fields.targetId.stringValue, "staff-target");
   assert.equal(audit[1].fields.reason.stringValue, grantInput().reason);
   assert.equal(audit[1].fields.requestId.stringValue, grantInput().requestId);
+  const change = audit[1].fields.authorizationChange.mapValue.fields;
+  assert.equal(change.before.nullValue, null);
+  const afterGrant = change.after.mapValue.fields;
+  assert.equal(afterGrant.version.integerValue, "1");
+  assert.equal(afterGrant.scopeGrants.arrayValue.values[0].stringValue, "learning.groups.read");
 });
 
 test("same request replays its receipt, while reusing the request ID with changed content conflicts", async () => {
@@ -173,8 +178,15 @@ test("update uses expected assignment version and revoke is a versioned soft rev
   const events = [...f.records.entries()].filter(([key]) => key.startsWith("learningAuditLogs:")).map(([, value]) => value);
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.update").fields.reason.stringValue, "Role responsibilities updated");
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.update").fields.requestId.stringValue, "request-update");
+  const updateChange = events.find((event) => event.fields.action.stringValue === "assignment.update").fields.authorizationChange.mapValue.fields;
+  assert.equal(updateChange.before.mapValue.fields.version.integerValue, "1");
+  assert.equal(updateChange.after.mapValue.fields.version.integerValue, "2");
+  assert.equal(updateChange.after.mapValue.fields.scopeGrants.arrayValue.values.length, 2);
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.reason.stringValue, "End of teaching mandate");
   assert.equal(events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.requestId.stringValue, "request-revoke");
+  const revokeChange = events.find((event) => event.fields.action.stringValue === "assignment.revoke").fields.authorizationChange.mapValue.fields;
+  assert.equal(revokeChange.before.mapValue.fields.active.booleanValue, true);
+  assert.equal(revokeChange.after.mapValue.fields.active.booleanValue, false);
   const registry = f.records.get("learningStaffAssignments:staff-target");
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.active.booleanValue, false);
   assert.equal(registry.fields.assignments.arrayValue.values[0].mapValue.fields.revokedBy.stringValue, "staff-admin");
@@ -221,6 +233,11 @@ test("grant refuses inactive target accounts, unapproved scopes and out-of-perim
     assignment: { ...grantInput().assignment, scopeGrants: ["learning.staffAssignments.manage"] },
   }, f.options);
   assert.equal(elevated.error, "assignment_scope_invalid");
+  const oversized = await createLearningStaffAssignment(request, config, {
+    ...grantInput("request-oversized-perimeter"),
+    assignment: { ...grantInput().assignment, structureIds: Array.from({ length: 201 }, (_, i) => "structure-" + i) },
+  }, f.options);
+  assert.equal(oversized.error, "assignment_perimeter_invalid");
   const wrong = await createLearningStaffAssignment(request, config, {
     ...grantInput("request-wrong"), assignment: { ...grantInput().assignment, structureIds: ["structure-b"] },
   }, f.options);
