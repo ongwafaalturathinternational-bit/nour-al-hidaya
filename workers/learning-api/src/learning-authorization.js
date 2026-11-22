@@ -51,7 +51,7 @@ export async function authorizeLearningGroup(request, config, scope, groupId, op
   }
 
   const staff = await (options.authorizeStaff ?? authorizeStaffScope)(
-    request, config, scope, { ...(options.staffOptions ?? {}), firestore },
+    request, config, scope, { ...(options.staffOptions ?? {}), firestore, verifyToken: options.verifyToken ?? options.staffOptions?.verifyToken },
   );
   if (!staff.ok) return staff;
 
