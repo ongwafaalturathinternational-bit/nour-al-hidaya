@@ -148,3 +148,12 @@ test("le registre Club masque et vide les données privées à chaque changement
   assert.match(html, /if\(generation!==authGeneration\)return/g);
   assert.match(html, /async function load\(generation=authGeneration\)/);
 });
+
+
+test("les historiques de la fiche bénévole ignorent les lectures asynchrones d'une ancienne session", () => {
+  const html = readFileSync(new URL("../club-khuddam.html", import.meta.url), "utf8");
+  const profile = html.slice(html.indexOf("async function showVolunteerDetails"), html.indexOf('$("closeVolunteerDetails")'));
+  assert.match(profile, /const generation=authGeneration/);
+  assert.match(profile, /if\(generation!==authGeneration\)return/g);
+  assert.match(profile, /if\(generation!==authGeneration\)return;\s*const present=/);
+});
