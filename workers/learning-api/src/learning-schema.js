@@ -97,3 +97,17 @@ export function validateLearningBeneficiaryPrivate(value, beneficiaryId) {
   }
   return { ok: true };
 }
+
+
+const PROFILE_STATUSES = new Set(["active", "inactive", "archived"]);
+export function validateLearningProfile(value, beneficiaryId, enrollmentId) {
+  if (!record(value) || value.beneficiaryId !== beneficiaryId ||
+      !PROFILE_STATUSES.has(value.status)) {
+    return { ok: false, error: "learning_profile_fields_invalid" };
+  }
+  if (value.enrollmentId !== undefined && value.enrollmentId !== null &&
+      value.enrollmentId !== enrollmentId) {
+    return { ok: false, error: "learning_profile_enrollment_mismatch" };
+  }
+  return { ok: true };
+}
