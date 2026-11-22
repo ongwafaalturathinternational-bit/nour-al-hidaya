@@ -29,3 +29,13 @@ test("le focus des zones de tableau est visible dans le socle WAT", () => {
   assert.match(css, /\.table-wrap\[role=["']region["']\]\[tabindex=["']0["']\]:focus-visible/);
   assert.match(css, /outline:3px solid var\(--wat-gold-light\)/);
 });
+
+test("la navigation des modules identifie la page courante", () => {
+  for (const page of pages.keys()) {
+    const html = readFileSync(new URL("../" + page, import.meta.url), "utf8");
+    const navStart = html.indexOf('<nav class="module-nav"');
+    const navEnd = html.indexOf("</nav>", navStart);
+    const nav = html.slice(navStart, navEnd);
+    assert.match(nav, new RegExp('<a href="' + page.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '" aria-current="page">'));
+  }
+});
