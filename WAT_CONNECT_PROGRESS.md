@@ -151,3 +151,11 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Au commit de code `3796ef1f92af89481a4c722e40d845bcf2ff1d32` et HEAD testé `9a855e68b8f4cd7dadd51048428e827d517737c6`, Firestore Emulator : **133/133 tests réussis, 0 échec, 0 ignoré**, run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472).
 - APK Android staging construit avec succès, run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484). Artefact debug staging ID `14763451503`, 4 372 131 octets, SHA-256 `9c75be9c0d06c0a087ccef1294e45ee97a367799bace485bfa55d762a9579791`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484/artifacts/14763451503).
 - Les deux workflows sont entièrement terminés avec succès. L'APK reste un artefact de test staging, pas un déploiement.
+
+
+
+## Revalidation finale PR #27 — HEAD de suivi — 22 novembre 2026
+
+- HEAD de code et de suivi `b510e1e3e870d14f91757d1dbecbb7e9cde38ecf` : Firestore Emulator **133/133 tests réussis**, 0 échec, run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323).
+- Android staging APK : build réussi, run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344). Artefact debug staging ID `14763730351`, 4 372 130 octets, SHA-256 `5bcffa77fc19a6a5a228d5590c734f771729ed9080315adcb7e4b2a4f00cdba7`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344/artifacts/14763730351).
+- Les deux workflows sont terminés avec succès. Aucun changement fonctionnel métier ou publication.
