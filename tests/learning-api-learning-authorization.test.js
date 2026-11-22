@@ -80,7 +80,10 @@ test("fails closed when resource or assignment registry is unavailable", async (
 });
 
 test("denies cross-site and cross-group resource access", async () => {
-  const otherSite = { fields: { siteId: encode("site-b"), structureId: encode("structure-a"), programId: encode("program-a") } };
+  const otherSite = { fields: {
+    name: encode("Groupe A"), status: encode("active"),
+    siteId: encode("site-b"), structureId: encode("structure-a"), programId: encode("program-a"),
+  } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a", setup({ group: otherSite }));
   assert.equal(result.error, "learning_assignment_scope_denied");
 });
