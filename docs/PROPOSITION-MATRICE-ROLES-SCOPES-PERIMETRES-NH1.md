@@ -24,7 +24,7 @@ Ce document prépare les contrôles serveur NH-1. Il ne crée aucun droit réel,
 | `learning.beneficiaries.create` | Créer une demande ou un dossier par parcours agent | Périmètre affecté |
 | `learning.beneficiaries.update` | Modifier les champs autorisés d'un dossier | Périmètre affecté ; champs privés exclus |
 | `learning.beneficiaries.review` | Examiner, accepter, retourner ou refuser une demande | Périmètre affecté ; décision motivée |
-| `learning.private.read` | Lire les données personnelles strictement nécessaires | Périmètre affecté ; accès séparé et journalisé |
+| `learning.beneficiaries.private.read` | Lire les données personnelles strictement nécessaires | Périmètre affecté ; accès séparé et journalisé |
 | `learning.groups.manage` | Gérer les groupes et leurs affectations | Groupes/sites affectés |
 | `learning.sessions.manage` | Gérer les séances et présences | Groupes/programmes affectés |
 | `learning.results.read` | Lire évaluations et résultats | Groupes/programmes affectés |
@@ -114,7 +114,7 @@ Les réponses ne doivent pas révéler l'existence d'un dossier situé hors du p
 - Affectation inactive ou expirée : refus.
 - Agent du site A tentant de lire ou modifier une ressource du site B : refus.
 - Agent d'une mosquée tentant d'accéder à un autre groupe non affecté : refus.
-- Agent avec lecture dossier mais sans `learning.private.read` : champs privés inaccessibles.
+- Agent avec lecture dossier mais sans `learning.beneficiaries.private.read` : champs privés inaccessibles.
 - Agent avec droit privé mais hors périmètre : refus.
 - Compte suspendu, jeton non vérifié ou registre indisponible : refus.
 - Tentative de fournir un périmètre dans le corps HTTP pour s'accorder soi-même des droits : ignorée ou rejetée ; les droits viennent du registre serveur.
