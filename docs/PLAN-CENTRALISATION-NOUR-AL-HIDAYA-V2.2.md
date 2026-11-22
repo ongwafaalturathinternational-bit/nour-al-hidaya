@@ -59,10 +59,10 @@ Le système conserve la provenance (auto-inscription ou agent), les consentement
 
 Les collections sont des propositions à harmoniser avec les règles Firestore et les données existantes avant toute migration.
 
-- `beneficiaries/{beneficiaryId}` : identifiant opaque, nom d'affichage minimal, statut, provenance, dates et métadonnées de validation.
-- `beneficiaryPrivate/{beneficiaryId}` : coordonnées et informations personnelles strictement nécessaires, avec accès plus restrictif.
-- `beneficiaryEnrollments/{enrollmentId}` : associations à un programme, site/mosquée facultatif, groupe, niveau et période.
-- `beneficiaryAccess/{beneficiaryId}` : liaison serveur facultative vers un compte Auth vérifié, sans faire de l'UID l'identifiant primaire.
+- `learningBeneficiaries/{beneficiaryId}` : identifiant opaque, nom d'affichage minimal, statut, provenance, dates et métadonnées de validation.
+- `learningBeneficiaryPrivate/{beneficiaryId}` : coordonnées et informations personnelles strictement nécessaires, avec accès plus restrictif.
+- `learningEnrollments/{enrollmentId}` : associations à un programme, site/mosquée facultatif, groupe, niveau et période.
+- `learningBeneficiaryAccess/{beneficiaryId}` : liaison serveur facultative vers un compte Auth vérifié, sans faire de l'UID l'identifiant primaire.
 - `learningProfiles/{beneficiaryId}` : paramètres pédagogiques et progression autorisée.
 - `learningGroups/{groupId}` : groupe, site, niveau, période et responsable.
 - `learningStaffAssignments/{assignmentId}` : affectations limitées dans le temps et dans le périmètre.
