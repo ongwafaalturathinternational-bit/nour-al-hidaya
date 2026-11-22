@@ -291,3 +291,12 @@ C'est une différence de configuration avérée entre les branches. Elle constit
 
 
 Mise à jour de validation PR #27 : Firestore Emulator **133/133**, 0 échec, run [45045424472](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424472); APK Android staging réussi, run [45045424484](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045424484). L'artefact Android est un build debug staging et ne constitue pas une publication.
+
+
+
+## 14. Résultats actualisés des correctifs UI/UX — 22 novembre 2026
+
+- PR #25, HEAD de code `5f32e4304d385b3223f6a49b9ef7d6438429628a` : Firestore Emulator **134/134**, run [45045681302](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681302); Android staging réussi, run [45045681206](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045681206). Les cinq modules Lot 8 marquent maintenant la page courante dans leur navigation.
+- PR #26, HEAD de code `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore Emulator **134/134**, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging encore en cours au dernier contrôle.
+- PR #27, HEAD `b510e1e3e870d14f91757d1dbecbb7e9cde38ecf` : Firestore Emulator **133/133**, run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323); Android staging réussi, run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344). Le menu Nour expose un nom de navigation, l'onglet actif et des boutons non-submit.
+- Ces tests couvrent les tests statiques et les règles Firestore en Emulator; ils ne constituent pas une recette visuelle navigateur, une validation utilisateur, ni un test contre Firebase réel.
