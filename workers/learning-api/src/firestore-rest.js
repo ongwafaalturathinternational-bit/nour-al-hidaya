@@ -1,7 +1,7 @@
 import { createGoogleAccessToken } from "./google-auth.js";
 
 const API_ROOT = "https://firestore.googleapis.com/v1";
-const COLLECTIONS = new Set([
+const READ_ONLY_COLLECTIONS = new Set(["programs", "learningStructures", "learningSites"]);\nconst COLLECTIONS = new Set([
   "staffAccess",
   "learningBeneficiaries",
   "learningBeneficiaryPrivate",
@@ -112,7 +112,7 @@ export function createFirestoreRestClient(config, options = {}) {
 
   return Object.freeze({
     async getDocument(collection, id) {
-      const response = await authorizedRequest(documentUrl(collection, id));
+      const response = await authorizedRequest(documentUrl(collection, id, true));
       return parseResponse(response);
     },
 
