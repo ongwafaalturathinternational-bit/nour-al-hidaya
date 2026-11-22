@@ -132,3 +132,42 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le plan docs/testing/learning-staff-assignment-test-plan.md a été corrigé au commit db2dcb7998541b6d48adb1cd741c2e1e810c29b8 : couverture effectivement exécutée séparée des prérequis de l'intégration réelle staging; niveaux de tests, limites des mocks et décisions WAT sont clarifiés.
 - État courant avant ce checkpoint documentaire : PR #22 ouverte, brouillon, non fusionnée, mergeable=true et toujours ciblée sur fix/lot8-club-onboarding-and-access. PR #20 reste ouverte, brouillon, non fusionnée, mergeable=true.
 - Aucun accès réel Firebase, changement IAM/binding, compte/dossier réel, configuration de production, route, fusion ou déploiement manuel n'a été touché. L'identité WAT/IAM reste non vérifiée; les routes restent fermées. La prévisualisation Cloudflare de branche est générée automatiquement par l'intégration existante; elle n'est pas le Worker staging autorisé et ne doit recevoir aucune donnée réelle.
+
+
+
+## Harmonisation des thèmes navigateur et PWA WAT — 22 novembre 2026
+
+- Branche dédiée `feature/wat-portal-theme-consistency`, créée depuis le HEAD vérifié de PR #22 (`6ac4bfe0b035547f5670c016094ce3d102a2023e`). PR #20/#22 et leurs cibles n'ont pas été modifiées.
+- Les pages WAT `index.html`, `administration.html`, `programmes.html`, `projets.html`, `activites.html`, `club-khuddam.html`, `club-khuddam-inscription.html` et `club-khuddam-espace.html` utilisent maintenant le `theme-color` institutionnel `#103047`, cohérent avec `site-institutionnel.html` et `wat-brand.css`.
+- `manifest.json` WAT utilise aussi `#103047`. Le manifeste Nour reste volontairement distinct (`#0F2240`) et ses chemins de démarrage restent `nour-al-hidaya.html`; aucune identité n'a été fusionnée.
+- Nouveau test statique `tests/wat-brand-theme.test.mjs` : vérifie l'import du socle WAT, la couleur des 9 pages institutionnelles et la séparation des thèmes/manifests WAT/Nour.
+- Le workflow Firestore Emulator déclenche ce test et couvre explicitement `site-institutionnel.html`.
+- CI non encore terminée à ce checkpoint. Aucun résultat de test revendiqué avant lecture du workflow.
+- Limite binaire toujours ouverte : les huit PNG originaux sont extraits localement et contrôlés, mais le connecteur GitHub disponible ne propose que l'écriture UTF-8 pour les fichiers de contenu; la fonction Git Data accepte du base64, mais aucun canal de transfert de fichiers local vers cet appel n'est exposé. Aucun binaire factice ni chemin cassé n'a été committé. Les logos ne sont donc pas encore intégrés au dépôt.
+- Aucun formulaire, rôle, scope, règle Firestore, route métier, donnée réelle, configuration Firebase/Cloudflare, fusion ou déploiement n'a été modifié.
+
+
+
+## Résultat partiel CI — PR #26 — 22 novembre 2026
+
+- Firestore security rules terminé avec succès au HEAD `abbc05b5905e10994f3143433152a2b73f7d32f1` : **133/133 tests réussis, 0 échec, 0 ignoré**, run [45045157000](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157000).
+- APK Android staging toujours en cours au run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005); ne pas annoncer sa réussite avant la fin du job.
+- PR #26 reste ouverte, brouillon, non fusionnée, mergeable=true.
+- APK Android staging terminé avec succès au même HEAD : run [45045157005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005). Artefact debug staging ID `14763202306`, 4 372 112 octets, empreinte SHA-256 `e6ada076a0dcad1f0c6bc1a6d9d0d4e4a4eb02143d33eeccb1b7051ff41b4778`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045157005/artifacts/14763202306). Aucun déploiement.
+
+
+
+## Portail WAT — accès clavier direct au contenu — 22 novembre 2026
+
+- Ajout d'un lien d'évitement « Aller au contenu principal » dans `index.html`, avec cible `main#main` et état de focus visible. Le lien n'apparaît qu'au focus clavier.
+- Test statique ajouté dans `tests/wat-brand-theme.test.mjs`. Le changement ne modifie pas les liens de navigation, l'authentification ni les fonctions du portail.
+- La PR #26 déclenche une nouvelle validation CI sur le HEAD actualisé; les résultats précédents 133/133 et Android staging ne couvrent pas encore cette dernière modification.
+
+
+
+## Revalidation Firestore — portail WAT — 22 novembre 2026
+
+- HEAD de code testé `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore Emulator **134/134 tests réussis**, 0 échec, 0 ignoré, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614). Le test inclut le lien d'évitement clavier du portail et la cohérence des thèmes.
+- Android staging est encore en cours au run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643); aucune réussite Android n'est encore revendiquée pour ce HEAD.
+- PR #26 reste ouverte en brouillon, sans fusion ni déploiement.
+- Android staging APK terminé avec succès au HEAD `27da8ad35942de288d5095a26f835f6a09ad96ac` : run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Artefact debug staging ID `14764010011`, 4 372 248 octets, SHA-256 `4a29166d49fb9497c25e645693325e5d2a53b7c1d113cb088e6b4a75cfdfa5ff`, expiration 6 décembre 2026 — [artefact](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643/artifacts/14764010011). Aucun déploiement.
