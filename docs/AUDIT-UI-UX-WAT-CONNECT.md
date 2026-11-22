@@ -137,3 +137,54 @@ Ne pas exposer de route métier NH-1 encore fermée. Ne pas connecter de donnée
 
 ---
 Conclusion : la première amélioration technique à réaliser est l'alignement de la page Finances sur les tokens et composants WAT partagés, puis la création d'un modèle de tableau mobile commun. Ces changements devront être proposés comme une PR indépendante et testés sans modifier les règles métier.
+
+
+## 9. Revue dédiée Nour Al-Hidaya et audit des identités officielles — 22 novembre 2026
+
+### 9.1 Ressources reçues et inventoriées
+
+Les deux archives fournies ont été ouvertes et leurs huit PNG originaux ont été inventoriés. Tous sont en RGBA avec transparence :
+
+| Identité | Ressource | Dimensions originales | Contexte cible |
+|---|---|---:|---|
+| WAT Connect | Logo complet couleur `WC copie.png` | 7087 × 2605 | Portail et en-têtes sur fond clair |
+| WAT Connect | Logo complet blanc `WC blanc.png` | 7087 × 2605 | En-têtes et bandeaux foncés |
+| WAT Connect | Icône couleur `ICONE WC.png` | 2746 × 2605 | Favicon, PWA et espaces compacts sur fond clair |
+| WAT Connect | Icône blanche `ICONE WC blanc.png` | 2746 × 2605 | Espaces compacts sur fond foncé |
+| Nour Al-Hidaya | Logo complet couleur `logo nour alhidaya.png` | 4683 × 2305 | Connexion et surfaces claires |
+| Nour Al-Hidaya | Logo complet blanc `logo blanc nour alhidaya copie.png` | 4683 × 2305 | En-tête et splash foncés |
+| Nour Al-Hidaya | Icône couleur `ICONE NOUR ALHIDAYA.png` | 5906 × 5906 | Favicon, PWA et navigation compacte |
+| Nour Al-Hidaya | Icône blanche `ICONE blanc NOUR ALHIDAYA copie.png` | 5906 × 5906 | Navigation compacte sur fond foncé |
+
+Les originaux sont conservés sans redessin ni changement de proportions. Le transfert de ces binaires dans le dépôt reste une étape technique à réaliser avant de modifier les références des pages : l'action GitHub de création de fichiers disponible dans ce chantier accepte le texte UTF-8, pas les octets PNG. Aucun faux fichier image ni chemin cassé ne sera ajouté en attendant une voie d'envoi binaire adaptée.
+
+### 9.2 Constats vérifiés dans les fichiers
+
+- `index.html` : en-tête textuel « WAT Connect », favicon `icon-192.png`, manifeste `manifest.json`; aucun logo image dans l'en-tête.
+- `manifest.json` : les deux tailles d'icône référencent les fichiers génériques racine `icon-192.png` et `icon-512.png`; la couleur de thème est encore `#102746`, alors que la référence WAT indique `#103047`.
+- `site-institutionnel.html`, `administration.html`, `programmes.html`, `projets.html`, `activites.html`, `club-khuddam.html`, `club-khuddam-inscription.html` et `club-khuddam-espace.html` : en-têtes observés textuels, sans logo image.
+- `nour-al-hidaya.html` : un unique logo PNG est encodé dans la constante JavaScript `LOGO`. Il est réutilisé dans des contextes visuellement différents : en-tête foncé, connexion claire, splash et écran de choix de langue. Cette constante unique ne permet donc pas de choisir correctement entre les versions couleur et blanche.
+- Le même fichier Nour pointe son favicon vers `icon-192.png`; `manifest-nour.json` utilise les mêmes chemins d'icônes racine que WAT Connect. La séparation des identités n'est donc pas encore assurée pour les icônes installées.
+- `sw.js` précache les deux icônes génériques et les deux manifestes, mais ne connaît pas encore les futurs chemins d'assets de marque.
+
+### 9.3 Plan d'intégration non destructive
+
+1. Ajouter les huit fichiers originaux dans un répertoire de ressources de marque distinct pour WAT et Nour, sans écraser les icônes génériques tant que leurs usages partagés ne sont pas migrés.
+2. Portail WAT : logo blanc sur l'en-tête foncé, logo couleur sur les surfaces claires, icône WAT dédiée dans le favicon et le manifeste.
+3. Modules WAT et site institutionnel : reprendre le même composant d'en-tête et les mêmes règles de choix de variante, sans modifier les navigations ou les autorisations.
+4. Nour : logo blanc dans l'en-tête/splash foncés, logo couleur dans la connexion claire, icône Nour dans le favicon et le manifeste Nour; garder l'icône seule dans les zones compactes.
+5. Mettre à jour le cache PWA et la préparation Android pour inclure chaque ressource, puis tester les deux manifestes et les icônes générées.
+6. Ajouter des tests statiques vérifiant la séparation des chemins WAT/Nour, les variantes de logo par contexte et le cache PWA; exécuter les workflows applicatifs et Android staging.
+7. Réaliser ensuite la recette visuelle à 360/390/768 px et sur écran large. Aucun statut « validé visuellement » ne sera revendiqué sans captures ou test navigateur.
+
+### 9.4 Nour Al-Hidaya — limites et conservation métier
+
+L'application est une page HTML/JavaScript volumineuse (463 391 caractères au HEAD audité), construisant dynamiquement les espaces apprenant, formateur et administration. La revue statique a repéré des écrans de connexion/création de compte, tableau de bord, leçons, devoirs, progrès, attestations, ressources, inscriptions et vues de suivi. Cette liste décrit les intitulés rencontrés dans le code, pas une recette fonctionnelle de chaque parcours.
+
+La première étape de refonte doit être un système de marque et de composants communs, pas une réécriture de l'application. Les rôles, états pédagogiques, validations, stockage, règles Firestore, parcours d'inscription et contenus ne doivent pas être altérés par l'intégration visuelle.
+
+### 9.5 Périmètre de vérification et limites
+
+- Revue statique des sources sur PR #22 et des ressources PNG fournies; pas de test graphique en navigateur ni sur appareil réel dans cette étape.
+- Les fichiers binaires ont été extraits et leurs dimensions/modes vérifiés localement; ils ne sont pas encore committés dans GitHub.
+- Le transfert binaire est donc un prérequis pour la PR d'intégration des logos. Les autres audits et tâches de cohérence de l'interface restent indépendants et peuvent continuer.
