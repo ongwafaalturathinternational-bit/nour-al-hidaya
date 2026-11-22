@@ -21,6 +21,7 @@ on:
       - "tests/programs-syntax.test.mjs"
       - "tests/members.rules.test.mjs"
       - "tests/admin-syntax.test.mjs"
+      - "tests/operational-block.test.mjs"
       - "tests/firestore.rules.test.mjs"
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
