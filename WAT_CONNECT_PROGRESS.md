@@ -142,3 +142,13 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Commits : correction `4d0bbe77f60867a1cb523b755cd8943b3d14bcc6`; tests `91bd403b7e9de8a06b6d70970e80e0e032855baf`.
 - CI du commit de tests : workflow NH-1 learning API **success** (run [45064716371](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064716371)). Au dernier contrôle, les workflows Firestore rules (run [45064721595](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721595)) et APK Android staging (run [45064721725](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064721725)) étaient encore en cours.
 - Aucun endpoint d'inscription n'a été ouvert; aucune donnée réelle, identité de service, clé, permission IAM, secret, binding Cloudflare ou configuration de production n'a été modifié.
+
+
+## Complément de durcissement Firestore — reçus immuables — 22 novembre 2026
+
+- Les collections de reçus d'idempotence et de synchronisation (`learningRegistrationReceipts`, `learningAssignmentReceipts`, `syncReceipts`) sont désormais append-only, au même titre que le journal d'audit : création autorisée par le client serveur, modification refusée.
+- Les transactions groupées n'autorisent les mises à jour que sur le registre `learningStaffAssignments`; les reçus et événements d'audit restent des créations protégées.
+- Tests ajoutés pour interdire la modification des reçus via les méthodes simples et les transactions groupées.
+- Commits : `6313411306eebed255a1afbd057707f4343bdab4` (code) et `aa1f73f7fcfcdc36e16bcd5dea2f1abdc728f51e` (tests).
+- Validation CI du HEAD de test : **116/116 tests NH-1 réussis, 0 échec** — run [45064865798](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45064865798).
+- La protection des écritures atomiques et l'immutabilité des reçus sont donc vérifiées par CI. Aucun endpoint métier n'est activé et aucun accès aux données réelles n'a été ouvert.
