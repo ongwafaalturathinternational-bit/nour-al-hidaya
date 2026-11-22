@@ -24,6 +24,7 @@ function db(overrides = {}) {
     "learningStructures/structure-a": structure,
     "learningSites/site-a": site,
     "programs/program-a": { name: "Nour Al-Hidaya", status: "active" },
+    "programs/program-b": { name: "Other program", status: "active" },
     "learningEnrollments/enrollment-a": enrollment,
     ...overrides,
   };
