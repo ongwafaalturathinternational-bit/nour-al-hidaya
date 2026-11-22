@@ -68,3 +68,28 @@ test("rejects malformed assignment documents", async () => {
     setup({ doc: { fields: { active: encode(true), assignments: encode("not-an-array") } } }));
   assert.equal(result.error, "learning_assignment_inactive");
 });
+
+test("uses the same trusted Firestore client for staff and assignment records", async () => {
+  const calls = [];
+  const firestore = {
+    getDocument: async (collection, uid) => {
+      calls.push(collection);
+      if (uid !== principal.uid) throw new Error("unexpected uid");
+      if (collection === "staffAccess") return { fields: {
+        active: { booleanValue: true },
+        role: { stringValue: "formateur" },
+        scopes: { arrayValue: { values: [{ stringValue: "learning.beneficiaries.read" }] } },
+      } };
+      if (collection === "learningStaffAssignments") return document;
+      throw new Error("unexpected collection");
+    },
+  };
+  const result = await authorizeLearningAssignment(request, { firebaseProjectId: "wat-connect-staging" },
+    "learning.beneficiaries.read", resource, {
+      firestore,
+      verifyToken: async () => ({ uid: principal.uid, emailVerified: true }),
+      now: new Date("2026-11-22T12:00:00Z"),
+    });
+  assert.equal(result.ok, true);
+  assert.deepEqual(calls, ["staffAccess", "learningStaffAssignments"]);
+});
