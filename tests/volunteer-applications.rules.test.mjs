@@ -29,6 +29,32 @@ test("un compte vérifié peut déposer sa candidature uniquement sous son UID",
   await assertSucceeds(getDoc(ref));
   await assertFails(setDoc(doc(db, "volunteerApplications", "someone-else"), application("applicant-1", "candidate@example.org")));
 });
+test("les listes compétences et intérêts restent bornées et composées de textes", async () => {
+  const acceptedUid = "applicant-bounded-text";
+  const acceptedDb = env.authenticatedContext(acceptedUid, {
+    email: "bounded@example.org", email_verified: true
+  }).firestore();
+  const withinLimit = ["a".repeat(120), "b".repeat(120), "c".repeat(120), "d".repeat(120)];
+  await assertSucceeds(setDoc(doc(acceptedDb, "volunteerApplications", acceptedUid),
+    application(acceptedUid, "bounded@example.org", { skills: withinLimit })));
+
+  const invalidCases = [
+    { uid: "applicant-long-skill", skills: ["x".repeat(121)] },
+    { uid: "applicant-nontext-skill", skills: [123] },
+    { uid: "applicant-object-interest", interests: [{ value: "education" }] },
+    { uid: "applicant-long-list", interests: Array.from({ length: 21 }, () => "a") },
+    { uid: "applicant-large-list-text", skills: Array.from({ length: 5 }, () => "x".repeat(100)) },
+  ];
+  for (const item of invalidCases) {
+    const db = env.authenticatedContext(item.uid, {
+      email: item.uid + "@example.org", email_verified: true
+    }).firestore();
+    const { uid, ...extra } = item;
+    await assertFails(setDoc(doc(db, "volunteerApplications", uid),
+      application(uid, uid + "@example.org", extra)));
+  }
+});
+
 test("un compte dont l'adresse n'est plus vérifiée ne peut pas relire son dossier candidat", async () => {
   await env.withSecurityRulesDisabled(async c => setDoc(
     doc(c.firestore(), "volunteerApplications", "applicant-unverified-read"),
