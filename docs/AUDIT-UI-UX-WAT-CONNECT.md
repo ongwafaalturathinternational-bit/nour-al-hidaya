@@ -300,3 +300,11 @@ Mise à jour de validation PR #27 : Firestore Emulator **133/133**, 0 échec, ru
 - PR #26, HEAD de code `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore Emulator **134/134**, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging encore en cours au dernier contrôle.
 - PR #27, HEAD `b510e1e3e870d14f91757d1dbecbb7e9cde38ecf` : Firestore Emulator **133/133**, run [45045584323](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584323); Android staging réussi, run [45045584344](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045584344). Le menu Nour expose un nom de navigation, l'onglet actif et des boutons non-submit.
 - Ces tests couvrent les tests statiques et les règles Firestore en Emulator; ils ne constituent pas une recette visuelle navigateur, une validation utilisateur, ni un test contre Firebase réel.
+
+
+
+## Validation finale des lots UI/UX — PR #24 et #26 — 22 novembre 2026
+
+- PR #24, HEAD de code `8bd9f49ec3e6da796232ef09908ad6a3563c9f40` : Firestore **193/193**, 0 échec, run [45045818833](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045818833). Les neuf tableaux Finance sont maintenant des régions accessibles au clavier; aucun build Android n'a été déclenché par ce changement Finance.
+- PR #26, HEAD de code `27da8ad35942de288d5095a26f835f6a09ad96ac` : Firestore **134/134**, 0 échec, run [45045726614](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726614); Android staging réussi, run [45045726643](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45045726643). Le portail a maintenant un lien d'évitement clavier vers son contenu.
+- Les validations Firestore/Android ne remplacent pas les tests visuels réels; aucune capture de navigateur ni recette sur appareil physique n'est revendiquée.
