@@ -36,6 +36,8 @@ on:
       - "tests/android-build.test.mjs"
       - "scripts/prepare-capacitor-web.mjs"
       - "index.html"
+      - "site-institutionnel.html"
+      - "tests/wat-brand-theme.test.mjs"
       - "nour-al-hidaya.html"
       - "manifest.json"
       - "manifest-nour.json"
