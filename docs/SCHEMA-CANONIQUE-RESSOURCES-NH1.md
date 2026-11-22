@@ -164,3 +164,15 @@ Les opérations multi-documents doivent utiliser une transaction ou un mécanism
 ## 9. État et limites
 
 Ce schéma est une proposition construite à partir des documents et règles présents dans le dépôt. Il ne certifie pas l'existence de collections Firestore, ni la présence de documents réels. Aucun document, règle, secret, compte, scope ou environnement n'a été modifié par cette spécification. Le helper actuel qui attend `siteId/mosqueId/programId` reste isolé et ne doit pas être présenté comme une autorisation prête pour la production.
+
+
+## 10. Dossier bénéficiaire et données privées — primitives préparatoires
+
+- `learningBeneficiaries/{beneficiaryId}` porte un statut de dossier (`active | inactive | archived`) sans supposer que le bénéficiaire possède un compte Firebase Auth.
+- `learningBeneficiaryPrivate/{beneficiaryId}` est un document distinct; il doit contenir le même `beneficiaryId` et un statut valide. Une divergence ou une absence entraîne un refus.
+- La primitive de consultation exige un `enrollmentId` fourni comme sélecteur, puis le serveur résout l'inscription et vérifie qu'elle référence exactement le bénéficiaire demandé. L'identifiant transmis par le client ne prouve jamais l'autorisation.
+- Le périmètre est hérité de l'inscription canonique (programme, structure, site et groupe éventuels) et comparé à l'affectation du membre du personnel.
+- Les données privées exigent un scope séparé : `learning.beneficiaries.private.read`. Ce scope doit être présent à la fois dans `staffAccess` et dans l'affectation retenue.
+- Les résolveurs ne renvoient aucun champ personnel privé : ils valident uniquement le lien et le statut. Une route future devra charger/serialiser les champs privés seulement après autorisation.
+- Ces helpers et leurs tests restent isolés; ils ne branchent aucune route, n'activent aucun scope réel et ne modifient aucune règle Firestore.
+- Limite assumée : l'accès est lié à une inscription active identifiée. La consultation transversale d'un dossier sans inscription active, ou la recherche multi-inscriptions, nécessite une décision de modèle et un mécanisme serveur dédié; aucun accès élargi n'est inféré.
