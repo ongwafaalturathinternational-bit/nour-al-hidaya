@@ -9,7 +9,12 @@ const base64url = (bytes) => {
   return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 const encodeJson = (value) => base64url(encoder.encode(JSON.stringify(value)));
-const decodeJson = (value) => JSON.parse(atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4)));
+const decodeJson = (value) => {
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) throw new Error("firebase_token_encoding_invalid");
+  const decoded = JSON.parse(atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4)));
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) throw new Error("firebase_token_payload_invalid");
+  return decoded;
+};
 
 function pemToBytes(pem) {
   const body = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
@@ -73,7 +78,7 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
 
   const header = decodeJson(parts[0]);
   const claims = decodeJson(parts[1]);
-  if (header.alg !== "RS256" || typeof header.kid !== "string") throw new Error("firebase_token_header_invalid");
+  if (header.alg !== "RS256" || typeof header.kid !== "string" || header.kid.length === 0 || header.kid.length > 256) throw new Error("firebase_token_header_invalid");
 
   const now = Math.floor((options.now ?? Date.now()) / 1000);
   const fetcher = options.fetch ?? fetch;
@@ -117,8 +122,15 @@ export async function verifyFirebaseIdToken(token, projectId, options = {}) {
   if (claims.aud !== projectId || claims.iss !== FIREBASE_ISSUER + projectId) throw new Error("firebase_token_project_invalid");
   if (typeof claims.sub !== "string" || claims.sub.length === 0 || claims.sub.length > 128) throw new Error("firebase_token_subject_invalid");
   if (!Number.isFinite(claims.exp) || claims.exp <= now) throw new Error("firebase_token_expired");
-  if (!Number.isFinite(claims.iat) || claims.iat > now + 300) throw new Error("firebase_token_issued_at_invalid");
-  if (!Number.isFinite(claims.auth_time) || claims.auth_time > now + 300) throw new Error("firebase_token_auth_time_invalid");
+  if (!Number.isFinite(claims.iat) || claims.iat > now + 300 || claims.exp - claims.iat > 3600) {
+    throw new Error("firebase_token_issued_at_invalid");
+  }
+  if (!Number.isFinite(claims.auth_time) || claims.auth_time > now + 300 || claims.auth_time > claims.iat) {
+    throw new Error("firebase_token_auth_time_invalid");
+  }
+  if (claims.nbf !== undefined && (!Number.isFinite(claims.nbf) || claims.nbf > now + 300)) {
+    throw new Error("firebase_token_not_yet_valid");
+  }
 
   return Object.freeze({
     uid: claims.sub,
