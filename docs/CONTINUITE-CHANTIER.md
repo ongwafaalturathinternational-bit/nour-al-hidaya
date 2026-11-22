@@ -167,3 +167,14 @@ Aucun merge, déploiement Cloudflare/Firebase, modification des règles ou donn�
 - Continuer la recette PWA/synchronisation et vérifier la cohérence des ressources staging Android.
 - Garder la conception du registre universel au stade documentaire tant que le cahier des charges initial n'a pas été confronté à l'architecture.
 - La PR #20 reste ouverte, en brouillon et non fusionnée. Les PR #10, #11 et #12 restent inchangées; le Lot 9 Finance demeure suspendu jusqu'à validation explicite du Lot 8.
+
+
+## Poursuite — 22 novembre 2026 : isolation de session du registre Projets
+
+- HEAD PR #20 avant cette correction : `e3b04361436f32425c86cf3b971e859265162d23`. Les validations Workers, Firestore et APK debug de ce SHA étaient toutes réussies.
+- Constat : le module Projets conservait l'écran et les tableaux privés après déconnexion ou changement de compte; un chargement asynchrone lancé sous l'ancienne session pouvait également se terminer après le changement.
+- Correction sur `projets.html` : fermeture de l'espace privé et vidage des tableaux à chaque événement d'authentification, invalidation par génération des chargements devenus obsolètes, revalidation après chaque lecture Firestore, y compris les affectations.
+- Régression ajoutée dans `tests/projects-volunteers-syntax.test.mjs`.
+- Commits : `e32a8da157e71d978887f07a910cf4bca4cf9655` (module), `f5927500f4392a84612e41efd19afeee1b2846fa` (test).
+- Validations du nouveau HEAD : workflows Firestore et APK debug déclenchés, encore en cours au dernier contrôle. Ne pas confondre avec les validations réussies du SHA précédent.
+- Audit complémentaire : les modules Club Khuddam et Activités présentent le même risque apparent de conservation de l'écran privé après déconnexion/changement de compte. À corriger sur la même branche avec tests dédiés, sans ouvrir de nouveaux droits.
