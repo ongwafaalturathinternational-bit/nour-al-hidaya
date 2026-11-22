@@ -69,12 +69,14 @@ test("Firestore duplicate create conflicts are not hidden", async () => {
 test("Firestore encoder rejects invalid field names, unsupported values and non-finite numbers", async () => {
   const client = createFirestoreRestClient(config, {
     getAccessToken: async () => token,
-    fetch: async () => new Response("{}", { status: 200 }),
+    fetch: async (_url, init) => new Response(JSON.stringify({ accepted: true, received: init?.body ? JSON.parse(init.body) : null }), { status: 200 }),
   });
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { "__bad": "x" }), /field_name_invalid/);
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { amount: Number.NaN }), /number_invalid/);
   await assert.rejects(() => client.createDocument("beneficiaries", "x", { amount: Number.MAX_SAFE_INTEGER + 1 }), /integer_unsafe/);
-  await assert.rejects(() => client.createDocument("beneficiaries", "x", { date: new Date() }), /value_type_invalid/);
+  const date = new Date("2026-11-22T00:00:00.000Z");
+  const result = await client.createDocument("beneficiaries", "x", { date });
+  assert.equal(result.received.fields.date.timestampValue, "2026-11-22T00:00:00.000Z");
 });
 
 test("Firestore access token is reused within its validity window", async () => {
