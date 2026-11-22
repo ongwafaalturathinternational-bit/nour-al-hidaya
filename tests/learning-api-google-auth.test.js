@@ -6,7 +6,7 @@ const enc = new TextEncoder();
 const b64url = (bytes) => {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 const jsonPart = (value) => b64url(enc.encode(JSON.stringify(value)));
 
@@ -61,7 +61,7 @@ test("Google OAuth helper exchanges a signed assertion and validates the respons
   const { pair } = await makeKeys();
   const pkcs8 = await crypto.subtle.exportKey("pkcs8", pair.privateKey);
   let requestBody;
-  const pem = "-----BEGIN PRIVATE KEY-----\\n" + btoa(String.fromCharCode(...new Uint8Array(pkcs8))).match(/.{1,64}/g).join("\\n") + "\\n-----END PRIVATE KEY-----";
+  const pem = "-----BEGIN PRIVATE KEY-----\n" + btoa(String.fromCharCode(...new Uint8Array(pkcs8))).match(/.{1,64}/g).join("\n") + "\n-----END PRIVATE KEY-----";
   const result = await createGoogleAccessToken({
     firebaseClientEmail: "wat-nh-staging@wat-connect-staging.iam.gserviceaccount.com",
     firebasePrivateKey: pem,
@@ -81,7 +81,7 @@ test("Google OAuth helper exchanges a signed assertion and validates the respons
 test("Google OAuth helper rejects malformed token responses", async () => {
   const { pair } = await makeKeys();
   const pkcs8 = await crypto.subtle.exportKey("pkcs8", pair.privateKey);
-  const pem = "-----BEGIN PRIVATE KEY-----\\n" + btoa(String.fromCharCode(...new Uint8Array(pkcs8))).match(/.{1,64}/g).join("\\n") + "\\n-----END PRIVATE KEY-----";
+  const pem = "-----BEGIN PRIVATE KEY-----\n" + btoa(String.fromCharCode(...new Uint8Array(pkcs8))).match(/.{1,64}/g).join("\n") + "\n-----END PRIVATE KEY-----";
   await assert.rejects(() => createGoogleAccessToken({
     firebaseClientEmail: "wat-nh-staging@wat-connect-staging.iam.gserviceaccount.com", firebasePrivateKey: pem,
   }, { fetch: async () => new Response(JSON.stringify({ access_token: "x", token_type: "Bearer", expires_in: 99999 }), { status: 200 }) }), /invalid_expiry/);
