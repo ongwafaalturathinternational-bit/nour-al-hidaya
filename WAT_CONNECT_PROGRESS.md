@@ -143,3 +143,5 @@ PR #22 : ouverte, brouillon, non fusionnée — feature/nour-central-management-
 - Le document propose une refonte progressive strictement présentationnelle, sans supprimer formulaires, registres, validations, filtres, exports, impressions, règles d'accès ni audit. Il précise les tests desktop/mobile et non-régression à exiger.
 - Limites explicites : audit HTML/CSS statique, pas de capture navigateur, de test utilisateur ni de certification WCAG ; Nour Al-Hidaya nécessite une revue visuelle dédiée. Le code Lot 9 n'a pas été intégré à cette branche.
 - Aucune donnée réelle, règle Firestore, route métier, configuration Firebase/Cloudflare, secret, production, fusion ou déploiement n'a été touché. PR #20, #22 et #12 restent indépendantes et non fusionnées.
+
+- PR documentaire créée : [#23 — Audit UI/UX comparatif WAT Connect](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/23), brouillon ouvert, cible `feature/nour-central-management-foundation`. Comparaison GitHub : 2 commits en avance, 0 en retard, base = HEAD de PR #22 ; vérification ultérieure : `mergeable=true`. Aucune fusion effectuée.
