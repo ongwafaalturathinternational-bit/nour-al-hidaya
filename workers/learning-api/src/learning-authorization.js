@@ -84,6 +84,7 @@ export async function authorizeLearningGroup(request, config, scope, groupId, op
           ok: true,
           principal: staff.principal,
           assignmentId: assignment.assignmentId,
+          scope,
           resource,
         };
       }
