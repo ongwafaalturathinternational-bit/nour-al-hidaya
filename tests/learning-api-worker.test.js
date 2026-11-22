@@ -73,6 +73,22 @@ test("duplicate-review routes remain disabled until secured configuration exists
   assert.equal(response.status, 503);
 });
 
+test("learning staff assignment operations are not exposed as HTTP routes", async () => {
+  for (const path of [
+    "/api/learning/staff-assignments",
+    "/api/learning/staff-assignments/assignment-test/grant",
+    "/api/learning/staff-assignments/assignment-test/update",
+    "/api/learning/staff-assignments/assignment-test/revoke",
+  ]) {
+    const response = await worker.fetch(new Request(`https://example.test${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    }));
+    assert.equal(response.status, 404, path);
+  }
+});
+
 test("unknown paths return 404", async () => {
   const response = await worker.fetch(new Request("https://example.test/api/other"));
   assert.equal(response.status, 404);
