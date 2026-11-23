@@ -87,3 +87,11 @@ Ce script n'a pas été exécuté dans le cadre de cette PR. Ne jamais élargir 
 - Firebase Emulator / règles Firestore et suite applicative : **183 tests réussis, 0 échec** — [run 45086639296](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086639296).
 - Ces résultats couvrent les règles et tests du dépôt; ils ne valident pas encore le déploiement des fonctions, App Check réel, ni le parcours complet avec Firebase staging.
 - Aucun bootstrap administrateur, déploiement de fonction, modification de compte réel, fusion ou publication en production n'a été effectué.
+
+## Revalidation du commit documentaire — 23 novembre 2026
+
+HEAD vérifié : `2449aa853bcfafaf9ccb791ea03462a9497f5f61`.
+
+- [Validation WAT Connect](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086787116) : réussie — syntaxe, contrôles du portail/configuration et compilation à blanc du Worker staging.
+- [Tests Firestore Emulator](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086787122) : réussis — compilation des règles et suite complète `tests/*.test.mjs`.
+- Ces validations concernent le commit indiqué. Elles ne constituent pas un déploiement, ni une vérification App Check en conditions réelles, ni un test de bout en bout des fonctions Firebase.
