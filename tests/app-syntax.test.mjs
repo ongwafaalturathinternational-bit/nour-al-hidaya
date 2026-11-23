@@ -69,6 +69,6 @@ test("les synchronisations hors connexion de Nour Al-Hidaya s'arrêtent au chang
     const body = html.slice(start, next < 0 ? html.length : next);
     assert.match(body, /generation=firebaseAuthGeneration/);
     assert.match(body, /isCurrentFirebaseSession\(uid,generation\)/);
-    assert.match(body, /if\(!isCurrentFirebaseSession\(uid,generation\)\)return synced/);
+    assert.match(body, /isActive:\(\)=>navigator\.onLine&&isCurrentFirebaseSession\(uid,generation\)/);
   }
 });
