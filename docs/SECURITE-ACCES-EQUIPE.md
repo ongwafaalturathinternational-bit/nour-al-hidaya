@@ -95,3 +95,10 @@ HEAD vérifié : `2449aa853bcfafaf9ccb791ea03462a9497f5f61`.
 - [Validation WAT Connect](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086787116) : réussie — syntaxe, contrôles du portail/configuration et compilation à blanc du Worker staging.
 - [Tests Firestore Emulator](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086787122) : réussis — compilation des règles et suite complète `tests/*.test.mjs`.
 - Ces validations concernent le commit indiqué. Elles ne constituent pas un déploiement, ni une vérification App Check en conditions réelles, ni un test de bout en bout des fonctions Firebase.
+
+## Revalidation suspension fail-closed — 23 novembre 2026
+
+- Correction : si la désactivation Firebase Authentication échoue pendant une suspension, le document `staffAccess` reste inactif. La fonction signale que la désactivation Auth doit être réconciliée ; elle ne réouvre plus les droits Firestore.
+- Lors d'une activation qui échoue, le statut Firestore précédent est restauré.
+- Tests du workflow Firestore sur le commit `6a659e5` : **réussis** — [run 45093023336](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45093023336).
+- La CI ne réalise toujours aucun déploiement Firebase ni test App Check réel. Aucun compte, claim, secret, IAM ou donnée réelle n'a été modifié.
