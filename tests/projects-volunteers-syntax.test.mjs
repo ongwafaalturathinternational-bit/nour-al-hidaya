@@ -3,6 +3,36 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
+test("un changement de session libère les formulaires Programmes et Projets", async () => {
+  for (const [file, forms] of [
+    ["programmes.html", {programForm:"saveButton"}],
+    ["projets.html", {projectForm:"saveButton", assignmentForm:"assignButton"}]
+  ]) {
+    const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
+    const clear = html.match(/function clearPrivateView\(\)\{[^\n]*?\}(?=async function init|\r?\n)/)?.[0];
+    assert.ok(clear, file);
+    const elements = new Map();
+    const element = id => {
+      if (!elements.has(id)) elements.set(id, {
+        disabled:true, close(){}, reset(){}, replaceChildren(){}
+      });
+      return elements.get(id);
+    };
+    const context = vm.createContext({$:element, user:{uid:"old"}, canManage:true,
+      projects:[], programs:[], volunteers:[], activities:[], scopes:[],
+      canAssign:true, canProjectsRead:true, canActivitiesRead:true, authGeneration:1, isCurrentStaffSession:()=>true});
+    for (const [id, button] of Object.entries(forms)) {
+      const handler = html.split('$("' + id + '").addEventListener("submit",')[1]?.split(/\r?\n/)[0];
+      assert.ok(handler, id);
+      const submit = vm.runInContext(handler.slice(0,-2), context);
+      await submit({preventDefault(){}});
+      assert.equal(element(button).disabled,true);
+    }
+    vm.runInContext(clear + "\nclearPrivateView();",context);
+    for (const button of Object.values(forms)) assert.equal(element(button).disabled,false);
+  }
+});
+
 for (const file of ["projets.html", "club-khuddam.html", "club-khuddam-inscription.html"]) {
   test(file + " contient un JavaScript valide", () => {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
