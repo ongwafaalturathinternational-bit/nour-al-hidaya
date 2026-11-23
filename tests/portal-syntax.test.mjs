@@ -103,7 +103,8 @@ test("le site institutionnel est une page publique distincte et reprend les troi
   }
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main">/);
-  assert.match(html, /prefers-reduced-motion:\s*reduce/);
+  const css = readFileSync(new URL("../wat-editorial.css", import.meta.url), "utf8");
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(html, /name="theme-color" content="#103047"/);
   assert.match(html, /property="og:title"/);
   assert.match(html, /property="og:description"/);
@@ -113,7 +114,8 @@ test("la vitrine ne présente pas un monogramme provisoire comme logo officiel",
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   assert.doesNotMatch(html, /class="logo">WAT<|class="orbit-mark">WAT</);
   assert.match(html, /Portail numérique de l’ONG Wafa Al-Turath/);
-  assert.ok(html.includes('<div class="orbit-mark"></div>'));
+  assert.match(html, /src="wat-connect-marque-claire\.webp"/);
+  assert.match(html, /src="wat-connect-marque\.webp"/);
 });
 
 test("le portail public propose un seul point d'entrée principal vers le Club", () => {
