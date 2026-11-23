@@ -1385,7 +1385,10 @@ function flushQueuedWrites({key, isActive, read, save, send, onError}) {
   }
   return synced;
  };
- const pending = previous ? previous.then(flush,flush) : flush();
+ // Web Locks coordonne les envois d’une même file entre les onglets de l’origine.
+ const locks = globalThis.navigator?.locks;
+ const run = () => locks ? locks.request("wat:nour:outbox:"+key,flush) : flush();
+ const pending = previous ? previous.then(run,run) : run();
  queueFlushes.set(key,pending);
  const cleanup = () => {if(queueFlushes.get(key)===pending)queueFlushes.delete(key)};
  pending.then(cleanup,cleanup);
