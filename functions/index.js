@@ -203,7 +203,8 @@ exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck:
 
   // Fermer d'abord l'accès Firestore : une suspension prend effet immédiatement,
   // même si le compte possède encore un jeton Firebase Authentication valide.
-  // En cas d'échec Auth, restaurer l'état Firestore précédent.
+  // Une suspension reste fermée même si la désactivation Auth échoue.
+  // En cas d'échec d'une activation, restaurer l'état Firestore précédent.
   const previousActive = snap.data().active === true;
   await ref.update({
     active,
@@ -213,14 +214,20 @@ exports.setStaffAccountStatus = onCall({ region: "us-central1", enforceAppCheck:
   try {
     await auth.updateUser(uid, { disabled: !active });
   } catch (error) {
-    await ref.update({
-      active: previousActive,
-      updatedAt: FieldValue.serverTimestamp(),
-      updatedBy: actorUid
-    }).catch(() => {
-      console.error("Échec de restauration du statut Firestore pour", uid);
-    });
-    throw new HttpsError("internal", "Le changement de statut n'a pas pu être appliqué. Vérifiez l'état du compte avant de réessayer.");
+    if (active === true) {
+      await ref.update({
+        active: previousActive,
+        updatedAt: FieldValue.serverTimestamp(),
+        updatedBy: actorUid
+      }).catch(() => {
+        console.error("Échec de restauration du statut Firestore pour", uid);
+      });
+    } else {
+      console.error("Suspension Firestore maintenue ; désactivation Auth à réconcilier pour", uid);
+    }
+    throw new HttpsError("internal", active
+      ? "L'activation n'a pas pu être finalisée ; l'accès Firestore a été restauré à son état précédent."
+      : "L'accès Firestore est suspendu. La désactivation Firebase Authentication a échoué et doit être réconciliée.");
   }
   return { uid, active };
 });
