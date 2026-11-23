@@ -1031,7 +1031,7 @@ function dlbar(title,head,rows){R.exp={title,head,rows};return `<div class="card
 function dlFile(name,mime,content){try{const b=new Blob(["\ufeff"+content],{type:mime+";charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast("Fichier prêt : "+name)}catch(e){toast("Téléchargement impossible ici")}}
 /* ---------- accès ---------- */
 function accessCard(){const a=S.access;if(!a)return"";return `<div class="card access"><div class="lbl">Accès créé automatiquement</div><h3>${esc(a.name)}</h3><div class="kpis" style="margin-top:8px"><div class="kpi"><span class="lbl">Identifiant</span><b dir="ltr">${esc(a.code)}</b></div><div class="kpi"><span class="lbl">Code d’accès</span><b dir="ltr">${esc(a.pin)}</b></div></div><p class="small muted" style="margin:8px 0">Donnez-les à la personne. Elle les saisit pour entrer dans son espace et pourra changer son code ensuite.</p><div class="row"><button class="btn sm sp" data-a="cpacc">Copier</button><button class="btn ghost sm sp" data-a="clracc">J’ai transmis l’accès</button></div></div>`}
-function render(){
+function renderContent(){
  const app=$("#app");app.classList.toggle("nonav",!S.role);document.body.classList.toggle("disc",!!S.set.discreet);
  document.documentElement.style.setProperty("--fs",S.set.fs);document.documentElement.lang=S.set.lang;document.documentElement.dir=S.set.lang==="ar"?"rtl":"ltr";
  if(!S.role){app.innerHTML=loginView();tx(app);return}
@@ -1051,9 +1051,11 @@ function render(){
  const pend=S.subs.filter(s=>s.pending).length;
  const status=online()?(pend?`<span class="pill off">${pend} en attente</span>`:`<span class="pill">En ligne</span>`):`<span class="pill off">Hors ligne</span>`;
  const nav=back?"":`<nav class="bar">${ro.tabs.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}">${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
- app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div><a class="portal-link" href="index.html" aria-label="Retour au portail WAT Connect">WAT Connect ↗</a>${status}</header><main>${inner}</main>${nav}`;
+ app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div><a class="portal-link" href="./index.html#connexion" aria-label="Retour au portail WAT Connect">WAT Connect ↗</a>${status}</header><main>${inner}</main>${nav}`;
  tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
 }
+// Garde-fou : une erreur de rendu ne doit jamais laisser l’écran Android entièrement blanc.
+function render(){try{renderContent()}catch(error){console.error("Erreur de rendu Nour Al-Hidaya :",error);document.documentElement.lang="fr";document.documentElement.dir="ltr";const app=document.getElementById("app");if(app){app.classList.add("nonav");app.innerHTML=`<main style="padding:28px 20px"><section class="card"><h2>Affichage momentanément indisponible</h2><p>Une erreur a interrompu l’affichage. Vous pouvez revenir au portail WAT Connect ou réessayer en français.</p><div class="list"><button class="btn" type="button" data-a="lang" data-v="fr">Réessayer en français</button><a class="btn ghost" href="./index.html#connexion">Retour à WAT Connect</a></div></section></main>`}}}
 function langBar(){return `<div class="langs">${[["fr","Français"],["en","English"],["ar","العربية"]].map(([k,n])=>`<button data-a="lang" data-v="${k}" class="${S.set.lang===k?"on":""}" ${k==="ar"?'lang="ar"':""}>${n}</button>`).join("")}</div>`}
 const roleId=k=>{const o=k==="apprenant"?learner("u1"):S.accounts.find(a=>a.role===k&&a.active!==false);return o?o.code+" · code "+o.pin:"—"};
 function loginView(){
