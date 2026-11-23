@@ -331,7 +331,7 @@ test("la date proposée après une nouvelle opération utilise le calendrier loc
 
 test("les transferts et rapprochements respectent la date d'ouverture de chaque compte", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const source = html.match(/function accountEligibleForDate\(account,date\)\{[\s\S]*?\}\nfunction accountComputedBalance/)?.[0]?.replace(/\nfunction accountComputedBalance[\s\S]*$/, "");
+  const source = html.match(/function accountEligibleForDate\(account,date\)\{[\s\S]*?\}\r?\n(?=function accountComputedBalance)/)?.[0];
   assert.ok(source, "accountEligibleForDate doit être défini");
   const eligible = vm.runInNewContext(source + "; accountEligibleForDate", {});
   const account = { status: "actif", openingDate: "2026-04-15" };
@@ -347,7 +347,7 @@ test("les transferts et rapprochements respectent la date d'ouverture de chaque 
 
 test("la clôture d'un compte exige un solde nul et aucun mouvement futur", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
-  const close = html.match(/async function closeAccount\(a\)\{[\s\S]*?\}\nasync function review/)?.[0] || "";
+  const close = html.match(/async function closeAccount\(a\)\{[\s\S]*?\}\r?\n(?=async function review)/)?.[0] || "";
   assert.ok(close, "closeAccount doit être défini");
   assert.match(close, /balance=accountComputedBalance\(a\.id,todayLocal\(\)\)/);
   assert.match(close, /if\(balance!==0\)/);
