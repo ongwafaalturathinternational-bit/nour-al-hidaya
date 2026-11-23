@@ -102,8 +102,10 @@ test("le site institutionnel est une page publique distincte et reprend les troi
     assert.ok(html.includes(fragment), "élément du site institutionnel absent : " + fragment);
   }
   assert.match(html, /<a class="skip-link" href="#main">/);
-  assert.match(html, /<main id="main">/);
-  assert.match(html, /prefers-reduced-motion:\s*reduce/);
+  assert.match(html, /<main id="main" tabindex="-1">/);
+  const design = readFileSync(new URL("../wat-institution.css", import.meta.url), "utf8");
+  assert.match(design, /prefers-reduced-motion:\s*reduce/);
+  assert.deepEqual(Array.from(html.matchAll(/class="goal-number">(\d+)/g), match => Number(match[1])), [1,2,3,4,5,6,7,10,11,16,17]);
   assert.match(html, /name="theme-color" content="#103047"/);
   assert.match(html, /property="og:title"/);
   assert.match(html, /property="og:description"/);
@@ -113,7 +115,9 @@ test("la vitrine ne présente pas un monogramme provisoire comme logo officiel",
   const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
   assert.doesNotMatch(html, /class="logo">WAT<|class="orbit-mark">WAT</);
   assert.match(html, /Portail numérique de l’ONG Wafa Al-Turath/);
-  assert.ok(html.includes('<div class="orbit-mark"></div>'));
+  assert.match(html, /class="launch-logo" src="assets\/identite\/wat-connect\.png"/);
+  const publicSite = readFileSync(new URL("../site-institutionnel.html", import.meta.url), "utf8");
+  assert.match(publicSite, /src="assets\/identite\/wafa-al-turath\.png"/);
 });
 
 test("le portail public propose un seul point d'entrée principal vers le Club", () => {

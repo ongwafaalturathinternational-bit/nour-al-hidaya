@@ -19,6 +19,9 @@ const files = [
   "firebase-init.js",
   "wat-brand.css",
   "wat-brand-nour.css",
+  "wat-entree.css",
+  "wat-entree.js",
+  "wat-institution.css",
   "sw.js",
   "manifest.json",
   "manifest-nour.json",
@@ -27,7 +30,9 @@ const files = [
   "wat-icon-192.png",
   "wat-icon-512.png",
   "nour-icon-192.png",
-  "nour-icon-512.png"
+  "nour-icon-512.png",
+  "assets/identite/wat-connect.png",
+  "assets/identite/wafa-al-turath.png"
 ];
 
 await fs.rm(output, { recursive: true, force: true });
@@ -36,6 +41,7 @@ for (const file of files) {
   const source = path.join(root, file);
   const target = path.join(output, file);
   await fs.access(source);
+  await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.copyFile(source, target);
 }
 
