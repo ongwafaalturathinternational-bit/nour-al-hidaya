@@ -78,3 +78,12 @@ Ce script n'a pas été exécuté dans le cadre de cette PR. Ne jamais élargir 
 6. Un scope non attribué ne donne aucun accès.
 7. La suspension ferme d'abord l'accès Firestore, même si un ancien jeton Firebase est encore valide.
 8. Les données pédagogiques privées d'un apprenant restent protégées des autres apprenants et des rôles qui n'en ont pas besoin.
+
+
+## Validation CI après correction — 23 novembre 2026
+
+- Le test statique de l'écran d'administration a été aligné sur la sélection d'environnement actuelle : hostname dédié ou variable injectée par le build, sans bascule par paramètre d'URL.
+- Workflow WAT Connect validation : **réussi** — [run 45086639295](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086639295).
+- Firebase Emulator / règles Firestore et suite applicative : **183 tests réussis, 0 échec** — [run 45086639296](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086639296).
+- Ces résultats couvrent les règles et tests du dépôt; ils ne valident pas encore le déploiement des fonctions, App Check réel, ni le parcours complet avec Firebase staging.
+- Aucun bootstrap administrateur, déploiement de fonction, modification de compte réel, fusion ou publication en production n'a été effectué.
