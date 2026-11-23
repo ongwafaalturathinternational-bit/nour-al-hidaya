@@ -29,3 +29,18 @@ Le portail n'accepte pas une adresse e-mail simplement saisie dans le formulaire
 - Aucun compte Firebase, mot de passe, profil réel, règle distante ou donnée de membre n'a été modifié.
 - Aucun déploiement ni fusion n'a été effectué.
 - Le garde-fou d'écran blanc améliore la récupération, mais la cause précise du défaut RTL/arabe doit encore être identifiée par une reproduction avec console WebView avant validation finale.
+
+## Amélioration de lisibilité du profil
+
+- La page « Moi » devient « Mon profil ».
+- L'identifiant et le changement de code d'accès restent immédiatement visibles.
+- Les messages/règlement, préférences/notifications et accompagnement sont regroupés dans des sections repliables.
+- L'état de connexion est présenté en une ligne.
+- Le bouton de déconnexion reste visible; la remise à zéro des données d'exemple n'est affichée qu'en mode démonstration.
+
+## Durcissement du changement de langue
+
+- La traduction utilise un mode de parcours des nœuds texte compatible avec les WebView qui n'exposent pas `NodeFilter` comme global.
+- La recherche des conteneurs de texte tolère un parent absent.
+- Si une exception de rendu survient, le réglage français est enregistré afin que la prochaine ouverture ne reste pas bloquée sur l'arabe.
+- Cette récupération ne remplace pas le test sur appareil et l'identification de la cause initiale.
