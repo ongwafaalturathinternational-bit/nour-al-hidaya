@@ -75,6 +75,9 @@ jobs:
       - name: Générer le projet Android
         run: npx cap add android
 
+      - name: Générer les icônes natives Android
+        run: npx capacitor-assets generate --android
+
       - name: Synchroniser les ressources web
         run: npx cap sync android
 
