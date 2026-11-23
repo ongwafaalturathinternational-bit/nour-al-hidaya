@@ -92,3 +92,17 @@ Correctif appliqué dans la branche :
 **Limite explicite :** le contrôle serveur valide la forme ISO et la longueur, mais ne calcule pas le calendrier grégorien. Une valeur telle que 2027-02-31 conserve une forme correcte et n'est pas rejetée par cette seule règle. Les formulaires utilisent des champs HTML de type date ; une validation calendaire serveur plus complète pourra être ajoutée si les dates deviennent des données critiques pour des traitements automatisés.
 
 Validation automatisée du HEAD 46ea6cc77594f9a53124d88d2838fd6679691e34 : 129 tests Firestore/applicatifs réussis, 0 échec, 0 ignoré. La construction APK staging a également réussi; elle ne constitue pas un test sur téléphone physique.
+
+
+## 11. Cohérence entre acceptation et registre des bénévoles — 23 novembre 2026
+
+L'audit des règles a relevé un écart entre l'interface et la garantie serveur : l'interface traitait l'acceptation dans une transaction qui créait aussi la fiche volunteers/{uid}, mais la règle autorisait un gestionnaire à passer directement une candidature à acceptee sans créer cette fiche. Une écriture directe ou un client modifié pouvait donc produire un dossier accepté absent du registre opérationnel.
+
+Correction apportée dans la branche :
+- une candidature ne peut être acceptée que si aucune fiche bénévole de même identifiant n'existait avant l'opération ;
+- la fiche correspondante doit exister après l'opération, être active et reprendre les données essentielles de la candidature ;
+- son auteur, son horodatage de création et son dernier auteur/horodatage doivent correspondre au gestionnaire et à l'opération courante ;
+- l'acceptation et la création doivent donc être réalisées dans le même batch/transaction Firestore ;
+- le refus reste une décision autonome et ne crée pas de fiche bénévole.
+
+Tests ajoutés : acceptation directe refusée, création atomique avec identité divergente refusée, création atomique cohérente acceptée. La validation Emulator du commit est suivie dans le journal de continuité.

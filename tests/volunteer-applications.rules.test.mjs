@@ -1,7 +1,7 @@
 import test, { after } from "node:test";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
@@ -89,13 +89,51 @@ test("la candidature ne peut pas être auto-approuvée ou modifiée par le candi
   const db = env.authenticatedContext("applicant-3", { email: "candidate3@example.org", email_verified: true }).firestore();
   await assertFails(setDoc(doc(db, "volunteerApplications", "applicant-3"), application("applicant-3", "candidate3@example.org", { status: "acceptee" })));
 });
-test("volunteers.read consulte une candidature et volunteers.manage peut la traiter", async () => {
+test("volunteers.read consulte une candidature mais son acceptation exige une fiche bénévole", async () => {
   await seed("reviewer", ["volunteers.read", "volunteers.manage"]);
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "volunteerApplications", "candidate"), application("candidate", "candidate@example.org")));
   const db = env.authenticatedContext("reviewer", { email: "reviewer@example.org", email_verified: true }).firestore();
   const ref = doc(db, "volunteerApplications", "candidate");
   await assertSucceeds(getDoc(ref));
-  await assertSucceeds(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer", updatedAt: serverTimestamp(), updatedBy: "reviewer" }));
+  await assertFails(updateDoc(ref, { status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer", updatedAt: serverTimestamp(), updatedBy: "reviewer" }));
+});
+
+test("l'acceptation crée atomiquement une fiche active correspondant à la candidature", async () => {
+  await seed("reviewer-atomic", ["volunteers.manage"]);
+  await env.withSecurityRulesDisabled(async c => setDoc(
+    doc(c.firestore(), "volunteerApplications", "candidate-atomic"),
+    application("candidate-atomic", "candidate-atomic@example.org")
+  ));
+  const db = env.authenticatedContext("reviewer-atomic", {
+    email: "reviewer-atomic@example.org", email_verified: true
+  }).firestore();
+  const applicationRef = doc(db, "volunteerApplications", "candidate-atomic");
+  const volunteerRef = doc(db, "volunteers", "candidate-atomic");
+  const decision = {
+    status: "acceptee", reviewedAt: serverTimestamp(), reviewedBy: "reviewer-atomic",
+    updatedAt: serverTimestamp(), updatedBy: "reviewer-atomic"
+  };
+
+  const mismatched = writeBatch(db);
+  mismatched.set(volunteerRef, {
+    fullName: "Nom différent", email: "candidate-atomic@example.org", phone: "+22900000000",
+    category: "occasionnel", skills: ["logistique"], interests: ["humanitaire"],
+    availability: "Week-ends", status: "actif", createdAt: serverTimestamp(),
+    createdBy: "reviewer-atomic", updatedAt: serverTimestamp(), updatedBy: "reviewer-atomic"
+  });
+  mismatched.update(applicationRef, decision);
+  await assertFails(mismatched.commit());
+
+  const accepted = writeBatch(db);
+  accepted.set(volunteerRef, {
+    fullName: "Candidat Test", email: "candidate-atomic@example.org", phone: "+22900000000",
+    category: "occasionnel", skills: ["logistique"], interests: ["humanitaire"],
+    availability: "Week-ends", status: "actif", createdAt: serverTimestamp(),
+    createdBy: "reviewer-atomic", updatedAt: serverTimestamp(), updatedBy: "reviewer-atomic"
+  });
+  accepted.update(applicationRef, decision);
+  await assertSucceeds(accepted.commit());
+  await assertSucceeds(getDoc(volunteerRef));
 });
 test("volunteers.read peut consulter mais pas traiter une candidature", async () => {
   await seed("reader", ["volunteers.read"]);

@@ -534,3 +534,14 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Artefact : [wat-connect-android-staging-debug-apk — ID 14779626482](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086123275/artifacts/14779626482), 4 374 948 octets, SHA-256 `2f503c863b831924f1871ab01a1ad8ee9e546cd4650d75dd29d26ce369f6d91d`, expiration le **7 décembre 2026 à 00:00 UTC**.
 - La correction du motif de test est validée : le contrôle du tableau `APP_FILES`, des ressources précachées et des chemins des manifestes passe dans la suite complète.
 - PR #20 demeure ouverte, en brouillon et non fusionnée. Aucun déploiement de production, compte réel ou donnée Firebase réelle modifié. La recette sur appareil Android physique et les scénarios terrain hors connexion restent à effectuer.
+
+
+## Correction d'intégrité — acceptation des candidatures Club — 23 novembre 2026
+
+- HEAD de départ vérifié : 6d467353cb607fbdc4e097bae65b41e03da84474, PR #20 ouverte en brouillon, branche fix/lot8-club-onboarding-and-access.
+- Constat : la règle Firestore autorisait un gestionnaire volunteers.manage à passer une candidature à acceptee sans créer la fiche correspondante dans volunteers. L'interface utilisait déjà une transaction, mais cette garantie n'était pas imposée au serveur.
+- Correctif préparé : l'acceptation exige désormais une création atomique de volunteers/{applicationId}, avec statut actif, données essentielles identiques à la candidature, auteur gestionnaire et horodatages serveur. Le refus reste indépendant.
+- Couverture ajoutée : refus d'une acceptation isolée, refus d'une fiche créée avec un nom divergent, acceptation d'un batch cohérent.
+- Validation locale : l'exécution de GitHub Actions/Node depuis le conteneur de travail n'est pas disponible (résolution DNS de github.com impossible). La revue statique et les contrôles de cohérence des remplacements sont effectués avant push; le workflow Firestore Emulator de la PR doit confirmer la compilation et les tests après push.
+- Workflow Android : non déclenché par ce lot règles/tests/documentation, car ses filtres de chemins ne couvrent pas ces fichiers. Aucun build APK n'est revendiqué pour ce correctif.
+- Aucun compte, dossier, règle ou donnée Firebase distante n'a été modifié. Aucun merge, déploiement ou publication.

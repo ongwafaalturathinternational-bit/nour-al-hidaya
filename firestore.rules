@@ -423,7 +423,31 @@ service cloud.firestore {
         && request.resource.data.reviewedAt == request.time
         && request.resource.data.reviewedBy == request.auth.uid
         && request.resource.data.updatedAt == request.time
-        && request.resource.data.updatedBy == request.auth.uid;
+        && request.resource.data.updatedBy == request.auth.uid
+        // Une acceptation doit créer atomiquement la fiche active correspondante.
+        // Un simple changement de statut ne peut plus laisser une candidature acceptée orpheline.
+        && (
+          request.resource.data.status == "refusee"
+          || (
+            !exists(/databases/$(database)/documents/volunteers/$(applicationId))
+            && existsAfter(/databases/$(database)/documents/volunteers/$(applicationId))
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.status == "actif"
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.fullName == resource.data.fullName
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.email == resource.data.email
+            && (
+              ("phone" in resource.data && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.phone == resource.data.phone)
+              || (!("phone" in resource.data) && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.phone == "")
+            )
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.category == resource.data.category
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.skills == resource.data.skills
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.interests == resource.data.interests
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.availability == resource.data.availability
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.createdBy == request.auth.uid
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.updatedBy == request.auth.uid
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.createdAt == request.time
+            && getAfter(/databases/$(database)/documents/volunteers/$(applicationId)).data.updatedAt == request.time
+          )
+        );
       allow delete: if false;
     }
 
