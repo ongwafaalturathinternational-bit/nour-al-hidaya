@@ -41,6 +41,10 @@ if (process["env"].WAT_FIREBASE_ENV === "staging") {
   await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\n' + source);
 }
 
+const assets = path.join(root, "assets");
+await fs.mkdir(assets, { recursive: true });
+await fs.copyFile(path.join(root, "icon-512.png"), path.join(assets, "icon.png"));
+
 const vendor = path.join(output, "vendor");
 await fs.mkdir(vendor, { recursive: true });
 const sdkFiles = [
