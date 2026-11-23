@@ -23,7 +23,11 @@ const files = [
   "manifest.json",
   "manifest-nour.json",
   "icon-192.png",
-  "icon-512.png"
+  "icon-512.png",
+  "wat-icon-192.png",
+  "wat-icon-512.png",
+  "nour-icon-192.png",
+  "nour-icon-512.png"
 ];
 
 await fs.rm(output, { recursive: true, force: true });
@@ -44,7 +48,7 @@ if (process["env"].WAT_FIREBASE_ENV === "staging") {
 
 const assets = path.join(root, "assets");
 await fs.mkdir(assets, { recursive: true });
-await sharp(path.join(root, "icon-512.png")).resize(1024, 1024, { fit: "contain" }).png().toFile(path.join(assets, "icon.png"));
+await sharp(path.join(assets, "brand", "wat", "ICONE WC.png")).resize(1024, 1024, { fit: "contain" }).png().toFile(path.join(assets, "icon.png"));
 
 const vendor = path.join(output, "vendor");
 await fs.mkdir(vendor, { recursive: true });

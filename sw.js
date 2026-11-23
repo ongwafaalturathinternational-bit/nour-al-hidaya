@@ -4,7 +4,7 @@
  * Aucune donnée privée, réponse Firestore ou requête d'authentification
  * n'est mise en cache par ce service worker.
  */
-const CACHE_NAME = "wat-connect-shell-v5";
+const CACHE_NAME = "wat-connect-shell-v6";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -24,7 +24,11 @@ const APP_FILES = [
   "./manifest.json",
   "./manifest-nour.json",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./wat-icon-192.png",
+  "./wat-icon-512.png",
+  "./nour-icon-192.png",
+  "./nour-icon-512.png"
 ];
 
 // Seuls les SDK Firebase statiques et versionnés sont autorisés au cache externe.
