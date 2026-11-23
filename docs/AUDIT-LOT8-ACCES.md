@@ -106,3 +106,9 @@ Correction apportée dans la branche :
 - le refus reste une décision autonome et ne crée pas de fiche bénévole.
 
 Tests ajoutés : acceptation directe refusée, création atomique avec identité divergente refusée, création atomique cohérente acceptée. La validation Emulator du commit est suivie dans le journal de continuité.
+
+### Résultats automatisés — commit 10dcb7d3c0e0ee87103a3e50979fa5a33c40a2b9
+
+- Firestore Emulator : **168/168 tests réussis**, 0 échec, 0 ignoré — [workflow 45096478154](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45096478154).
+- Android staging debug : build et publication réussis — [workflow 45096478160](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45096478160).
+- Ces workflows correspondent exactement au commit applicatif indiqué. Ils ne remplacent pas la recette sur téléphone physique ni une vérification des données historiques déjà présentes.

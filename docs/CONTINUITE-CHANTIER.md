@@ -543,5 +543,16 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Correctif préparé : l'acceptation exige désormais une création atomique de volunteers/{applicationId}, avec statut actif, données essentielles identiques à la candidature, auteur gestionnaire et horodatages serveur. Le refus reste indépendant.
 - Couverture ajoutée : refus d'une acceptation isolée, refus d'une fiche créée avec un nom divergent, acceptation d'un batch cohérent.
 - Validation locale : l'exécution de GitHub Actions/Node depuis le conteneur de travail n'est pas disponible (résolution DNS de github.com impossible). La revue statique et les contrôles de cohérence des remplacements sont effectués avant push; le workflow Firestore Emulator de la PR doit confirmer la compilation et les tests après push.
-- Workflow Android : non déclenché par ce lot règles/tests/documentation, car ses filtres de chemins ne couvrent pas ces fichiers. Aucun build APK n'est revendiqué pour ce correctif.
+- Le workflow Android staging a également été déclenché et a réussi sur le même SHA applicatif; l'artefact et les deux SHA exacts sont consignés ci-dessous.
 - Aucun compte, dossier, règle ou donnée Firebase distante n'a été modifié. Aucun merge, déploiement ou publication.
+
+### Validation finale — acceptation atomique Club — 23 novembre 2026
+
+- **Commit applicatif et tests validés :** 10dcb7d3c0e0ee87103a3e50979fa5a33c40a2b9.
+- **Firestore Emulator / suite complète :** 168 tests réussis, 0 échec, 0 ignoré — [workflow 45096478154](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45096478154). La compilation des règles et l'exécution de toutes les suites ont réussi.
+- **Android staging debug :** préparation Firebase staging, vérification du routage, synchronisation Capacitor, compilation Gradle et publication de l'artefact réussies — [workflow 45096478160](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45096478160).
+- **Artefact :** [wat-connect-android-staging-debug-apk — ID 14783153287](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45096478160/artifacts/14783153287), 4 374 945 octets, SHA-256 `70e0724a42ec1bbbfdd6c41d7bf373aa5371b867b98ff5541bcb303921dd47e7`, expiration le **7 décembre 2026 à 01:48 UTC**.
+- Les deux workflows ont été vérifiés par leurs métadonnées GitHub : ils référencent exactement le même head SHA 10dcb7d3c0e0ee87103a3e50979fa5a33c40a2b9.
+- Les nouveaux tests refusent une acceptation directe sans fiche, refusent une fiche dont le nom diverge, et acceptent le batch cohérent. Le refus d'une candidature reste possible sans création de fiche.
+- Le HEAD de branche après cette mise à jour documentaire sera distinct du SHA applicatif testé; cette mise à jour ne modifie ni règles ni tests. Ne pas attribuer de nouveau résultat de test au commit documentaire.
+- PR #20 reste ouverte, en brouillon et non fusionnée. Aucun compte, dossier ou projet Firebase distant n'a été modifié; aucun déploiement de production ni publication Android n'a été effectué.
