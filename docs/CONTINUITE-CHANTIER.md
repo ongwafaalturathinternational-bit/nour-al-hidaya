@@ -524,3 +524,13 @@ Cette entrée est consignée dans le journal de continuité de la branche de tra
 - Correction du test dans le commit `c15dd8abed263b165a7c578975ac0e0aa3f7a265`. Les validations doivent être relancées sur ce nouveau commit; aucun résultat n'est présumé.
 - Le test vérifie désormais l'existence des ressources précachées et des chemins de démarrage/icônes des deux manifestes.
 - Aucun merge ni déploiement de production effectué.
+
+
+## Validation après correction du test PWA — 23 novembre 2026
+
+- Commit applicatif testé : `c15dd8abed263b165a7c578975ac0e0aa3f7a265` (exécuté dans le contexte de la PR #20).
+- Suite Firestore/application : **167 tests réussis, 0 échec** — [workflow 45086123241](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086123241).
+- APK Android staging debug : **construction et publication réussies** — [workflow 45086123275](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086123275).
+- Artefact : [wat-connect-android-staging-debug-apk — ID 14779626482](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45086123275/artifacts/14779626482), 4 374 948 octets, SHA-256 `2f503c863b831924f1871ab01a1ad8ee9e546cd4650d75dd29d26ce369f6d91d`, expiration le **7 décembre 2026 à 00:00 UTC**.
+- La correction du motif de test est validée : le contrôle du tableau `APP_FILES`, des ressources précachées et des chemins des manifestes passe dans la suite complète.
+- PR #20 demeure ouverte, en brouillon et non fusionnée. Aucun déploiement de production, compte réel ou donnée Firebase réelle modifié. La recette sur appareil Android physique et les scénarios terrain hors connexion restent à effectuer.
