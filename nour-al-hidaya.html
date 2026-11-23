@@ -968,9 +968,9 @@ return {en,ar,pat};
 Object.keys(_en).forEach(k=>{if(!I18N.en[k])I18N.en[k]=_en[k]});Object.keys(_ar).forEach(k=>{if(!I18N.ar[k])I18N.ar[k]=_ar[k]});
 I18N.pat.push([/^(\d+) nouveaux? messages?$/,"$1 new message(s)","$1 رسالة جديدة"],[/^Messages \((\d+)\)$/,"Messages ($1)","الرسائل ($1)"],[/^Fiches papier à saisir : (\d+)$/,"Paper forms to key in: $1","استمارات ورقية للإدخال: $1"],[/^(\d+) alertes? sur les séances$/,"$1 session alert(s)","$1 تنبيه على الحصص"],[/^(\d+) fiches? papier à saisir.*$/,"$1 paper form(s) to key in","$1 استمارة ورقية للإدخال"]);
 
-function tx(root){const L=S.set.lang;if(L==="fr")return;const D=I18N[L]||{};const P=I18N.pat;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const ns=[];while(w.nextNode())ns.push(w.currentNode);
+function tx(root){const L=S.set.lang;if(L==="fr")return;const D=I18N[L]||{};const P=I18N.pat||[];const w=document.createTreeWalker(root,document.defaultView?.NodeFilter?.SHOW_TEXT??4);const ns=[];while(w.nextNode())ns.push(w.currentNode);
   const conv=k=>{if(D[k])return D[k];for(const p of P){const m=k.match(p[0]);if(m){const tp=L==="en"?p[1]:p[2];return tp.replace(/\$(\d)/g,(x,i)=>D[m[i]]||m[i])}}return null};
- ns.forEach(n=>{const k=n.nodeValue.trim();if(!k||n.parentElement.closest(".prose,.verse .ar,.verse .fr,.verse .ref,.key,.seq,.chips,.opt,.prac span,.num"))return;const r=conv(k);if(r)n.nodeValue=n.nodeValue.replace(k,r)});
+ ns.forEach(n=>{const k=n.nodeValue.trim();if(!k||n.parentElement?.closest?.(".prose,.verse .ar,.verse .fr,.verse .ref,.key,.seq,.chips,.opt,.prac span,.num"))return;const r=conv(k);if(r)n.nodeValue=n.nodeValue.replace(k,r)});
  root.querySelectorAll("[placeholder],[aria-label]").forEach(e=>{["placeholder","aria-label"].forEach(a=>{const v=e.getAttribute(a);if(v&&D[v])e.setAttribute(a,D[v])})})}
 /* ---------- état d'interface ---------- */
 let R={tab:null,view:null,lesson:null,hw:null,attest:null,learner:null,report:false};
@@ -1055,7 +1055,7 @@ function renderContent(){
  tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
 }
 // Garde-fou : une erreur de rendu ne doit jamais laisser l’écran Android entièrement blanc.
-function render(){try{renderContent()}catch(error){console.error("Erreur de rendu Nour Al-Hidaya :",error);document.documentElement.lang="fr";document.documentElement.dir="ltr";const app=document.getElementById("app");if(app){app.classList.add("nonav");app.innerHTML=`<main style="padding:28px 20px"><section class="card"><h2>Affichage momentanément indisponible</h2><p>Une erreur a interrompu l’affichage. Vous pouvez revenir au portail WAT Connect ou réessayer en français.</p><div class="list"><button class="btn" type="button" data-a="lang" data-v="fr">Réessayer en français</button><a class="btn ghost" href="./index.html#connexion">Retour à WAT Connect</a></div></section></main>`}}}
+function render(){try{renderContent()}catch(error){console.error("Erreur de rendu Nour Al-Hidaya :",error);S.set.lang="fr";save();document.documentElement.lang="fr";document.documentElement.dir="ltr";const app=document.getElementById("app");if(app){app.classList.add("nonav");app.innerHTML=`<main style="padding:28px 20px"><section class="card"><h2>Affichage momentanément indisponible</h2><p>Une erreur a interrompu l’affichage. Vous pouvez revenir au portail WAT Connect ou réessayer en français.</p><div class="list"><button class="btn" type="button" data-a="lang" data-v="fr">Réessayer en français</button><a class="btn ghost" href="./index.html#connexion">Retour à WAT Connect</a></div></section></main>`}}}
 function langBar(){return `<div class="langs">${[["fr","Français"],["en","English"],["ar","العربية"]].map(([k,n])=>`<button data-a="lang" data-v="${k}" class="${S.set.lang===k?"on":""}" ${k==="ar"?'lang="ar"':""}>${n}</button>`).join("")}</div>`}
 const roleId=k=>{const o=k==="apprenant"?learner("u1"):S.accounts.find(a=>a.role===k&&a.active!==false);return o?o.code+" · code "+o.pin:"—"};
 function loginView(){
