@@ -5,13 +5,13 @@ import vm from "node:vm";
 
 const source = fs.readFileSync("firebase-init.js", "utf8");
 
-function createFirebaseHarness({ online = true, clearPersistence = async () => {}, page = "administration.html", hostname = "example.org", environment = undefined } = {}) {
+function createFirebaseHarness({ online = true, clearPersistence = async () => {}, enablePersistence = async () => {}, page = "administration.html", hostname = "example.org", environment = undefined } = {}) {
   const calls = [];
   const auth = {
     signOut: async () => { calls.push("auth.signOut"); }
   };
   const db = {
-    enablePersistence: async () => { calls.push("enablePersistence"); },
+    enablePersistence: async () => { calls.push("enablePersistence"); return enablePersistence(); },
     waitForPendingWrites: async () => { calls.push("waitForPendingWrites"); },
     terminate: async () => { calls.push("terminate"); },
     clearPersistence: async () => { calls.push("clearPersistence"); return clearPersistence(); }
@@ -78,6 +78,32 @@ test("hors connexion, la déconnexion refuse de purger un cache avec persistance
   await assert.rejects(harness.wat.signOutSafely(), /Reconnectez-vous/);
   assert.deepEqual(harness.calls, ["enablePersistence"]);
   assert.equal(harness.calls.includes("auth.signOut"), false);
+});
+
+test("une déconnexion immédiate attend l’initialisation du cache et regroupe les appels concurrents", async () => {
+  let enable;
+  const harness = createFirebaseHarness({enablePersistence:()=>new Promise(resolve=>{enable=resolve})});
+  const first=harness.wat.signOutSafely();
+  const second=harness.wat.signOutSafely();
+  assert.equal(first,second);
+  assert.deepEqual(harness.calls,["enablePersistence"]);
+  enable();
+  await Promise.all([first,second]);
+  assert.deepEqual(harness.calls,[
+    "enablePersistence","waitForPendingWrites","terminate","clearPersistence","auth.signOut","navigate:index.html"
+  ]);
+});
+
+test("une nouvelle tentative après un blocage de la purge reprend sur le client Firestore terminé", async () => {
+  let attempts=0;
+  const harness=createFirebaseHarness({clearPersistence:async()=>{
+    if(++attempts===1)throw new Error("another tab is active");
+  }});
+  await assert.rejects(harness.wat.signOutSafely(),/another tab is active/);
+  await harness.wat.signOutSafely();
+  assert.deepEqual(harness.calls,[
+    "enablePersistence","waitForPendingWrites","terminate","clearPersistence","clearPersistence","auth.signOut","navigate:index.html"
+  ]);
 });
 
 
