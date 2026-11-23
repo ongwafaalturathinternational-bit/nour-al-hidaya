@@ -17,7 +17,7 @@ test("WAT Connect affiche son identité visuelle dans l’en-tête", () => {
 test("l’échec de connexion conserve le mot de passe pour permettre une nouvelle tentative", () => {
   assert.match(portal, /let signedIn=false/);
   assert.match(portal, /if\(signedIn\)\$\("password"\)\.value=""/);
-  assert.match(portal, /compte existe dans Firebase staging/);
+  assert.match(portal, /Adresse e-mail ou mot de passe incorrect/);
 });
 
 test("Nour Al-Hidaya garde un écran de récupération si le rendu échoue", () => {

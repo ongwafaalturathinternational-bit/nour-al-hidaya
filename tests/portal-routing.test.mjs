@@ -56,3 +56,14 @@ test("le portail conserve le mot de passe après un refus et le vide après une 
   const portal = read("../index.html");
   assert.match(portal, /finally\{if\(signedIn\)\$\("password"\)\.value="";b\.disabled=false/);
 });
+
+test("l’accès WAT propose un lien d’évitement et des parcours d’inscription directs", () => {
+  const portal = read("../index.html");
+  const access = portal.split('<section id="connexion"')[1].split("</section>")[0];
+  assert.match(portal, /<a class="skip-link" href="#main">/);
+  assert.match(portal, /<main id="main" tabindex="-1">/);
+  assert.match(access, /href="#programme-club-khuddam"/);
+  assert.match(portal, /id="programme-club-khuddam"/);
+  assert.match(access, /href="nour-al-hidaya\.html"/);
+  assert.match(access, /id="loginForm" aria-describedby="message"/);
+});
