@@ -4,7 +4,7 @@
  * Aucune donnée privée, réponse Firestore ou requête d'authentification
  * n'est mise en cache par ce service worker.
  */
-const CACHE_NAME = "wat-connect-shell-v6";
+const CACHE_NAME = "wat-connect-shell-v7";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -21,6 +21,11 @@ const APP_FILES = [
   "./firebase-init.js",
   "./wat-brand.css",
   "./wat-brand-nour.css",
+  "./wat-entree.css",
+  "./wat-entree.js",
+  "./wat-institution.css",
+  "./assets/identite/wat-connect.png",
+  "./assets/identite/wafa-al-turath.png",
   "./manifest.json",
   "./manifest-nour.json",
   "./icon-192.png",
