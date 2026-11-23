@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const portal = fs.readFileSync("index.html", "utf8");
 const nour = fs.readFileSync("nour-al-hidaya.html", "utf8");
@@ -8,6 +9,27 @@ const capacitor = JSON.parse(fs.readFileSync("capacitor.config.json", "utf8"));
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const build = fs.readFileSync(".github/workflows/android-apk.yml", "utf8");
 const prepare = fs.readFileSync("scripts/prepare-capacitor-web.mjs", "utf8");
+
+test("les parcours d’accès Nour traduisent leurs commandes et leurs erreurs", () => {
+  const start = nour.search(/Object\.assign\(I18N\.en,\{\r?\n/);
+  const end = nour.indexOf("function tx(root)", start);
+  assert.ok(start >= 0 && end > start);
+  const translations = { en: {}, ar: {}, pat: [] };
+  const settings = { set: { lang: "ar" } };
+  const translate = vm.runInNewContext(nour.slice(start, end) + "\ntranslated", {
+    I18N: translations,
+    S: settings
+  });
+  assert.equal(translate("Se connecter"), "تسجيل الدخول");
+  assert.equal(translate("Adresse e-mail ou mot de passe incorrect."), "البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+  assert.equal(translate("Adresse e-mail (obligatoire)"), "البريد الإلكتروني (إلزامي)");
+  settings.set.lang = "en";
+  assert.equal(translate("Retour à WAT Connect"), "Back to WAT Connect");
+  settings.set.lang = "fr";
+  assert.equal(translate("Mot de passe"), "Mot de passe");
+  assert.match(nour, /if\(shouldRender!==false\)render\(\)/);
+  assert.match(nour, /aria-current=\\"page\\"/);
+});
 
 test("WAT Connect affiche son identité visuelle dans l’en-tête", () => {
   assert.match(portal, /class="wat-logo" src="wat-icon-192\.png"/);
