@@ -89,4 +89,5 @@ test("les activités refusent les statuts invalides et la suppression", async ()
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "activities", "keep"), activity("activity-owner")));
   await assertFails(deleteDoc(doc(db, "activities", "keep")));
   await assertFails(setDoc(doc(db, "activities", "bad"), activity("activity-owner", { status: "inconnue" })));
+  await assertFails(setDoc(doc(db, "activities", "invalid-date"), activity("activity-owner", { activityDate: "2026-02-30" })));
 });

@@ -49,6 +49,8 @@ test("un projet refuse les données invalides et la suppression", async () => {
   await seed("project-owner", ["projects.manage"]);
   const db = env.authenticatedContext("project-owner", { email_verified: true }).firestore();
   await assertFails(setDoc(doc(db, "projects", "bad"), project("project-owner", { status: "inconnu" })));
+  await assertFails(setDoc(doc(db, "projects", "invalid-date"), project("project-owner", { startDate: "2027-02-29" })));
+  await assertFails(setDoc(doc(db, "projects", "reversed-dates"), project("project-owner", { startDate: "2027-03-01", endDate: "2027-02-28" })));
   await env.withSecurityRulesDisabled(async c => setDoc(doc(c.firestore(), "projects", "keep"), project("system")));
   await assertFails(deleteDoc(doc(db, "projects", "keep")));
 });

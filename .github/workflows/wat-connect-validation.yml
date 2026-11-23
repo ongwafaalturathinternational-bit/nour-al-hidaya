@@ -1,0 +1,35 @@
+name: WAT Connect validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - security/staging-email-verification-flow
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Vérifier la syntaxe des fonctions et scripts
+        run: |
+          node --check functions/index.js
+          node --check scripts/bootstrap-wat-admin.js
+      - name: Vérifier les scripts du portail et les configurations
+        run: |
+          node --test tests/*syntax.test.mjs tests/firebase-project-aliases.test.mjs tests/staff-functions-security.test.mjs
+          node -e "JSON.parse(require('fs').readFileSync('firebase.json','utf8')); JSON.parse(require('fs').readFileSync('functions/package.json','utf8')); JSON.parse(require('fs').readFileSync('wrangler.json','utf8')); JSON.parse(require('fs').readFileSync('wrangler.staging.json','utf8'));"
+      - name: Valider le Worker Cloudflare sans déploiement
+        run: npx --yes wrangler@4 deploy --dry-run --config wrangler.staging.json --outdir /tmp/wat-connect-staging-dry-run

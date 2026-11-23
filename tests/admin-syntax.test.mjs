@@ -11,4 +11,10 @@ test("le module d’administration contient un JavaScript valide", () => {
     .filter(source => source.trim());
   assert.ok(scripts.length > 0);
   scripts.forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source), "script administration n°" + (index + 1)));
+  assert.match(html, /id="typeFilter"/);
+  assert.match(html, /id="memberStatusFilter"/);
+  assert.match(html, /function editMember\(member\)/);
+  assert.match(html, /doc\(editingMemberId\)\.update\(data\)/);
+  assert.match(html, /function resetMemberForm\(\)/);
+  assert.match(html, /Annuler la modification/);
 });

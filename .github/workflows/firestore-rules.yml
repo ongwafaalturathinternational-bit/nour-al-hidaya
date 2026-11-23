@@ -26,6 +26,8 @@ on:
       - ".github/workflows/firestore-rules.yml"
       - "firebase.json"
       - "wrangler.json"
+      - "wrangler.staging.json"
+      - ".firebaseignore"
       - ".assetsignore"
       - "tests/cloudflare-preview.test.mjs"
       - "sw.js"
@@ -41,6 +43,10 @@ on:
       - "tests/portal-syntax.test.mjs"
       - "tests/portal-routing.test.mjs"
       - "tests/app-syntax.test.mjs"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

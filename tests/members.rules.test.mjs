@@ -1,7 +1,7 @@
 import test, { after } from "node:test";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect-members",
@@ -73,4 +73,23 @@ test("les fiches ne peuvent pas être supprimées et les champs sont validés", 
   await assertFails(setDoc(doc(db, "members", "bad"), record("manager-delete", {
     fullName: "x".repeat(121)
   })));
+});
+
+test("un gestionnaire peut modifier une fiche sans réécrire son historique de création", async () => {
+  await seedStaff("member-editor", ["members.read", "members.manage"]);
+  await env.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), "members", "editable"), record("member-editor"));
+  });
+  const db = env.authenticatedContext("member-editor", { email_verified: true }).firestore();
+  await assertSucceeds(updateDoc(doc(db, "members", "editable"), {
+    fullName: "Nom mis à jour",
+    email: "",
+    updatedAt: serverTimestamp(),
+    updatedBy: "member-editor"
+  }));
+  await assertFails(updateDoc(doc(db, "members", "editable"), {
+    createdBy: "autre-utilisateur",
+    updatedAt: serverTimestamp(),
+    updatedBy: "member-editor"
+  }));
 });

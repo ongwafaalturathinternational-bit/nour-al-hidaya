@@ -8,3 +8,14 @@ firestore.rules
 *.txt
 *.zip
 **/*.test.*
+/functions/
+/scripts/
+package.json
+package-lock.json
+npm-shrinkwrap.json
+/node_modules/
+/.git/
+/.firebaserc
+/.env*
+*.log
+wrangler.staging.json

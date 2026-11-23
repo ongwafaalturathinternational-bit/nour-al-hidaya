@@ -48,3 +48,28 @@ test("un compte non vérifié reçoit un lien de confirmation avant toute décon
   assert.match(html, /Un lien de confirmation vient d’être envoyé/);
   assert.match(html, /await WATFirebase\.auth\.signOut\(\)/);
 });
+
+
+test("la connexion bascule vers l'espace membre sans référencer un conteneur inexistant", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /<div id="publicContent">/);
+  assert.match(html, /\$\("publicContent"\)\.hidden=true/);
+  assert.match(html, /\$\("publicContent"\)\.hidden=false/);
+  assert.doesNotMatch(html, /\$\("public"\)\.hidden/);
+});
+
+
+test("les erreurs de connexion restent visibles hors du conteneur masqué après authentification", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(html, /<div id="message" class="message" role="alert" aria-live="assertive" tabindex="-1" hidden><\/div>\s*<section id="workspace"/);
+  assert.match(html, /el\.scrollIntoView\(\{behavior:"auto",block:"center"\}\)/);
+  assert.match(html, /function show\(user,profile,staff\)\{\$\("message"\)\.hidden=true/);
+});
+
+test("une seule voie traite l'accès après la connexion Firebase", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const formHandler = html.match(/\$\("loginForm"\)\.addEventListener\("submit",[\s\S]*?\}\);/)?.[0] || "";
+  assert.match(formHandler, /signInWithEmailAndPassword/);
+  assert.doesNotMatch(formHandler, /await access\(c\.user\)/);
+  assert.match(html, /onAuthStateChanged\(async user=>\{if\(!user\)return;try\{await access\(user\)/);
+});
