@@ -11,7 +11,7 @@ const build = fs.readFileSync(".github/workflows/android-apk.yml", "utf8");
 const prepare = fs.readFileSync("scripts/prepare-capacitor-web.mjs", "utf8");
 
 test("les parcours d’accès Nour traduisent leurs commandes et leurs erreurs", () => {
-  const start = nour.indexOf("Object.assign(I18N.en,{\n");
+  const start = nour.search(/Object\.assign\(I18N\.en,\{\r?\n/);
   const end = nour.indexOf("function tx(root)", start);
   assert.ok(start >= 0 && end > start);
   const translations = { en: {}, ar: {}, pat: [] };
