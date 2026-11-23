@@ -27,6 +27,8 @@ L'objectif est d'éviter la multiplication d'outils isolés, les doubles saisies
 ## 3. Architecture fonctionnelle cible
 
 ### A. Portail institutionnel public
+- Page publique distincte `site-institutionnel.html` : présentation de l'ONG, axes officiels « Éduquer · Servir · Préserver », programmes et voies de contact/participation.
+- La page actuelle est une vitrine statique; le CMS éditorial (actualités, pages, médias, publications et workflow de validation) reste à réaliser.
 - Présentation de l'ONG, vision, mission, gouvernance et transparence.
 - Programmes, projets, activités, actualités et rapports publiables.
 - Pages partenaires, soutien, dons et contact.

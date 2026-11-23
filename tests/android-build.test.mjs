@@ -17,7 +17,7 @@ test("Capacitor cible WAT Connect avec un dossier web isolé", () => {
 });
 
 test("la préparation APK ne copie que les pages et ressources web nécessaires", () => {
-  for (const file of ["index.html", "activites.html", "projets.html", "club-khuddam.html", "firebase-init.js", "sw.js", "manifest.json"]) {
+  for (const file of ["index.html", "site-institutionnel.html", "activites.html", "projets.html", "club-khuddam.html", "firebase-init.js", "wat-brand.css", "sw.js", "manifest.json"]) {
     assert.ok(script.includes(JSON.stringify(file)), file);
   }
   assert.doesNotMatch(script, /firestore\.rules|\.env|service-account|\.jks|\.keystore/);
@@ -35,4 +35,12 @@ test("le build APK est un artefact de test sans clé de signature de production"
   assert.match(workflow, /assembleDebug/);
   assert.match(workflow, /upload-artifact@v4/);
   assert.doesNotMatch(workflow, /signingConfigs\.release|PLAY_STORE|keystore-password/i);
+});
+
+test("la préparation Android embarque la charte graphique facettée de WAT", () => {
+  assert.ok(script.includes('"wat-brand.css"'));
+  const css = fs.readFileSync("wat-brand.css", "utf8");
+  for (const token of ["--wat-turquoise", "--wat-blue", "--wat-gold", "linear-gradient(145deg", ".wat-crystal-surface"]) {
+    assert.ok(css.includes(token), "élément de charte absent : " + token);
+  }
 });

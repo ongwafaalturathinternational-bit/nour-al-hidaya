@@ -27,7 +27,7 @@ function program(uid, extra = {}) {
 
 test("programs.manage autorise la création et la lecture", async () => {
   await seed("program-manager", ["programs.read", "programs.manage"]);
-  const db = env.authenticatedContext("program-manager").firestore();
+  const db = env.authenticatedContext("program-manager", { email: "program-manager@example.org", email_verified: true }).firestore();
   await assertSucceeds(setDoc(doc(db, "programs", "nour"), program("program-manager")));
   await assertSucceeds(getDoc(doc(db, "programs", "nour")));
 });
@@ -35,7 +35,7 @@ test("programs.manage autorise la création et la lecture", async () => {
 test("programs.read autorise la lecture mais interdit la création", async () => {
   await seed("program-reader", ["programs.read"]);
   await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(), "programs", "seed"), program("system")));
-  const db = env.authenticatedContext("program-reader").firestore();
+  const db = env.authenticatedContext("program-reader", { email: "program-reader@example.org", email_verified: true }).firestore();
   await assertSucceeds(getDoc(doc(db, "programs", "seed")));
   await assertFails(setDoc(doc(db, "programs", "other"), program("program-reader")));
 });
@@ -43,14 +43,16 @@ test("programs.read autorise la lecture mais interdit la création", async () =>
 test("un compte sans scope ou inactif ne peut pas lire le catalogue", async () => {
   await seed("program-none", []);
   await seed("program-inactive", ["programs.read", "programs.manage"], false);
-  await assertFails(getDoc(doc(env.authenticatedContext("program-none").firestore(), "programs", "x")));
-  await assertFails(getDoc(doc(env.authenticatedContext("program-inactive").firestore(), "programs", "x")));
+  await assertFails(getDoc(doc(env.authenticatedContext("program-none", { email: "program-none@example.org", email_verified: true }).firestore(), "programs", "x")));
+  await assertFails(getDoc(doc(env.authenticatedContext("program-inactive", { email: "program-inactive@example.org", email_verified: true }).firestore(), "programs", "x")));
 });
 
 test("les programmes ne peuvent pas être supprimés et les données sont validées", async () => {
   await seed("program-owner", ["programs.read", "programs.manage"]);
-  const db = env.authenticatedContext("program-owner").firestore();
+  const db = env.authenticatedContext("program-owner", { email: "program-owner@example.org", email_verified: true }).firestore();
   await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(), "programs", "keep"), program("program-owner")));
   await assertFails(deleteDoc(doc(db, "programs", "keep")));
   await assertFails(setDoc(doc(db, "programs", "bad"), program("program-owner", { status: "unknown" })));
+  await assertFails(setDoc(doc(db, "programs", "empty-description"), program("program-owner", { description: "" })));
+  await assertFails(setDoc(doc(db, "programs", "missing-description"), program("program-owner", { description: 1500 })));
 });

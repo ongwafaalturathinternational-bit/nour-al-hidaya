@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const club = fs.readFileSync("club-khuddam.html", "utf8");
+const administration = fs.readFileSync("administration.html", "utf8");
 const projects = fs.readFileSync("projets.html", "utf8");
 const activities = fs.readFileSync("activites.html", "utf8");
 const rules = fs.readFileSync("firestore.rules", "utf8");
 const firebaseInit = fs.readFileSync("firebase-init.js", "utf8");
+const portal = fs.readFileSync("index.html", "utf8");
 
 test("le Club conserve les trois catégories officielles de bénévoles", () => {
   for (const category of ["occasionnel", "engage", "contributeur"]) {
@@ -22,7 +24,7 @@ test("une candidature publique vérifiée est examinée avant son entrée au reg
   assert.match(club, /runTransaction\(async tx=>\{/);
   assert.match(club, /appSnap\.data\(\)\.status!==\"en_attente\"/);
   assert.match(club, /tx\.set\(volRef/);
-  assert.match(club, /reviewedBy:user\.uid/);
+  assert.match(club, /reviewedBy:actor\.uid/);
   assert.match(rules, /allow delete: if false;/);
 });
 
@@ -60,4 +62,42 @@ test("les fiches bénévoles et historiques opérationnels ne sont pas supprimab
   assert.match(volunteerRules, /allow delete: if false;/);
   const attendanceRules = rules.slice(rules.indexOf("match /attendance/{recordId}"), rules.indexOf("match /volunteers/{volunteerId}"));
   assert.match(attendanceRules, /allow delete: if false;/);
+});
+
+
+test("la création de fiches membres invalide les sessions administratives obsolètes", () => {
+  assert.match(administration, /function isCurrentStaffSession\(account,generation\)/);
+  assert.match(administration, /const actor=currentUser,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.add\(data\)/);
+  assert.match(administration, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
+  assert.match(administration, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=currentUser;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.doc\(id\)\.update/);
+});
+
+
+test("le portail ne propose Nour Al-Hidaya aux membres d'équipe que s'ils ont aussi un profil apprenant", () => {
+  const staffBranch = portal.slice(portal.indexOf("if(staff){"), portal.indexOf("else if(application)"));
+  assert.ok(staffBranch.includes("if(profile.role") && staffBranch.includes("apprenant") && staffBranch.includes('addModule("⌂"'));
+  assert.equal((staffBranch.match(/addModule\("⌂"/g) || []).length, 1);
+});
+
+test("les écritures du module Programmes refusent une session équipe obsolète", () => {
+  const programmes = fs.readFileSync("programmes.html", "utf8");
+  assert.match(programmes, /function isCurrentStaffSession\(account,generation\)/);
+  assert.match(programmes, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=user;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(programmes, /async function changeStatus\(id,status\)[\s\S]*?if\(!isCurrentStaffSession\(actor,generation\)\)return;await load\(generation\)/);
+  assert.match(programmes, /programForm\"\)\.addEventListener\(\"submit\",async e=>\{e\.preventDefault\(\);const actor=user,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
+  assert.match(programmes, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\(\"programs\"\)\.add\(data\)/);
+  assert.match(programmes, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
+});
+
+test("les chargements Projets et Activités ignorent les réponses d'une session Firebase obsolète", () => {
+  for (const [name, page] of [["Projets", projects], ["Activités", activities]]) {
+    assert.ok(page.includes("function isCurrentAuthAccount(account,generation)"), name);
+    assert.ok(page.includes("await WATFirebase.persistenceReady;if(!isCurrentAuthAccount(account,generation))return;"), name);
+    assert.ok(page.includes("if(!isCurrentStaffSession(user,generation))return"), name);
+    assert.ok(page.includes("if(!isCurrentAuthAccount(account,generation))return;"), name);
+  }
+  assert.ok(projects.includes('if(!isCurrentStaffSession(user,generation)||$("assignmentProject").value!==id)return;'));
+  assert.ok(activities.includes('if(!isCurrentStaffSession(user,generation)||$("selectedActivity").value!==id)return;'));
 });

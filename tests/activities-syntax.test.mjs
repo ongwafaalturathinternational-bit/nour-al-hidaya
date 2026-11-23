@@ -116,3 +116,37 @@ test("le registre filtre les activités par projet uniquement avec le périmètr
   assert.match(html, /!\$\("projectFilter"\)\.value\|\|a\.projectId===\$\("projectFilter"\)\.value/);
   assert.match(html, /projectFilter"\)\.addEventListener\("change",render\)/);
 });
+
+test("modifier manuellement un participant dissocie la sélection préalable du Club Khuddam", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /function clearClubVolunteerSelection\(\)/);
+  assert.match(html, /\["participantLabel","participantRef"\]\.forEach\(id=>\$\(id\)\.addEventListener\("input",clearClubVolunteerSelection\)\)/);
+  assert.match(html, /participantType"\)\.addEventListener\("change",clearClubVolunteerSelection\)/);
+  assert.match(html, /\$\("clubVolunteer"\)\.addEventListener\("change"/);
+});
+
+
+
+
+test("le registre Activités et Présences efface les données privées au changement de session", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /authGeneration=0/);
+  assert.match(html, /function clearPrivateView\(\)/);
+  assert.match(html, /activities=\[\];attendanceRecords=\[\];clubVolunteers=\[\];linkedProjects=\[\]/);
+  assert.match(html, /const generation=\+\+authGeneration;clearPrivateView\(\)/);
+  assert.match(html, /function isCurrentAuthAccount\(account,generation\)/);
+  assert.match(html, /await WATFirebase\.persistenceReady;if\(!isCurrentAuthAccount\(account,generation\)\)return/);
+  assert.match(html, /async function load\(generation=authGeneration\)/);
+  assert.match(html, /async function loadAttendance\(generation=authGeneration\)/);
+});
+
+
+test("le registre des présences ignore une réponse liée à une ancienne activité sélectionnée", () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  assert.match(html, /if\(!isCurrentStaffSession\(user,generation\)\|\|\$\("selectedActivity"\)\.value!==id\)return/);
+});
+
+test("le registre Activités efface les formulaires privés au changement de session", () => {
+ const html=readFileSync(new URL("../activites.html",import.meta.url),"utf8");
+ assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("activityForm"\)\.reset\(\);\$\("attendanceForm"\)\.reset\(\)/);
+});

@@ -4,10 +4,12 @@
  * Aucune donnée privée, réponse Firestore ou requête d'authentification
  * n'est mise en cache par ce service worker.
  */
-const CACHE_NAME = "wat-connect-shell-v1";
+const CACHE_NAME = "wat-connect-shell-v5";
 const APP_FILES = [
   "./",
   "./index.html",
+  "./portail.html",
+  "./site-institutionnel.html",
   "./nour-al-hidaya.html",
   "./administration.html",
   "./programmes.html",
@@ -15,7 +17,10 @@ const APP_FILES = [
   "./projets.html",
   "./club-khuddam.html",
   "./club-khuddam-inscription.html",
+  "./club-khuddam-espace.html",
   "./firebase-init.js",
+  "./wat-brand.css",
+  "./wat-brand-nour.css",
   "./manifest.json",
   "./manifest-nour.json",
   "./icon-192.png",
@@ -79,6 +84,10 @@ self.addEventListener("fetch", event => {
   if (url.origin !== scope.origin) return;
 
   const appUrls = new Set(APP_FILES.map(file => new URL(file, scope).href));
+  // Ne pas transformer une navigation vers une URL non gérée en page d'accueil :
+  // seules les pages explicitement autorisées bénéficient du fallback hors ligne.
+  if (!appUrls.has(url.href)) return;
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -94,7 +103,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (!appUrls.has(url.href)) return;
   event.respondWith(
     caches.match(request).then(cached => cached || fetch(request).then(response => {
       if (response && response.ok) {

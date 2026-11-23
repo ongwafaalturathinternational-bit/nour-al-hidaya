@@ -1,9 +1,10 @@
-name: Android APK test build
+name: Android staging APK test build
 
 on:
   pull_request:
     paths:
       - "index.html"
+      - "site-institutionnel.html"
       - "nour-al-hidaya.html"
       - "administration.html"
       - "programmes.html"
@@ -11,6 +12,7 @@ on:
       - "projets.html"
       - "club-khuddam.html"
       - "club-khuddam-inscription.html"
+      - "club-khuddam-espace.html"
       - "firebase-init.js"
       - "sw.js"
       - "manifest.json"
@@ -60,8 +62,15 @@ jobs:
       - name: Installer Capacitor
         run: npm install --no-audit --no-fund
 
-      - name: Préparer les fichiers web
+      - name: Préparer les fichiers web avec Firebase staging
+        env:
+          WAT_FIREBASE_ENV: staging
         run: npm run build:android:web
+
+      - name: Vérifier le routage Firebase staging de l'APK
+        run: |
+          node --check web-dist/firebase-init.js
+          grep -Fq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
 
       - name: Générer le projet Android
         run: npx cap add android
@@ -75,7 +84,7 @@ jobs:
       - name: Publier l'APK de test
         uses: actions/upload-artifact@v4
         with:
-          name: wat-connect-android-debug-apk
+          name: wat-connect-android-staging-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14

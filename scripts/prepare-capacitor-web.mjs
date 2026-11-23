@@ -5,6 +5,7 @@ const root = process.cwd();
 const output = path.join(root, "web-dist");
 const files = [
   "index.html",
+  "site-institutionnel.html",
   "nour-al-hidaya.html",
   "administration.html",
   "programmes.html",
@@ -12,8 +13,11 @@ const files = [
   "projets.html",
   "club-khuddam.html",
   "club-khuddam-inscription.html",
+  "club-khuddam-espace.html",
   "portail.html",
   "firebase-init.js",
+  "wat-brand.css",
+  "wat-brand-nour.css",
   "sw.js",
   "manifest.json",
   "manifest-nour.json",
@@ -28,6 +32,13 @@ for (const file of files) {
   const target = path.join(output, file);
   await fs.access(source);
   await fs.copyFile(source, target);
+}
+
+// Le build APK de test peut forcer staging sans modifier les sources de production.
+if (process["env"].WAT_FIREBASE_ENV === "staging") {
+  const firebaseInit = path.join(output, "firebase-init.js");
+  const source = await fs.readFile(firebaseInit, "utf8");
+  await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\n' + source);
 }
 
 const vendor = path.join(output, "vendor");

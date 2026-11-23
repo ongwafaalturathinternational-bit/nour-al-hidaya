@@ -39,7 +39,7 @@ header.top img{height:36px;width:auto;border-radius:9px;background:#fff;padding:
 header.top .t{flex:1;min-width:0}
 header.top .t b{font-family:var(--serif);font-size:1.02rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header.top .t small{opacity:.8;font-size:.78rem}
-.pill{font-size:.72rem;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.35);white-space:nowrap}
+.pill{font-size:.72rem;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.35);white-space:nowrap}.portal-link{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border:1px solid rgba(255,255,255,.55);border-radius:999px;color:#fff;text-decoration:none;font-size:.72rem;font-weight:700;white-space:nowrap}.portal-link:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .pill.off{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .back{background:none;border:0;color:#fff;font-size:1.4rem;line-height:1;padding:4px 8px 4px 0}
 main{flex:1;padding:16px max(16px,env(safe-area-inset-left,0px)) 96px max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
@@ -186,7 +186,9 @@ label.chk.on{border-color:var(--ok);background:var(--ok-soft)}
 @keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#splash *,.wel>*{animation:none!important}}
 </style>
-
+<link rel="stylesheet" href="wat-brand-nour.css">
+</head>
+<body>
 <div id="app"></div>
 
 <!-- SDK Firebase : initialisation du projet, sans activer encore les comptes réels. -->
@@ -1049,7 +1051,7 @@ function render(){
  const pend=S.subs.filter(s=>s.pending).length;
  const status=online()?(pend?`<span class="pill off">${pend} en attente</span>`:`<span class="pill">En ligne</span>`):`<span class="pill off">Hors ligne</span>`;
  const nav=back?"":`<nav class="bar">${ro.tabs.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}">${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
- app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div>${status}</header><main>${inner}</main>${nav}`;
+ app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div><a class="portal-link" href="index.html" aria-label="Retour au portail WAT Connect">WAT Connect ↗</a>${status}</header><main>${inner}</main>${nav}`;
  tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
 }
 function langBar(){return `<div class="langs">${[["fr","Français"],["en","English"],["ar","العربية"]].map(([k,n])=>`<button data-a="lang" data-v="${k}" class="${S.set.lang===k?"on":""}" ${k==="ar"?'lang="ar"':""}>${n}</button>`).join("")}</div>`}
@@ -1060,7 +1062,7 @@ function loginView(){
  ${langBar()}
  <div class="free"><b>Gratuit pour tous, partout dans le monde.</b><br>Sans paiement, sans publicité. Vos données ne sont jamais vendues.</div>
  ${reg?`<div class="card"><h3>Créer mon espace</h3><div class="list" style="margin-top:10px">
-  <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
+  <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" maxlength="120" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
   <div><label class="lbl" for="sc">Mon pays</label><select id="sc">${CCS.map(c=>`<option value="${c}">${esc(country(c))}</option>`).join("")}<option value="XX">Autre</option></select></div>
   <div><label class="lbl" for="sx">Je suis</label><select id="sx"><option value="F">Une femme</option><option value="M">Un homme</option></select></div>
   <div><label class="lbl" for="sa">Mon âge</label><select id="sa">${AGES.map(a=>`<option value="${a[0]}" ${a[0]==="26-40"?"selected":""}>${a[1]}</option>`).join("")}</select></div>
@@ -1119,7 +1121,7 @@ function hwDetail(){
  if(S.role==="apprenant"){
   if(s){body=`<div class="card"><div class="lbl">Mon travail</div><p style="margin:6px 0 0">${s.text?esc(s.text):"Fichier envoyé : "+esc(s.file||"")}</p>${s.pending?`<p class="small" style="color:var(--warn)">En attente : il sera envoyé dès que la connexion revient.</p>`:""}</div>
    ${s.status==="corrigé"?`<div class="card" style="border-color:var(--ok)"><div class="row"><b>Retour du formateur</b><span class="sp"></span><span class="tag ok">${s.note} / 3</span></div><p style="margin:6px 0 0">${esc(s.comment)}</p></div>`:`<div class="note info">Rendu le ${fmt(s.date)}. Le formateur va le corriger.</div>`}`}
-  else if(h.type==="text")body=`<label class="lbl" for="hwt">Ma réponse</label><textarea id="hwt" placeholder="Écrivez ici…"></textarea><button class="btn full" data-a="sendtext">Envoyer mon devoir</button>`;
+  else if(h.type==="text")body=`<label class="lbl" for="hwt">Ma réponse</label><textarea id="hwt" maxlength="5000" placeholder="Écrivez ici…"></textarea><button class="btn full" data-a="sendtext">Envoyer mon devoir</button>`;
   else body=`<label class="lbl" for="hwf">${h.type==="audio"?"Mon enregistrement":"Ma photo"}</label><input id="hwf" type="file" ${h.type==="audio"?'accept="audio/*" capture':'accept="image/*" capture="environment"'} style="width:100%;padding:12px;border:1.5px dashed var(--line);border-radius:12px;background:var(--surface)"><button class="btn full" data-a="sendfile">Envoyer mon devoir</button>
    <p class="small muted">Sur le téléphone, ce bouton ouvre le micro ou l’appareil photo. Le fichier part vers le formateur, même si la connexion est coupée au moment de l’envoi.</p>`;
  }
@@ -1141,7 +1143,7 @@ function lessonView(){
  if(step===0)b=`<div class="lbl">Leçon ${id}</div><h2 style="margin:2px 0 4px">${esc(L.title)}</h2><div class="ar" style="font-size:1.5rem;color:var(--gold)">${L.ar}</div><div class="key" style="margin-top:14px">${esc(L.key)}</div>`;
  if(step===1)b=`<div class="prose">${L.text.map(([h,p])=>`${h?`<h3>${esc(h)}</h3>`:""}${p.split("\n").map(x=>`<p style="margin-bottom:${p.includes("\n")?4:10}px">${esc(x)}</p>`).join("")}`).join("")}</div>`;
  if(step===2)b=`<div class="verse"><div class="ar">${L.verse.ar}</div><div class="fr">${esc(L.verse.fr)}</div><div class="ref">${esc(L.verse.ref)}</div><button class="audio" data-a="audio">▶ Écouter</button></div><div class="note" style="margin-top:2px">Le texte arabe est repris des livrets de l’ONG. L’audio de récitation sera fourni par l’ONG (voix et droits à valider) ; la lecture suivie mot à mot est prévue dans la version finale.</div>`;
- if(step===3){const v=S.reflect[CUR()+":"+id]||"";b=`<div class="card" style="background:var(--gold-soft)"><div class="lbl">Pause réflexion</div>${L.reflect.map(q=>`<p class="prose" style="margin:8px 0 0">${esc(q)}</p>`).join("")}</div><label class="lbl" for="refl">Mes notes (visibles de moi seul)</label><textarea id="refl" data-a="refl" placeholder="Facultatif">${esc(v)}</textarea>`}
+ if(step===3){const v=S.reflect[CUR()+":"+id]||"";b=`<div class="card" style="background:var(--gold-soft)"><div class="lbl">Pause réflexion</div>${L.reflect.map(q=>`<p class="prose" style="margin:8px 0 0">${esc(q)}</p>`).join("")}</div><label class="lbl" for="refl">Mes notes (visibles de moi seul)</label><textarea id="refl" data-a="refl" maxlength="5000" placeholder="Facultatif">${esc(v)}</textarea>`}
  if(step===4){const c=S.practice[CUR()+":"+id]||[];b=`<div class="lbl">Cette semaine, je fais…</div>${L.practice.map((p,i)=>`<label class="chk prac ${c.includes(i)?"on":""}"><input type="checkbox" data-a="prac" data-v="${i}" ${c.includes(i)?"checked":""}><span>${esc(p)}</span></label>`).join("")}<div class="small muted">Votre parrain ou votre marraine verra ce que vous avez coché.</div>`}
  if(step===5)b=`<div class="card" style="background:var(--ok-soft)"><div class="lbl" style="color:var(--ok)">À retenir</div>${L.retain.map(r=>`<div class="chk-row" style="margin-top:8px"><span style="color:var(--ok);font-weight:700">✓</span><span>${esc(r)}</span></div>`).join("")}</div>`;
  if(step===6)b=quizView();
@@ -1371,23 +1373,29 @@ async function queueAndSyncProgress(uid,lessonId,score,total){
  enqueueProgress(uid,lessonId,score,total);
  if(navigator.onLine)await syncPendingProgress(uid);
 }
-async function syncPendingProgress(uid){
- if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!WATFirebase.auth.currentUser||WATFirebase.auth.currentUser.uid!==uid)return 0;
+async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
+ if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!isCurrentFirebaseSession(uid,generation))return 0;
  const items=readProgressQueue(uid);let synced=0;const remaining=[];
  for(const item of items){
+  if(!isCurrentFirebaseSession(uid,generation))return synced;
   try{
    await WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
     lessonId:String(item.lessonId),score:Number(item.score),total:Number(item.total),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
    synced++;
-  }catch(error){console.error("Synchronisation progression :",error);remaining.push(item)}
+  }catch(error){
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
+   console.error("Synchronisation progression :",error);remaining.push(item)
+  }
  }
- writeProgressQueue(uid,remaining);
+ if(isCurrentFirebaseSession(uid,generation))writeProgressQueue(uid,remaining);
  return synced;
 }
-async function loadFirebaseProgress(uid){
+async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ if(!isCurrentFirebaseSession(uid,generation))return false;
  S.done[uid]=S.done[uid]||{};
  snap.forEach(doc=>{
   const p=doc.data(),lessonId=Number(doc.id);
@@ -1401,6 +1409,7 @@ async function loadFirebaseProgress(uid){
   if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
  });
  await syncPendingProgress(uid);
+ return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- synchronisation des autres données pédagogiques de l'apprenant ---------- */
 const learningQueueKey=uid=>"nh_learning_queue_"+uid;
@@ -1423,47 +1432,61 @@ async function queueAndSyncLearning(uid,recordId,data){
  enqueueLearning(uid,recordId,data);applyLearningRecord(uid,data);
  if(navigator.onLine)await syncPendingLearning(uid);
 }
-async function syncPendingLearning(uid){
+async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
  const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;
- if(!uid||!navigator.onLine||!user||user.uid!==uid||!user.emailVerified)return 0;
+ if(!uid||!navigator.onLine||!user||!user.emailVerified||!isCurrentFirebaseSession(uid,generation))return 0;
  const items=readLearningQueue(uid),remaining=[];let synced=0;
  for(const item of items){
+  if(!isCurrentFirebaseSession(uid,generation))return synced;
   try{
    await WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
    synced++;
-  }catch(error){console.error("Synchronisation pédagogique :",error);remaining.push(item)}
+  }catch(error){
+   if(!isCurrentFirebaseSession(uid,generation))return synced;
+   console.error("Synchronisation pédagogique :",error);remaining.push(item)
+  }
  }
- writeLearningQueue(uid,remaining);return synced;
+ if(isCurrentFirebaseSession(uid,generation))writeLearningQueue(uid,remaining);
+ return synced;
 }
-async function loadFirebaseLearning(uid){
+async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ if(!isCurrentFirebaseSession(uid,generation))return false;
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
  const pending=readLearningQueue(uid);
  pending.forEach(item=>applyLearningRecord(uid,item.data));
  await syncPendingLearning(uid);
+ return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- authentification Firebase ---------- */
-async function enterFirebaseUser(user){
+let firebaseAuthGeneration=0;
+function isCurrentFirebaseSession(uid,generation){return generation===firebaseAuthGeneration&&WATFirebase.auth.currentUser?.uid===uid}
+async function enterFirebaseUser(user,generation){
+  const id=user.uid;
   try{await user.reload()}catch(e){}
-  if(!user.emailVerified){
+  if(!isCurrentFirebaseSession(id,generation))return false;
+  const activeUser=WATFirebase.auth.currentUser;
+  if(!activeUser?.emailVerified){
     try{await user.sendEmailVerification()}catch(e){}
-    await WATFirebase.auth.signOut();
+    if(isCurrentFirebaseSession(id,generation))await WATFirebase.auth.signOut();
     toast("Vérifiez votre adresse e-mail avant de vous connecter.");
     return false;
   }
-  const snap=await WATFirebase.db.collection("users").doc(user.uid).get();
+  const snap=await WATFirebase.db.collection("users").doc(id).get();
+  if(!isCurrentFirebaseSession(id,generation))return false;
   if(!snap.exists||snap.data().role!=="apprenant"){
-    await WATFirebase.auth.signOut();
+    if(isCurrentFirebaseSession(id,generation))await WATFirebase.auth.signOut();
     toast("Profil introuvable ou accès non autorisé. Contactez l’ONG.");
     return false;
   }
-  const p=snap.data(),id=user.uid;
+  const p=snap.data();
   let l=learner(id);
   if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
   else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
-  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id)}catch(progressError){console.error("Chargement progression distante :",progressError)}try{await loadFirebaseLearning(id)}catch(learningError){console.error("Chargement données pédagogiques :",learningError)}R.signup=false;R.tab=null;save();render();return true;
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id,generation)}catch(progressError){console.error("Chargement progression distante :",progressError)}if(!isCurrentFirebaseSession(id,generation))return false;try{await loadFirebaseLearning(id,generation)}catch(learningError){console.error("Chargement données pédagogiques :",learningError)}if(!isCurrentFirebaseSession(id,generation))return false;R.signup=false;R.tab=null;save();render();return true;
 }
 /* ---------- actions ---------- */
 function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncProgress(user.uid,id,q.score,LESSONS[id].quiz.length)}
@@ -1496,7 +1519,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
  testpr(){prayerAlert(nextPrayer().p);return false},
  allown(){try{if(window.Notification)Notification.requestPermission().then(r=>toast(r==="granted"?"Notifications autorisées":"Notifications refusées"));else toast("Non disponible sur cet appareil")}catch(e){toast("Non disponible ici")}return false},
  dl(v){const e=R.exp;if(!e)return false;const tbl="<table><tr>"+e.head.map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr>"+e.rows.map(r=>"<tr>"+r.map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")+"</table>";
-  const html='<html><head><meta charset="utf-8"><title>'+esc(e.title)+'</title><style>body{font-family:Georgia,serif;color:#0F2240}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4px 8px;font-size:11pt}th{background:#0F2240;color:#fff}h2{border-bottom:3px solid #C9972B}</style></head><body><h2>'+esc(e.title)+'</h2><p>Programme Nour Al-Hidaya · '+fmt(dayISO())+'</p>'+tbl+'</body></html>';
+  const html='<html><head><meta charset="utf-8"><title>'+esc(e.title)+'</title><style>body{font-family:Georgia,serif;color:#0F2240}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:4px 8px;font-size:11pt}th{background:#0F2240;color:#fff}h2{border-bottom:3px solid #C9972B}</style>  <link rel="stylesheet" href="wat-brand.css"></head><body><h2>'+esc(e.title)+'</h2><p>Programme Nour Al-Hidaya · '+fmt(dayISO())+'</p>'+tbl+'</body></html>';
   const nm=e.title.replace(/[^\w]+/g,"_");
   const csv=[e.head].concat(e.rows).map(r=>r.map(c=>'"'+String(c??"").replace(/"/g,'""')+'"').join(";")).join("\n");
   const host=async(name,data)=>{try{const d=window.claude&&claude.use?await claude.use("downloads"):null;if(!d)return false;await d.save({filename:name,data});return true}catch(x){if(x&&x.code==="declined")return true;return false}};
@@ -1563,7 +1586,7 @@ async signup(){
 },
   mode(){S.set.mode=$("#mo").value;const l=learner(CUR());if(l.st==="libre"&&S.set.mode!=="seul")l.st="attente";else if(l.st==="attente"&&S.set.mode==="seul")l.st="libre";save()},
  cc(){learner(CUR()).cc=$("#mc").value;save()},
- async logout(){try{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut()}catch(e){console.error(e)}S.role=null;S.access=null;save()},
+ async logout(){try{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut()}catch(e){console.error(e);toast("Déconnexion impossible. Réessayez.");return}S.role=null;S.access=null;save();location.assign("index.html")},
  tab(v){R.tab=v;R.newhw=false},
  back(){R.lesson=R.hw=R.attest=R.learner=null;R.cl=null;R.rl=false;R.cf=null;R.report=false;R.hwu=null},
  lesson(v){startLesson(+v)},
@@ -1830,7 +1853,9 @@ window.addEventListener("online",()=>{render();const user=window.WATFirebase&&WA
 window.addEventListener("offline",render);
 if(window.WATFirebase&&WATFirebase.ready){
  WATFirebase.auth.onAuthStateChanged(user=>{
-  if(user&&user.emailVerified)enterFirebaseUser(user).catch(error=>{console.error("Restauration session :",error);toast("Impossible de charger votre profil.")});
+  const generation=++firebaseAuthGeneration;
+  if(!DEMO_MODE){S.role=null;S.cur=null;S.access=null;R.tab=null;R.lesson=null;save();render()}
+  if(user)enterFirebaseUser(user,generation).catch(error=>{console.error("Restauration session :",error);if(generation===firebaseAuthGeneration)toast("Impossible de charger votre profil.")});
  });
 }
 render();
