@@ -29,8 +29,9 @@ test("Nour Al-Hidaya garde un écran de récupération si le rendu échoue", () 
 });
 
 test("la génération Android produit une véritable icône de lanceur", () => {
-  assert.equal(pkg.devDependencies["@capacitor/assets"], "^3.0.5");
+  assert.equal(pkg.devDependencies["@capacitor/assets"], "^4.0.0");
+  assert.equal(pkg.devDependencies.sharp, "^0.34.5");
   assert.match(prepare, /copyFile\(path\.join\(root, "icon-512\.png"\), path\.join\(assets, "icon\.png"\)\)/);
-  assert.match(build, /npx capacitor-assets generate --android/);
+  assert.match(build, /npx @capacitor\/assets generate --android/);
   assert.equal(capacitor.appName, "WAT Connect");
 });
