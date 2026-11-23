@@ -1366,6 +1366,31 @@ function attestView(){
  <div class="note">Modèle de démonstration. La version finale reprend le modèle officiel de l’ONG, génère le fichier PDF et ajoute un code QR permettant de vérifier l’attestation.</div>`}
 
 /* ---------- synchronisation des résultats de quiz ---------- */
+const queueFlushes = new Map();
+function flushQueuedWrites({key, isActive, read, save, send, onError}) {
+ const previous = queueFlushes.get(key);
+ const flush = async () => {
+  if(!isActive())return 0;
+  let synced = 0;
+  for(const item of read()){
+   if(!isActive())break;
+   const serialized = JSON.stringify(item);
+   if(!read().some(candidate=>JSON.stringify(candidate)===serialized))continue;
+   try{await send(item)}
+   catch(error){if(isActive())onError(error);continue}
+   if(!isActive())break;
+   // La file peut avoir changé pendant l’écriture. Retirer seulement le contenu confirmé.
+   save(read().filter(candidate=>JSON.stringify(candidate)!==serialized));
+   synced++;
+  }
+  return synced;
+ };
+ const pending = previous ? previous.then(flush,flush) : flush();
+ queueFlushes.set(key,pending);
+ const cleanup = () => {if(queueFlushes.get(key)===pending)queueFlushes.delete(key)};
+ pending.then(cleanup,cleanup);
+ return pending;
+}
 const progressQueueKey=uid=>"nh_progress_queue_"+uid;
 function readProgressQueue(uid){try{return JSON.parse(localStorage.getItem(progressQueueKey(uid))||"[]")}catch(e){return[]}}
 function writeProgressQueue(uid,items){try{localStorage.setItem(progressQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale de progression indisponible",e)}}
@@ -1380,23 +1405,17 @@ async function queueAndSyncProgress(uid,lessonId,score,total){
 }
 async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
  if(!uid||!navigator.onLine||!window.WATFirebase||!WATFirebase.ready||!isCurrentFirebaseSession(uid,generation))return 0;
- const items=readProgressQueue(uid);let synced=0;const remaining=[];
- for(const item of items){
-  if(!isCurrentFirebaseSession(uid,generation))return synced;
-  try{
-   await WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
+ return flushQueuedWrites({
+  key:progressQueueKey(uid),
+  isActive:()=>navigator.onLine&&isCurrentFirebaseSession(uid,generation),
+  read:()=>readProgressQueue(uid),
+  save:items=>writeProgressQueue(uid,items),
+  send:item=>WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
     lessonId:String(item.lessonId),score:Number(item.score),total:Number(item.total),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-   });
-   if(!isCurrentFirebaseSession(uid,generation))return synced;
-   synced++;
-  }catch(error){
-   if(!isCurrentFirebaseSession(uid,generation))return synced;
-   console.error("Synchronisation progression :",error);remaining.push(item)
-  }
- }
- if(isCurrentFirebaseSession(uid,generation))writeProgressQueue(uid,remaining);
- return synced;
+  }),
+  onError:error=>console.error("Synchronisation progression :",error)
+ });
 }
 async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
@@ -1440,22 +1459,16 @@ async function queueAndSyncLearning(uid,recordId,data){
 async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
  const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;
  if(!uid||!navigator.onLine||!user||!user.emailVerified||!isCurrentFirebaseSession(uid,generation))return 0;
- const items=readLearningQueue(uid),remaining=[];let synced=0;
- for(const item of items){
-  if(!isCurrentFirebaseSession(uid,generation))return synced;
-  try{
-   await WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
+ return flushQueuedWrites({
+  key:learningQueueKey(uid),
+  isActive:()=>navigator.onLine&&isCurrentFirebaseSession(uid,generation),
+  read:()=>readLearningQueue(uid),
+  save:items=>writeLearningQueue(uid,items),
+  send:item=>WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-   });
-   if(!isCurrentFirebaseSession(uid,generation))return synced;
-   synced++;
-  }catch(error){
-   if(!isCurrentFirebaseSession(uid,generation))return synced;
-   console.error("Synchronisation pédagogique :",error);remaining.push(item)
-  }
- }
- if(isCurrentFirebaseSession(uid,generation))writeLearningQueue(uid,remaining);
- return synced;
+  }),
+  onError:error=>console.error("Synchronisation pédagogique :",error)
+ });
 }
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();

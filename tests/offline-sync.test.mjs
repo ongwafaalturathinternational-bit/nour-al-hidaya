@@ -1,8 +1,68 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const init = fs.readFileSync("firebase-init.js", "utf8");
+
+const nour = fs.readFileSync("nour-al-hidaya.html", "utf8");
+const start = nour.indexOf("const queueFlushes = new Map();");
+const end = nour.indexOf("const progressQueueKey", start);
+const createFlusher = () => vm.runInNewContext(nour.slice(start, end) + "\nflushQueuedWrites");
+
+test("une écriture confirmée ne supprime pas une mise à jour saisie pendant la synchronisation", async () => {
+  const flush = createFlusher();
+  let items = [{recordId:"reflection_1",value:"première note"}];
+  let confirm;
+  const sent = [];
+  const options = {
+    key:"learning:learner",
+    isActive:()=>true,
+    read:()=>items.slice(),
+    save:next=>{items=Array.from(next)},
+    send:item=>{
+      sent.push(item.value);
+      if(sent.length===1)return new Promise(resolve=>{confirm=resolve});
+    },
+    onError:assert.fail
+  };
+  const first=flush(options);
+  items=[{recordId:"reflection_1",value:"nouvelle note"},{recordId:"practice_2",value:"exercice"}];
+  const second=flush(options);
+  assert.deepEqual(sent,["première note"]);
+  confirm();
+  assert.equal(await first,1);
+  assert.equal(await second,2);
+  assert.deepEqual(sent,["première note","nouvelle note","exercice"]);
+  assert.deepEqual(items,[]);
+});
+
+test("un refus et un changement de session laissent les écritures à reprendre", async () => {
+  const flush = createFlusher();
+  let active=true;
+  let items=[{lessonId:"1"},{lessonId:"2"},{lessonId:"3"}];
+  const sent=[];
+  const errors=[];
+  const options={
+    key:"progress:learner",
+    isActive:()=>active,
+    read:()=>items.slice(),
+    save:next=>{items=Array.from(next)},
+    send:async item=>{
+      sent.push(item.lessonId);
+      if(item.lessonId==="1")throw Error("hors réseau");
+      active=false;
+    },
+    onError:error=>errors.push(error.message)
+  };
+  assert.equal(await flush(options),0);
+  assert.deepEqual(sent,["1","2"]);
+  assert.deepEqual(errors,["hors réseau"]);
+  assert.deepEqual(items.map(item=>item.lessonId),["1","2","3"]);
+  active=true;
+  assert.equal(await flush({...options, send:async()=>{}}),3);
+  assert.deepEqual(items,[]);
+});
 
 test("les modules opérationnels activent le cache Firestore hors connexion multi-onglets", () => {
   assert.match(init, /db\.enablePersistence\(\{\s*synchronizeTabs:\s*true\s*\}\)/);
