@@ -10,7 +10,7 @@ const build = fs.readFileSync(".github/workflows/android-apk.yml", "utf8");
 const prepare = fs.readFileSync("scripts/prepare-capacitor-web.mjs", "utf8");
 
 test("WAT Connect affiche son identité visuelle dans l’en-tête", () => {
-  assert.match(portal, /class="wat-logo" src="icon-192\.png"/);
+  assert.match(portal, /class="wat-logo" src="wat-icon-192\.png"/);
   assert.match(portal, /\.identity \.wat-logo/);
 });
 
@@ -43,7 +43,7 @@ test("le profil Nour Al-Hidaya regroupe les préférences dans des sections repl
 test("la génération Android produit une véritable icône de lanceur", () => {
   assert.equal(pkg.devDependencies["@capacitor/assets"], "^4.0.0");
   assert.equal(pkg.devDependencies.sharp, "^0.34.5");
-  assert.match(prepare, /sharp\(path\.join\(root, "icon-512\.png"\)\)\.resize\(1024, 1024/);
+  assert.match(prepare, /sharp\(path\.join\(assets, "brand", "wat", "ICONE WC\.png"\)\)\.resize\(1024, 1024/);
   assert.match(build, /npx @capacitor\/assets generate --android/);
   assert.equal(capacitor.appName, "WAT Connect");
 });
