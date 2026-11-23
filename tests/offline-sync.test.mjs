@@ -8,7 +8,7 @@ const init = fs.readFileSync("firebase-init.js", "utf8");
 const nour = fs.readFileSync("nour-al-hidaya.html", "utf8");
 const start = nour.indexOf("const queueFlushes = new Map();");
 const end = nour.indexOf("const progressQueueKey", start);
-const createFlusher = () => vm.runInNewContext(nour.slice(start, end) + "\nflushQueuedWrites");
+const createFlusher = (navigator) => vm.runInNewContext(nour.slice(start, end) + "\nflushQueuedWrites", { navigator });
 
 test("une écriture confirmée ne supprime pas une mise à jour saisie pendant la synchronisation", async () => {
   const flush = createFlusher();
@@ -90,4 +90,49 @@ test("le message hors connexion distingue le cache disponible du mode non pris e
   assert.match(init, /données déjà consultées restent disponibles/);
   assert.match(init, /seront synchronisées au retour du réseau/);
   assert.match(init, /cache hors connexion n'est pas disponible/);
+});
+
+
+test("deux onglets coordonnent l’envoi d’une même file quand Web Locks est disponible", async () => {
+  const locks = new Map();
+  const navigator = {
+    locks: {
+      request(name, callback) {
+        const previous = locks.get(name) ?? Promise.resolve();
+        const pending = previous.then(callback, callback);
+        locks.set(name, pending);
+        return pending;
+      }
+    }
+  };
+  const firstTab = createFlusher(navigator);
+  const secondTab = createFlusher(navigator);
+  let items = [{ lessonId: "1" }];
+  const sent = [];
+  let confirm;
+  let started;
+  const firstSend = new Promise(resolve => { started = resolve; });
+  const options = {
+    key: "progress:learner",
+    isActive: () => true,
+    read: () => items.slice(),
+    save: next => { items = Array.from(next); },
+    send: item => {
+      sent.push(item.lessonId);
+      return new Promise(resolve => {
+        confirm = resolve;
+        started();
+      });
+    },
+    onError: assert.fail
+  };
+  const first = firstTab(options);
+  await firstSend;
+  const second = secondTab({ ...options, send: item => { sent.push(item.lessonId); } });
+  await Promise.resolve();
+  assert.deepEqual(sent, ["1"]);
+  confirm();
+  assert.deepEqual(await Promise.all([first, second]), [1, 0]);
+  assert.deepEqual(sent, ["1"]);
+  assert.deepEqual(items, []);
 });
