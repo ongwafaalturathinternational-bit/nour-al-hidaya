@@ -18,7 +18,7 @@ Le rapprochement de #39 et #38 impose une vérification fonctionnelle du retour 
 
 ## Validation locale
 
-126 tests Node hors émulateur ont réussi sur l’assemblage. Le bundle web Capacitor de staging a généré 23 ressources web et trois SDK Firebase locaux. Le ciblage staging de firebase-init.js a été vérifié. La réussite des builds APK individuels ne qualifie pas l’APK de l’assemblage.
+126 tests Node hors émulateur ont réussi sur l’assemblage. La suite complète sous l’émulateur Firestore, projet fictif demo-wat-connect, donne 179 réussites, 0 échec, 0 test ignoré. Le bundle web Capacitor de staging a généré 23 ressources web et trois SDK Firebase locaux. Le ciblage staging de firebase-init.js a été vérifié. La réussite des builds APK individuels ne qualifie pas l’APK de l’assemblage.
 
 ## Cloudflare #36
 
@@ -50,3 +50,9 @@ Utiliser des comptes fictifs déjà autorisés. Avant toute écriture, vérifier
 | Club Khuddam | Candidature acceptée puis affectation | Approbation et fiche bénévole, compétence, mission, présence et clôture |
 
 Prochain lot indépendant : éprouver ces circuits avec des dossiers fictifs, relier chaque échec au test ou au composant concerné, et compléter les tests applicatifs où une régression est reproductible. L’autorisation de la Présidence est nécessaire uniquement pour la fusion, la production, ou une modification des accès réels. Les scénarios Firebase nécessitent la disponibilité de profils de recette autorisés.
+
+### Dossiers fictifs à préparer pour l’exercice métier
+
+- DÉMO-01 : une convocation, un PV retourné pour correction, puis une version approuvée. Vérifier que le registre lie la décision à la bonne version et que le responsable clôture l’action avec une preuve.
+- DÉMO-02 : une demande d’achat avec pièce manquante, puis complétée. Relever les états rejetée, soumise, validée et vérifier que seule la dernière écriture validée alimente le rapport. Faire intervenir un valideur distinct de l’auteur.
+- DÉMO-03 : un programme, un projet, une activité, une candidature Club acceptée et une fiche bénévole. Vérifier l’affectation et la présence; comparer le total du rapport à la liste source. Tester ces chaînages là où les modules le permettent et consigner les étapes manuelles proposées.
