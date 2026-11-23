@@ -95,7 +95,7 @@ h2{font-size:1.25rem}h3{font-size:1.05rem}
 .verse .fr{font-family:var(--serif);font-style:italic;opacity:.92}
 .verse .ref{color:#EBCB7C;font-size:.85rem;margin-top:4px}
 .audio{display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:99px;padding:8px 16px}
-textarea,input[type=text],input[type=password],input[type=file],select{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+textarea,input[type=text],input[type=email],input[type=password],input[type=file],select{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 textarea{min-height:96px;resize:vertical}
 label.chk{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface)}
 label.chk input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--navy);flex:none}
@@ -124,6 +124,7 @@ label.chk.on{border-color:var(--ok);background:var(--ok-soft)}
 .note.info{background:var(--blue-soft);border-color:var(--navy)}
 .note.priv{background:var(--bad-soft);border-color:var(--bad)}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:99px;z-index:20;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:90%;text-align:center;border:1px solid var(--gold)}
+.login .lbl{display:block;margin-block-end:4px}
 .login{padding:28px max(20px,env(safe-area-inset-left,0px)) 30px;display:flex;flex-direction:column;gap:14px;flex:1}
 .login .brand{text-align:center;padding:10px 0 6px}
 .login .brand img{width:min(300px,86%);height:auto;border:0;background:none}
@@ -969,13 +970,144 @@ return {en,ar,pat};
 Object.keys(_en).forEach(k=>{if(!I18N.en[k])I18N.en[k]=_en[k]});Object.keys(_ar).forEach(k=>{if(!I18N.ar[k])I18N.ar[k]=_ar[k]});
 I18N.pat.push([/^(\d+) nouveaux? messages?$/,"$1 new message(s)","$1 رسالة جديدة"],[/^Messages \((\d+)\)$/,"Messages ($1)","الرسائل ($1)"],[/^Fiches papier à saisir : (\d+)$/,"Paper forms to key in: $1","استمارات ورقية للإدخال: $1"],[/^(\d+) alertes? sur les séances$/,"$1 session alert(s)","$1 تنبيه على الحصص"],[/^(\d+) fiches? papier à saisir.*$/,"$1 paper form(s) to key in","$1 استمارة ورقية للإدخال"]);
 
+Object.assign(I18N.en,{
+  "Navigation principale de Nour Al-Hidaya":"Nour Al-Hidaya main navigation",
+  "Retour à WAT Connect":"Back to WAT Connect",
+  "Retour au portail WAT Connect":"Back to the WAT Connect portal",
+  "J’ai déjà un compte":"I already have an account",
+  "Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.":"Sign in with the email and password you used to register.",
+  "Adresse e-mail":"Email address",
+  "Mot de passe":"Password",
+  "Se connecter":"Sign in",
+  "Mot de passe oublié ?":"Forgot your password?",
+  "vous@exemple.com":"you@example.com",
+  "Créer mon espace":"Create my account",
+  "Prénom ou pseudonyme":"First name or nickname",
+  "Pas de nom de famille nécessaire":"No surname needed",
+  "Mon pays":"My country",
+  "Autre":"Other",
+  "Je suis":"I am",
+  "Une femme":"A woman",
+  "Un homme":"A man",
+  "Mon âge":"My age",
+  "Ce que je cherche":"What I’m looking for",
+  "Apprendre le Coran et l’arabe":"Learn the Qur’an and Arabic",
+  "Découvrir l’islam et être accompagné(e) après ma conversion":"Discover Islam and receive support after converting",
+  "Ma mosquée (facultatif)":"My mosque (optional)",
+  "Aucune, ou je suis loin":"None or too far away",
+  "Comment je veux apprendre":"How I want to learn",
+  "Seul(e), avec l’application, à mon rythme":"Independently, in the app, at my own pace",
+  "Avec un groupe en ligne":"With an online group",
+  "Cours en présentiel près de chez moi (l’application en complément)":"In-person lessons nearby, with the app as a supplement",
+  "Adresse e-mail (obligatoire)":"Email address (required)",
+  "Créer un mot de passe":"Create a password",
+  "8 caractères minimum":"At least 8 characters",
+  "Un e-mail de vérification sera envoyé avant l’accès à votre espace.":"You’ll receive a verification email before you can access your account.",
+  "Commencer gratuitement":"Get started for free",
+  "Annuler":"Cancel",
+  "Les cours en présentiel continuent.":"In-person lessons continue.",
+  "L’application s’y ajoute pour celles et ceux qui préfèrent suivre les cours sur leur téléphone, seuls ou en groupe.":"The app is also available for learning on a phone, independently or in a group.",
+  "Mode démonstration activé — comptes fictifs":"Demo mode enabled — fictional accounts",
+  "Mode démonstration désactivé.":"Demo mode is off.",
+  "Les comptes fictifs ne sont pas accessibles. Vous pouvez créer un compte apprenant avec une adresse e-mail et un mot de passe ; son profil de base sera enregistré dans WAT Connect.":"Demo accounts are unavailable. You can create a learner account with an email address and password. Your basic profile will be saved in WAT Connect.",
+  "Version en cours de développement.":"This version is under development.",
+  "Les comptes, résultats de quiz, notes personnelles, pratiques et devoirs écrits sont synchronisés avec Firebase pour les apprenants connectés. Les présences, pièces jointes et espaces réels de l’équipe restent à développer.":"For signed-in learners, accounts, quiz results, private notes, practice and written assignments sync with Firebase. Attendance, attachments and team workspaces are still under development.",
+  "Saisissez votre adresse e-mail et votre mot de passe":"Enter your email address and password.",
+  "Saisissez d’abord votre adresse e-mail dans le champ de connexion.":"Enter your email address in the sign-in field first.",
+  "Le service sécurisé est momentanément indisponible":"The secure service is temporarily unavailable.",
+  "Le service sécurisé est momentanément indisponible.":"The secure service is temporarily unavailable.",
+  "Adresse e-mail ou mot de passe incorrect.":"Incorrect email address or password.",
+  "Ce compte est désactivé.":"This account is disabled.",
+  "Trop de tentatives. Réessayez plus tard.":"Too many attempts. Try again later.",
+  "Connexion Internet indisponible.":"Internet connection unavailable.",
+  "Connexion impossible. Vérifiez vos identifiants.":"Unable to sign in. Check your credentials.",
+  "Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.":"If an account uses this address, a reset link has been sent.",
+  "Adresse e-mail invalide.":"Invalid email address.",
+  "Trop de demandes. Réessayez plus tard.":"Too many requests. Try again later.",
+  "Impossible d’envoyer le lien. Réessayez plus tard.":"Unable to send the link. Try again later.",
+  "Choisissez un prénom ou un pseudonyme":"Choose a first name or nickname.",
+  "Saisissez une adresse e-mail valide":"Enter a valid email address.",
+  "Le mot de passe doit contenir au moins 8 caractères":"The password must have at least 8 characters.",
+  "Compte créé. Vérifiez votre boîte e-mail avant de vous connecter.":"Account created. Check your email before signing in.",
+  "Cette adresse e-mail possède déjà un compte.":"This email address already has an account.",
+  "Choisissez un mot de passe plus robuste.":"Choose a stronger password.",
+  "Les règles de sécurité Firebase ne sont pas encore publiées. Ne réessayez pas avant leur activation.":"The service’s security configuration is incomplete. Try again once it is ready.",
+  "Impossible de créer le compte. Réessayez.":"Unable to create the account. Try again."
+});
+Object.assign(I18N.ar,{
+  "Navigation principale de Nour Al-Hidaya":"التنقّل الرئيسي في نور الهداية",
+  "Retour à WAT Connect":"العودة إلى وات كونكت",
+  "Retour au portail WAT Connect":"العودة إلى بوابة وات كونكت",
+  "J’ai déjà un compte":"لدي حساب بالفعل",
+  "Connectez-vous avec l’adresse e-mail et le mot de passe utilisés à l’inscription.":"سجّل الدخول بالبريد الإلكتروني وكلمة المرور اللذين استخدمتهما عند التسجيل.",
+  "Adresse e-mail":"البريد الإلكتروني",
+  "Mot de passe":"كلمة المرور",
+  "Se connecter":"تسجيل الدخول",
+  "Mot de passe oublié ?":"هل نسيت كلمة المرور؟",
+  "vous@exemple.com":"name@example.com",
+  "Créer mon espace":"إنشاء حسابي",
+  "Prénom ou pseudonyme":"الاسم الأول أو الاسم المستعار",
+  "Pas de nom de famille nécessaire":"لا حاجة إلى اسم العائلة",
+  "Mon pays":"بلدي",
+  "Autre":"أخرى",
+  "Je suis":"أنا",
+  "Une femme":"امرأة",
+  "Un homme":"رجل",
+  "Mon âge":"عمري",
+  "Ce que je cherche":"ما أبحث عنه",
+  "Apprendre le Coran et l’arabe":"تعلّم القرآن واللغة العربية",
+  "Découvrir l’islam et être accompagné(e) après ma conversion":"التعرّف إلى الإسلام والحصول على الدعم بعد اعتناقه",
+  "Ma mosquée (facultatif)":"مسجدي (اختياري)",
+  "Aucune, ou je suis loin":"لا يوجد مسجد قريب",
+  "Comment je veux apprendre":"كيف أريد أن أتعلّم",
+  "Seul(e), avec l’application, à mon rythme":"بمفردي عبر التطبيق وبالوتيرة التي تناسبني",
+  "Avec un groupe en ligne":"مع مجموعة عبر الإنترنت",
+  "Cours en présentiel près de chez moi (l’application en complément)":"دروس حضورية بالقرب مني مع استخدام التطبيق للتكميل",
+  "Adresse e-mail (obligatoire)":"البريد الإلكتروني (إلزامي)",
+  "Créer un mot de passe":"إنشاء كلمة مرور",
+  "8 caractères minimum":"٨ أحرف على الأقل",
+  "Un e-mail de vérification sera envoyé avant l’accès à votre espace.":"ستصلك رسالة للتحقق من بريدك قبل إتاحة الدخول إلى حسابك.",
+  "Commencer gratuitement":"ابدأ مجانًا",
+  "Annuler":"إلغاء",
+  "Les cours en présentiel continuent.":"تستمر الدروس الحضورية.",
+  "L’application s’y ajoute pour celles et ceux qui préfèrent suivre les cours sur leur téléphone, seuls ou en groupe.":"يتيح التطبيق أيضًا متابعة الدروس عبر الهاتف، فرديًا أو ضمن مجموعة.",
+  "Mode démonstration activé — comptes fictifs":"وضع العرض التوضيحي مفعّل، الحسابات افتراضية",
+  "Mode démonstration désactivé.":"وضع العرض التوضيحي غير مفعّل.",
+  "Les comptes fictifs ne sont pas accessibles. Vous pouvez créer un compte apprenant avec une adresse e-mail et un mot de passe ; son profil de base sera enregistré dans WAT Connect.":"الحسابات الافتراضية غير متاحة. يمكنك إنشاء حساب متعلّم ببريد إلكتروني وكلمة مرور. سيُحفظ ملفك الأساسي في وات كونكت.",
+  "Version en cours de développement.":"هذا الإصدار قيد التطوير.",
+  "Les comptes, résultats de quiz, notes personnelles, pratiques et devoirs écrits sont synchronisés avec Firebase pour les apprenants connectés. Les présences, pièces jointes et espaces réels de l’équipe restent à développer.":"تُزامَن الحسابات ونتائج الاختبارات والملاحظات الخاصة والتطبيقات والواجبات الكتابية مع فايربيس للمتعلمين المسجّلين دخولهم. لا يزال الحضور والمرفقات ومساحات عمل الفريق قيد التطوير.",
+  "Saisissez votre adresse e-mail et votre mot de passe":"أدخل بريدك الإلكتروني وكلمة المرور.",
+  "Saisissez d’abord votre adresse e-mail dans le champ de connexion.":"أدخل بريدك الإلكتروني أولًا في خانة تسجيل الدخول.",
+  "Le service sécurisé est momentanément indisponible":"الخدمة الآمنة غير متاحة مؤقتًا.",
+  "Le service sécurisé est momentanément indisponible.":"الخدمة الآمنة غير متاحة مؤقتًا.",
+  "Adresse e-mail ou mot de passe incorrect.":"البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "Ce compte est désactivé.":"هذا الحساب معطّل.",
+  "Trop de tentatives. Réessayez plus tard.":"محاولات كثيرة. حاول مرة أخرى لاحقًا.",
+  "Connexion Internet indisponible.":"الاتصال بالإنترنت غير متاح.",
+  "Connexion impossible. Vérifiez vos identifiants.":"تعذّر تسجيل الدخول. تحقّق من بيانات الدخول.",
+  "Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.":"إذا كان هذا البريد مرتبطًا بحساب، فقد أُرسل إليه رابط إعادة التعيين.",
+  "Adresse e-mail invalide.":"البريد الإلكتروني غير صالح.",
+  "Trop de demandes. Réessayez plus tard.":"طلبات كثيرة. حاول مرة أخرى لاحقًا.",
+  "Impossible d’envoyer le lien. Réessayez plus tard.":"تعذّر إرسال الرابط. حاول مرة أخرى لاحقًا.",
+  "Choisissez un prénom ou un pseudonyme":"اختر اسمًا أول أو اسمًا مستعارًا.",
+  "Saisissez une adresse e-mail valide":"أدخل بريدًا إلكترونيًا صالحًا.",
+  "Le mot de passe doit contenir au moins 8 caractères":"يجب أن تتكوّن كلمة المرور من ٨ أحرف على الأقل.",
+  "Compte créé. Vérifiez votre boîte e-mail avant de vous connecter.":"أُنشئ الحساب. تحقّق من بريدك الإلكتروني قبل تسجيل الدخول.",
+  "Cette adresse e-mail possède déjà un compte.":"هذا البريد الإلكتروني مرتبط بحساب بالفعل.",
+  "Choisissez un mot de passe plus robuste.":"اختر كلمة مرور أقوى.",
+  "Les règles de sécurité Firebase ne sont pas encore publiées. Ne réessayez pas avant leur activation.":"لم يكتمل إعداد أمان الخدمة. حاول مجددًا بعد اكتماله.",
+  "Impossible de créer le compte. Réessayez.":"تعذّر إنشاء الحساب. حاول مرة أخرى."
+});
+I18N.pat.push([/^Pôle (\d+) · mosquée \(exemple\)$/,"Hub $1 · mosque (example)","المركز $1 · مسجد (مثال)"]);
+const translated = text => I18N[S.set.lang]?.[text] || text;
+
 function tx(root){const L=S.set.lang;if(L==="fr")return;const D=I18N[L]||{};const P=I18N.pat||[];const w=document.createTreeWalker(root,document.defaultView?.NodeFilter?.SHOW_TEXT??4);const ns=[];while(w.nextNode())ns.push(w.currentNode);
   const conv=k=>{if(D[k])return D[k];for(const p of P){const m=k.match(p[0]);if(m){const tp=L==="en"?p[1]:p[2];return tp.replace(/\$(\d)/g,(x,i)=>D[m[i]]||m[i])}}return null};
  ns.forEach(n=>{const k=n.nodeValue.trim();if(!k||n.parentElement?.closest?.(".prose,.verse .ar,.verse .fr,.verse .ref,.key,.seq,.chips,.opt,.prac span,.num"))return;const r=conv(k);if(r)n.nodeValue=n.nodeValue.replace(k,r)});
  root.querySelectorAll("[placeholder],[aria-label]").forEach(e=>{["placeholder","aria-label"].forEach(a=>{const v=e.getAttribute(a);if(v&&D[v])e.setAttribute(a,D[v])})})}
 /* ---------- état d'interface ---------- */
 let R={tab:null,view:null,lesson:null,hw:null,attest:null,learner:null,report:false};
-const toast=m=>{const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2400)};
+const toast=m=>{const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=translated(m);document.body.appendChild(t);setTimeout(()=>t.remove(),2400)};
 const online=()=>navigator.onLine!==false;
 
 /* ---------- rendu ---------- */
@@ -1051,7 +1183,7 @@ function renderContent(){
  app.classList.toggle("nonav",back);
  const pend=S.subs.filter(s=>s.pending).length;
  const status=online()?(pend?`<span class="pill off">${pend} en attente</span>`:`<span class="pill">En ligne</span>`):`<span class="pill off">Hors ligne</span>`;
- const nav=back?"":`<nav class="bar">${ro.tabs.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}">${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
+ const nav=back?"":`<nav class="bar" aria-label="Navigation principale de Nour Al-Hidaya">${ro.tabs.map(t=>`<button type="button" data-a="tab" data-v="${t[0]}" class="${R.tab===t[0]?"on":""}" ${R.tab===t[0]?"aria-current=\"page\"":""}>${ico[t[2]]}${t[1]}</button>`).join("")}</nav>`;
  app.innerHTML=`<header class="top">${back?'<button class="back flip" data-a="back" aria-label="Retour">‹</button>':`<img src="${LOGO}" alt="">`}<div class="t"><b>${esc(title)}</b><small>${esc(sub)}${S.set.discreet?" · mode discret":""}</small></div><a class="portal-link" href="./index.html#connexion" aria-label="Retour au portail WAT Connect">WAT Connect ↗</a>${status}</header><main>${inner}</main>${nav}`;
  tx(app);app.querySelectorAll(".prose,.key,.opt,.chip,.seq div,.fb,.prac span,.verse .fr,.item b,.btn,h3,header.top b,.card p,.chk-row span,.small.muted").forEach(e=>{if(!e.closest(".cert"))e.setAttribute("dir","auto")});window.scrollTo(0,0);
 }
@@ -1063,7 +1195,7 @@ function loginView(){
  const reg=R.signup;
  return `<div class="login"><div class="brand"><img src="${LOGO}" alt=""><h1 class="sr">Nour Al-Hidaya</h1><p class="muted small" style="margin:6px 0 0">Apprendre le Coran, l’arabe et les bases de l’islam</p></div>
  ${langBar()}
- <a class="btn ghost" href="./index.html#connexion">${({fr:"Retour à WAT Connect",en:"Back to WAT Connect",ar:"العودة إلى وات كونكت"})[S.set.lang] || "Retour à WAT Connect"}</a>
+ <a class="btn ghost" href="./index.html#connexion">Retour à WAT Connect</a>
  <div class="free"><b>Gratuit pour tous, partout dans le monde.</b><br>Sans paiement, sans publicité. Vos données ne sont jamais vendues.</div>
  ${reg?`<div class="card"><h3>Créer mon espace</h3><div class="list" style="margin-top:10px">
   <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" maxlength="120" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
@@ -1295,7 +1427,7 @@ function reportForm(){return `<div class="note info">Ce formulaire reprend la fi
  <button class="btn full" data-a="sendrep">Envoyer au bureau exécutif</button><p class="small muted">Envoyé même sans connexion. Ne promettez jamais le secret absolu à la personne concernée.</p>`}
 function myId(){return S.role==="apprenant"?learner(CUR()).code:((S.accounts.find(a=>a.role===S.role&&a.active!==false))||{code:"—"}).code}
 function myObj(){return S.role==="apprenant"?learner(CUR()):S.accounts.find(a=>a.role===S.role&&a.active!==false)}
-function rulesGate(){const t=RULE_T[S.role];return `<div class="login"><div class="brand"><img src="${LOGO}" alt=""></div>${langBar()}<div><div class="lbl">Avant d’entrer · version ${esc(S.rules.v)} du ${fmt(S.rules.date)}</div><h2>${t[0]}</h2></div>
+function rulesGate(){const t=RULE_T[S.role];return `<div class="login"><div class="brand"><img src="${LOGO}" alt=""></div>${langBar()}<a class="btn ghost" href="./index.html#connexion">Retour à WAT Connect</a><div><div class="lbl">Avant d’entrer · version ${esc(S.rules.v)} du ${fmt(S.rules.date)}</div><h2>${t[0]}</h2></div>
  <div class="card rules" tabindex="0">${ruleLines(S.role).map((x,i)=>`<p dir="auto"><b>${i+1}.</b> ${esc(x)}</p>`).join("")}</div>
  <label class="chk"><input type="checkbox" id="rok"><span>J’ai lu ce règlement et je l’accepte. Cet accord est enregistré avec la date, la version et mon identifiant.</span></label>
  <button class="btn gold full" data-a="accept">J’accepte et j’entre</button><button class="btn ghost full" data-a="refuse">Je refuse</button>
@@ -1552,7 +1684,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
   if(!email||!password){toast("Saisissez votre adresse e-mail et votre mot de passe");return false}
   if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible");return false}
   try{const credential=await WATFirebase.auth.signInWithEmailAndPassword(email,password);await enterFirebaseUser(credential.user)}
-  catch(error){console.error("Connexion Firebase :",error);const messages={"auth/invalid-credential":"Adresse e-mail ou mot de passe incorrect.","auth/user-disabled":"Ce compte est désactivé.","auth/too-many-requests":"Trop de tentatives. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Connexion impossible. Vérifiez vos identifiants.")}
+  catch(error){console.error("Connexion Firebase :",error);const messages={"auth/invalid-credential":"Adresse e-mail ou mot de passe incorrect.","auth/user-disabled":"Ce compte est désactivé.","auth/too-many-requests":"Trop de tentatives. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Connexion impossible. Vérifiez vos identifiants.");return false}
 },
  async forgotPassword(){
   const email=$("#liemail").value.trim().toLowerCase();
@@ -1560,6 +1692,7 @@ loginid(){if(!DEMO_MODE){toast("La connexion réelle sera activée avec l’auth
   if(!window.WATFirebase||!WATFirebase.ready){toast("Le service sécurisé est momentanément indisponible.");return false}
   try{await WATFirebase.auth.sendPasswordResetEmail(email);toast("Si cette adresse possède un compte, un lien de réinitialisation vient d’être envoyé.")}
   catch(error){console.error("Réinitialisation du mot de passe :",error);const messages={"auth/invalid-email":"Adresse e-mail invalide.","auth/too-many-requests":"Trop de demandes. Réessayez plus tard.","auth/network-request-failed":"Connexion Internet indisponible."};toast(messages[error.code]||"Impossible d’envoyer le lien. Réessayez plus tard.")}
+  return false
  },
  signupo(){R.signup=true},signupx(){R.signup=false},
 async signup(){
@@ -1587,11 +1720,12 @@ async signup(){
     }
     const messages={"auth/email-already-in-use":"Cette adresse e-mail possède déjà un compte.","auth/invalid-email":"Adresse e-mail invalide.","auth/weak-password":"Choisissez un mot de passe plus robuste.","auth/network-request-failed":"Connexion Internet indisponible.","permission-denied":"Les règles de sécurité Firebase ne sont pas encore publiées. Ne réessayez pas avant leur activation."};
     toast(messages[error.code]||"Impossible de créer le compte. Réessayez.");
+    return false;
   }
 },
   mode(){S.set.mode=$("#mo").value;const l=learner(CUR());if(l.st==="libre"&&S.set.mode!=="seul")l.st="attente";else if(l.st==="attente"&&S.set.mode==="seul")l.st="libre";save()},
  cc(){learner(CUR()).cc=$("#mc").value;save()},
- async logout(){try{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut()}catch(e){console.error(e);toast("Déconnexion impossible. Réessayez.");return}S.role=null;S.access=null;save();location.assign("index.html")},
+ async logout(){try{if(window.WATFirebase&&WATFirebase.ready)await WATFirebase.auth.signOut()}catch(e){console.error(e);toast("Déconnexion impossible. Réessayez.");return}S.role=null;S.access=null;save();location.assign("./index.html#connexion")},
  tab(v){R.tab=v;R.newhw=false},
  back(){R.lesson=R.hw=R.attest=R.learner=null;R.cl=null;R.rl=false;R.cf=null;R.report=false;R.hwu=null},
  lesson(v){startLesson(+v)},
@@ -1849,7 +1983,7 @@ function welcomeMsg(el,l){S.set.lang=l;save();document.documentElement.lang=l;do
 /* ---------- événements ---------- */
 document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type!=="checkbox"))return;if(t.type==="checkbox"&&t.dataset.a==="refl")return;
  const f=A[t.dataset.a];if(!f)return;const result=f(t.dataset.v,t);if(result===false)return;
- if(result&&typeof result.then==="function"){t.disabled=true;result.then(()=>render()).catch(error=>{console.error(error);toast("Une erreur est survenue.")}).finally(()=>{t.disabled=false});return}
+ if(result&&typeof result.then==="function"){t.disabled=true;result.then(shouldRender=>{if(shouldRender!==false)render()}).catch(error=>{console.error(error);toast("Une erreur est survenue.")}).finally(()=>{t.disabled=false});return}
  render();});
 document.addEventListener("change",e=>{const t=e.target;if((t.tagName==="SELECT"||(t.tagName==="INPUT"&&t.type==="text"))&&A[t.dataset.a]){if(A[t.dataset.a](t.dataset.v,t)!==false)render()}});
 document.addEventListener("input",e=>{if(e.target.id==="refl"&&R.lesson){S.reflect[CUR()+":"+R.lesson.id]=e.target.value;save()}});
