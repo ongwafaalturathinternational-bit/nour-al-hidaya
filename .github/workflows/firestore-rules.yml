@@ -34,6 +34,7 @@ on:
       - "tests/pwa-shell.test.mjs"
       - "tests/offline-sync.test.mjs"
       - "tests/android-build.test.mjs"
+      - "tests/android-field-feedback.test.mjs"
       - "scripts/prepare-capacitor-web.mjs"
       - "index.html"
       - "nour-al-hidaya.html"

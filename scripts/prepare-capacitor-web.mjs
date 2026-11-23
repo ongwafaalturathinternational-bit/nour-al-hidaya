@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 
 const root = process.cwd();
 const output = path.join(root, "web-dist");
@@ -40,6 +41,10 @@ if (process["env"].WAT_FIREBASE_ENV === "staging") {
   const source = await fs.readFile(firebaseInit, "utf8");
   await fs.writeFile(firebaseInit, 'window.WAT_FIREBASE_ENV = "staging";\n' + source);
 }
+
+const assets = path.join(root, "assets");
+await fs.mkdir(assets, { recursive: true });
+await sharp(path.join(root, "icon-512.png")).resize(1024, 1024, { fit: "contain" }).png().toFile(path.join(assets, "icon.png"));
 
 const vendor = path.join(output, "vendor");
 await fs.mkdir(vendor, { recursive: true });
