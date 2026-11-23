@@ -31,6 +31,13 @@ test("Nour Al-Hidaya garde un écran de récupération si le rendu échoue", () 
   assert.match(nour, /href="\.\/index\.html#connexion"/);
 });
 
+test("le profil Nour Al-Hidaya regroupe les préférences dans des sections repliables", () => {
+  assert.match(nour, /<h2>Mon profil<\/h2>/);
+  assert.match(nour, /<details class="card"><summary><b>Messages et règlement<\/b><\/summary>/);
+  assert.match(nour, /<details class="card"><summary><b>Préférences et notifications<\/b><\/summary>/);
+  assert.match(nour, /<button class="btn ghost full" data-a="logout">Se déconnecter<\/button>/);
+});
+
 test("la génération Android produit une véritable icône de lanceur", () => {
   assert.equal(pkg.devDependencies["@capacitor/assets"], "^4.0.0");
   assert.equal(pkg.devDependencies.sharp, "^0.34.5");
