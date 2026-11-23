@@ -76,7 +76,7 @@ jobs:
         run: npx cap add android
 
       - name: Générer les icônes natives Android
-        run: npx capacitor-assets generate --android
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#103047' --iconBackgroundColorDark '#103047' --splashBackgroundColor '#103047'
 
       - name: Synchroniser les ressources web
         run: npx cap sync android
