@@ -27,6 +27,8 @@ test("Nour Al-Hidaya garde un écran de récupération si le rendu échoue", () 
   assert.match(nour, /function render\(\)\{try\{renderContent\(\)\}catch\(error\)/);
   assert.match(nour, /S\.set\.lang="fr";save\(\)/);
   assert.match(nour, /Réessayer en français/);
+  assert.match(nour, /id="render-diagnostic"/);
+  assert.match(nour, /diagnostic\.textContent=\("Diagnostic : "\+name\+" — "\+message\)\.slice\(0,180\)/);
   assert.match(nour, /Retour à WAT Connect/);
   assert.match(nour, /href="\.\/index\.html#connexion"/);
 });
