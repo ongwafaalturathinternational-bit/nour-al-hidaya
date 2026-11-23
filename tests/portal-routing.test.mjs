@@ -52,7 +52,7 @@ test("le portail masque son contenu public après authentification sans référe
 });
 
 
-test("le portail efface le mot de passe après chaque tentative de connexion", () => {
+test("le portail conserve le mot de passe après un refus et le vide après une connexion acceptée", () => {
   const portal = read("../index.html");
-  assert.match(portal, /finally\{\$\("password"\)\.value="";b\.disabled=false/);
+  assert.match(portal, /finally\{if\(signedIn\)\$\("password"\)\.value="";b\.disabled=false/);
 });
