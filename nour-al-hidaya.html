@@ -1063,6 +1063,7 @@ function loginView(){
  const reg=R.signup;
  return `<div class="login"><div class="brand"><img src="${LOGO}" alt=""><h1 class="sr">Nour Al-Hidaya</h1><p class="muted small" style="margin:6px 0 0">Apprendre le Coran, l’arabe et les bases de l’islam</p></div>
  ${langBar()}
+ <a class="btn ghost" href="./index.html#connexion">${({fr:"Retour à WAT Connect",en:"Back to WAT Connect",ar:"العودة إلى وات كونكت"})[S.set.lang] || "Retour à WAT Connect"}</a>
  <div class="free"><b>Gratuit pour tous, partout dans le monde.</b><br>Sans paiement, sans publicité. Vos données ne sont jamais vendues.</div>
  ${reg?`<div class="card"><h3>Créer mon espace</h3><div class="list" style="margin-top:10px">
   <div><label class="lbl" for="sn">Prénom ou pseudonyme</label><input id="sn" type="text" maxlength="120" autocomplete="off" placeholder="Pas de nom de famille nécessaire"></div>
