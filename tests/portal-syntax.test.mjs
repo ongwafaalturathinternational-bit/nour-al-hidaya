@@ -125,7 +125,7 @@ test("le portail public propose un seul point d'entrée principal vers le Club",
 
 test("Nour Al-Hidaya offre toujours un retour au portail après navigation ou déconnexion", () => {
   const html = readFileSync(new URL("../nour-al-hidaya.html", import.meta.url), "utf8");
-  assert.match(html, /class="portal-link" href="index\.html"/);
+  assert.match(html, /class="portal-link" href="\.\/index\.html#connexion"/);
   assert.match(html, /location\.assign\("index\.html"\)/);
 });
 
