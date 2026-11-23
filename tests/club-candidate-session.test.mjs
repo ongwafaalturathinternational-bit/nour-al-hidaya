@@ -75,3 +75,41 @@ test("les formulaires publics effacent les mots de passe et ignorent les erreurs
   assert.match(login, /generation!==authGeneration\|\|WATFirebase\.auth\.currentUser/);
   assert.match(login, /finally\{\$\("loginPassword"\)\.value=""\}/);
 });
+
+test("le formulaire Club rend la transition invitée et attend le jeton avant de lire le dossier", async () => {
+  const page = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const start = page.indexOf("async function updateAccount");
+  const source = page.slice(start, page.indexOf("async function checkExisting", start));
+  const nodes = new Map();
+  const order = [];
+  const auth = { currentUser: null };
+  const context = vm.createContext({
+    authGeneration: 0,
+    currentUser: null,
+    WATFirebase: { auth, persistenceReady: Promise.resolve() },
+    clearPrivateView() {},
+    $(id) {
+      if (!nodes.has(id)) nodes.set(id, { hidden: true });
+      return nodes.get(id);
+    },
+    checkExisting() { order.push("lecture"); },
+    say: assert.fail,
+  });
+  const guard = page.slice(page.indexOf("function isCurrentSession"), page.indexOf("function clearPrivateView"));
+  const update = vm.runInContext(guard + source + "\nupdateAccount", context);
+  await update(null);
+  assert.match(nodes.get("accountState").textContent, /connectez-vous/);
+  assert.deepEqual(order, []);
+  const user = {
+    uid: "candidate",
+    emailVerified: true,
+    async getIdToken(force) {
+      assert.equal(force, true);
+      order.push("jeton");
+    },
+  };
+  auth.currentUser = user;
+  await update(user);
+  assert.deepEqual(order, ["jeton", "lecture"]);
+  assert.equal(nodes.get("applicationPanel").hidden, false);
+});
