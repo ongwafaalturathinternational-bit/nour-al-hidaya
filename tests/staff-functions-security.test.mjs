@@ -33,6 +33,9 @@ test("l'activation exige la vérification de l'adresse et la suspension désacti
   assert.match(source, /if \(active && user\.emailVerified !== true\)/);
   assert.match(source, /auth\.updateUser\(uid, \{ disabled: !active \}\)/);
   assert.match(source, /const previousActive = snap\.data\(\)\.active === true/);
+  assert.match(source, /if \(active === true\) \{/);
+  assert.match(source, /Suspension Firestore maintenue/);
+  assert.match(source, /désactivation Firebase Authentication a échoué/);
   assert.match(source, /ref\.update\(\{\s*active,/);
   assert.ok(source.indexOf("await ref.update({\n    active,") < source.indexOf("await auth.updateUser(uid, { disabled: !active })"),
     "Firestore doit fermer ou ouvrir le périmètre avant la synchronisation Auth");
