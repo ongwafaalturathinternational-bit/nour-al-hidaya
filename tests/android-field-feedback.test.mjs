@@ -22,7 +22,10 @@ test("l’échec de connexion conserve le mot de passe pour permettre une nouvel
 
 test("Nour Al-Hidaya garde un écran de récupération si le rendu échoue", () => {
   assert.match(nour, /function renderContent\(\)/);
+  assert.match(nour, /document\.defaultView\?\.NodeFilter\?\.SHOW_TEXT\?\?4/);
+  assert.match(nour, /n\.parentElement\?\.closest\?\./);
   assert.match(nour, /function render\(\)\{try\{renderContent\(\)\}catch\(error\)/);
+  assert.match(nour, /S\.set\.lang="fr";save\(\)/);
   assert.match(nour, /Réessayer en français/);
   assert.match(nour, /Retour à WAT Connect/);
   assert.match(nour, /href="\.\/index\.html#connexion"/);
