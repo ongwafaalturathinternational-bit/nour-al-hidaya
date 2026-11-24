@@ -13,3 +13,16 @@ Les PR #54 (3d4d603) et #55 (61bb8ea) sont empilées sur #22. Les vérifications
 | NH-06 | Couper le réseau après saisie, puis rétablir et relancer la demande | Un seul dossier confirmé côté serveur. Le statut local reste en attente jusqu’à confirmation. Vérifier sur le flux d’inscription, distinct des files pédagogiques #37–38. |
 
 **Preuve par cas** : [SHA] [environnement] [agent fictif et périmètre] [référence anonymisée] [compte de dossiers avant/après] [résultat] [écart]. Le parcours complet dépend du raccordement de l’API au flux d’inscription et de comptes staging fictifs habilités.
+
+## Reprise d’une inscription — complément #56
+
+Sur c3aa7ed, le contrôle API 45316554636 est réussi. Il couvre la dérivation du reçu et de l’empreinte. L’écriture atomique du dossier et du reçu reste à raccorder. Pour qualifier le parcours intégré, relever le nombre de dossiers et de reçus avant et après chaque cas.
+
+| Cas | Action de recette | Résultat attendu ou décision à consigner |
+|---|---|---|
+| NH-07 | Après une réponse perdue, répéter à l’identique une demande fictive dans le même contexte | Un seul dossier, un seul reçu et même référence de suivi lorsque la première demande a été confirmée. |
+| NH-08 | Réutiliser la même référence avec un contenu modifié | Vérifier le traitement métier choisi pour cet écart. Dans tous les cas, exiger une issue explicite, traçable et sans écrasement silencieux. |
+| NH-09 | Rejouer la référence dans le contexte d’un autre groupe ou acteur | Aucun accès au reçu du premier contexte et aucun rapprochement abusif. |
+| NH-10 | Interrompre l’écriture entre les deux opérations du parcours de test | Aucun dossier orphelin et aucun reçu annonçant une réussite sans dossier. Vérifier après reprise que le total final est un dossier. |
+
+Compléter la preuve avec la référence opaque, l’issue affichée après reprise et les décomptes serveur. Utiliser exclusivement des dossiers fictifs. Ces scénarios restent à exécuter.
