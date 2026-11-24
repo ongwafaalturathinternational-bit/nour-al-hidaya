@@ -1,4 +1,20 @@
 import test from "node:test";
+import { prepareReminder } from "../lib/wat-reminders.mjs";
+
+test("un rappel exige la révision courante, une audience et un consentement actifs", () => {
+  const event = {id:"e1", revision:1, status:"published", audience:["u1"], title:"Dossier privé"};
+  const scheduled = {eventId:"e1", revision:1, recipientUid:"u1", channel:"push"};
+  const recipient = {uid:"u1", active:true, optInChannels:["push"]};
+  const request = {event, scheduled, recipient};
+  const reminder = prepareReminder(request);
+  assert.deepEqual(reminder, {key:'["e1",1,"u1","push"]',channel:"push",message:"Vous avez un rappel WAT Connect."});
+  assert.deepEqual(prepareReminder(request), reminder);
+  for (const override of [
+    {event:{...event,status:"cancelled"}}, {event:{...event,revision:2}},
+    {event:{...event,audience:[]}}, {recipient:{...recipient,active:false}},
+    {recipient:{...recipient,optInChannels:[]}}, {recipient:{...recipient,uid:"u2"}}
+  ]) assert.equal(prepareReminder({...request,...override}),null);
+});
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
