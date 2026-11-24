@@ -24,3 +24,16 @@ S’appuie sur ARCHITECTURE-NOTIFICATIONS-UNIFIEES.md. État vérifié dans le c
 | Android | Importer une invitation générique sur le téléphone de recette | Heure, durée et référence correctes ; aucun détail confidentiel exporté |
 
 Premier lot code envisageable : modèle d’événement et export iCalendar local pour les événements habilités, avec données fictives. L’activation des envois nécessite un environnement staging configuré, des appareils et comptes de recette autorisés et la vérification des limites du service. Aucun envoi ni dépense fait dans ce lot.
+
+## Recette technique du reçu de rappel
+
+Exécuter sur un émulateur ou avec un transport simulé. Utiliser une nouvelle référence d’événement pour chaque scénario et un destinataire fictif. Vérifier le nombre d’appels au transport, le résultat retourné et le statut du reçu.
+
+| Scénario | Résultat attendu |
+| --- | --- |
+| Transport accepte et reçu mis à jour | Retour `accepted` et reçu `accepted`. |
+| Transport sans réponse et reçu mis à jour | Retour `uncertain` et reçu `uncertain`. |
+| Transport accepte, mise à jour du reçu impossible | Retour `receipt-unconfirmed` avec `transportStatus: accepted`. La réservation empêche tout second appel au transport. |
+| Même rappel rejoué | Retour `already-reserved`, sans nouvel appel au transport. |
+
+Un reçu `reserved` qui persiste après traitement appelle un rapprochement avec le résultat du transport, si celui-ci est disponible. Garder la réservation pendant l’examen. Une acceptation par le transport indique une prise en charge et la remise au destinataire demande une preuve distincte.
