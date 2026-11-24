@@ -28,3 +28,9 @@ Dix simulations Git à blanc ont produit un arbre sans conflit sur les couples #
 - L’historique Workers Builds accessible contient quatre exécutions réussies, toutes sur `main`. La plus récente concerne `510896a813bb116e4610841ffe2e01506da355c5`, la base de la PR. Aucun build ne correspond à la tête `ba65361b8f7ea72b698802b954aea76eee85e143`. Le déclencheur observé cible `main`. Aucun projet Pages ni build Workers de staging n’apparaît dans ce compte.
 - Inspection Git du SHA exact : la PR ajoute trois fichiers Markdown. Le contenu hors documentation est identique à sa base. Cette arborescence historique ne contient ni `package.json` ni script `build:android:web`. La commande de build actuellement configurée n’a donc pas de script local à exécuter sur ce checkout. Cette incompatibilité est vérifiable dans Git, tandis que le journal de l’échec signalé reste indisponible.
 - Si le signalement réapparaît, comparer le SHA et la branche du journal à ceux du tableau. Pour vérifier le socle applicatif récent, utiliser les workflows staging des branches techniques correspondantes.
+
+## Test combiné Club, déconnexion et synchronisation
+
+La simulation à blanc a combiné le code de #64 (`05a86d76d218a7e8ae12105ae62121deac19349d`), #39 (`97bbb8ad89533419cd57a7d6c582d1f2e0d36726`) et #40 (`88e4a821adeb388f5a13f94b42534a805ad5c804`). Le checkout local de #64 comprend aussi un point de suivi documentaire local. Les deux simulations successives ont produit l’arbre `5de518ef126f0e58beeec2f44317d6c6a17036c5` sans conflit.
+
+Les 128 tests Node hors émulateur ont réussi sur une extraction de cet arbre. Ils couvrent notamment les files Nour, la déconnexion Firebase, la session de candidature Club, le shell PWA et la syntaxe. L’émulateur Firestore sur l’arbre combiné, l’APK combiné et la recette avec des comptes de staging restent à valider. Aucune branche source n’a été modifiée.
