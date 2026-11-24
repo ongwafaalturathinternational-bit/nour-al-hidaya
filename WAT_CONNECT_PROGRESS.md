@@ -181,3 +181,6 @@ PR #54, branche codex/nour-perimetres-registre. Les 120 tests API et les contrô
 
 ## Reprise frontière HTTP des demandes d’inscription
 Branche codex/nour-inscription-demande, sur #54 (3d4d603, CI API verte). Le lecteur serveur accepte un objet JSON UTF-8 et borne le flux à 16 Kio par défaut même sans taille déclarée fiable. Suite API : 122 tests locaux. Le lecteur ne vérifie pas encore les champs métier et n’est relié à aucune route. Champs indispensables, protection anti-abus, écriture atomique et recette staging restent à traiter. Le filtre CI couvre les PR API empilées sur les branches codex/nour-*.
+
+## Reprise des demandes Nour par identifiant d’opération
+Branche codex/nour-idempotence-demande sur #55 (61bb8ea, CI API verte). Le serveur dérive une clé de reçu par contexte et UUID, puis une empreinte HMAC de la charge validée. Une répétition de la même demande reproduit les deux valeurs; un contenu différent sous le même UUID change l’empreinte. 124 tests API locaux. Cette étape ne définit aucune unicité métier. Il reste à rattacher ces valeurs à une écriture atomique, définir la durée de conservation et garantir la stabilité ou la lecture des anciennes clés durant toute la fenêtre de reprise. Aucun secret réel utilisé et aucune route ouverte.
