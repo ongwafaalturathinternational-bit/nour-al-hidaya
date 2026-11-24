@@ -52,3 +52,11 @@ test("le build conserve un artefact web après vérification de Firebase staging
   assert.ok(verification >= 0 && artifact > verification && sync > artifact);
   assert.match(workflow, /name: wat-connect-web-staging\s+path: web-dist\/\s+if-no-files-found: error/);
 });
+
+test("le workflow APK restaure le cache Gradle après génération du projet", () => {
+  const generation = workflow.indexOf("npx cap add android");
+  const cache = workflow.indexOf("gradle/actions/setup-gradle@");
+  const build = workflow.indexOf("assembleDebug");
+  assert.ok(generation >= 0 && cache > generation && build > cache);
+  assert.match(workflow, /gradle\/actions\/setup-gradle@[a-f0-9]{40}[^\n]*\s+with:\s+cache-read-only: false/);
+});
