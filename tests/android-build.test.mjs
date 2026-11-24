@@ -72,3 +72,12 @@ test("toute ressource du paquet Capacitor déclenche le build APK", () => {
     assert.ok(watchedPaths.has(file), "ressource Android non surveillée : " + file);
   }
 });
+
+test("le workflow Cloudflare impose Firebase staging avant publication", () => {
+  const preview = fs.readFileSync(".github/workflows/cloudflare-staging-preview.yml", "utf8");
+  const build = preview.match(/- name: Construire les ressources web[\s\S]*?(?=\n      - name:)/)?.[0];
+  assert.ok(build);
+  assert.match(build, /env:\s+WAT_FIREBASE_ENV: staging\s+run:/);
+  assert.match(build, /npm run build:android:web\s+node --check web-dist\/firebase-init\.js\s+grep -Fxq 'window\.WAT_FIREBASE_ENV = "staging";' web-dist\/firebase-init\.js/);
+  assert.ok(preview.indexOf("wrangler@4 deploy") > preview.indexOf(build));
+});
