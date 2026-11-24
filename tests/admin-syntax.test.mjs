@@ -44,3 +44,27 @@ test("les registres Annuaire et Club conservent les clés des documents Firestor
     assert.deepEqual(collectionsRead, collections);
   }
 });
+
+test("l’Annuaire bloque une seconde modification de la même fiche pendant l’écriture", async () => {
+  const html = readFileSync(new URL("../administration.html", import.meta.url), "utf8");
+  const start = html.indexOf("const pendingMemberStatuses");
+  const end = html.indexOf("function clearPrivateView", start);
+  assert.ok(start >= 0 && end > start);
+  const pending = [];
+  const db = { collection: () => ({ doc: id => ({ update: () => new Promise(resolve => pending.push({ id, resolve })) }) }) };
+  const change = vm.runInNewContext(html.slice(start, end) + "\nchangeStatus", {
+    authGeneration: 1, currentUser: { uid: "staff" }, canManage: true, isCurrentStaffSession: () => true,
+    WATFirebase: { db }, firebase: { firestore: { FieldValue: { serverTimestamp: () => 0 } } },
+    loadMembers: async () => {}, say() {},
+  });
+  const first = change("member-a", "inactif");
+  await change("member-a", "inactif");
+  const other = change("member-b", "actif");
+  assert.deepEqual(pending.map(entry => entry.id), ["member-a", "member-b"]);
+  pending.forEach(entry => entry.resolve());
+  await Promise.all([first, other]);
+  const retry = change("member-a", "actif");
+  assert.equal(pending.length, 3);
+  pending[2].resolve();
+  await retry;
+});
