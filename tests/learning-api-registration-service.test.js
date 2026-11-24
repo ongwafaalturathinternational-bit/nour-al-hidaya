@@ -122,6 +122,36 @@ test("agent registration checks both perimeters and uses the server group period
   assert.equal(writes, undefined);
   options.firestore.getDocument = getDocument;
 
+  // The original transaction cannot see a receipt written after its snapshot.
+  const firestore = options.firestore;
+  const runTransaction = firestore.runRegistrationTransaction;
+  let storedReceipt, writesAfterLostResponse = 0;
+  firestore.runRegistrationTransaction = async callback => {
+    const snapshotReceipt = storedReceipt;
+    return callback({
+      async getDocument(collection, id) {
+        if (collection === "learningRegistrationReceipts" && snapshotReceipt?.id === id) {
+          return doc(snapshotReceipt.fields);
+        }
+        return firestore.getDocument(collection, id);
+      },
+      async commitDocuments(batch) {
+        writesAfterLostResponse++;
+        storedReceipt = batch.find(write => write.collection === "learningRegistrationReceipts");
+        throw Error("commit response lost");
+      },
+    });
+  };
+  const recoveryInput = { ...input, operationId: crypto.randomUUID() };
+  const recoveryRequest = () => routeRequest("agent", JSON.stringify(recoveryInput));
+  const lostResponse = await worker.fetch(recoveryRequest());
+  assert.equal(lostResponse.status, 503);
+  const recovered = await worker.fetch(recoveryRequest());
+  assert.equal(recovered.status, 200);
+  assert.deepEqual(await recovered.json(), { enrollmentId: storedReceipt.fields.enrollmentId, status: "pending" });
+  assert.equal(writesAfterLostResponse, 1);
+  firestore.runRegistrationTransaction = runTransaction;
+
   let attempts=0, commits=0;
   options.firestore.runRegistrationTransaction=function(callback){attempts++;return callback(this)};
   options.firestore.commitDocuments=async()=>{
