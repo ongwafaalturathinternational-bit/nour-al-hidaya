@@ -69,3 +69,17 @@ test("la génération Android produit une véritable icône de lanceur", () => {
   assert.match(build, /npx @capacitor\/assets generate --android/);
   assert.equal(capacitor.appName, "WAT Connect");
 });
+
+test("le sélecteur Nour annonce la langue et l’état actif de chaque bouton", () => {
+  const html = fs.readFileSync("nour-al-hidaya.html", "utf8");
+  const source = html.match(/^function langBar\(\).*$/m)?.[0];
+  assert.ok(source);
+  const render = new Function("S", source + "\nreturn langBar();");
+  for (const lang of ["fr", "en", "ar"]) {
+    const output = render({ set: { lang } });
+    assert.equal((output.match(/aria-pressed="true"/g) || []).length, 1);
+    for (const code of ["fr", "en", "ar"]) {
+      assert.match(output, new RegExp(`data-v="${code}"[^>]* lang="${code}" aria-pressed="${lang === code}"`));
+    }
+  }
+});
