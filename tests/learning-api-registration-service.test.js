@@ -53,7 +53,8 @@ test("agent registration checks both perimeters and uses the server group period
     authorizeStaff:async (_request,_config,scope)=>scopes.includes(scope)?
       {ok:true,principal:{uid:"agent"}}:{ok:false,status:403,error:"scope_denied"},
     resolveBeneficiary:async()=>({beneficiaryId:"b",enrollmentId:"source",groupId:"source-group",programId:"p",structureId:"s"}),
-    firestore:{async getDocument(collection){if(documents[collection])return documents[collection];throw Error("firestore_document_not_found")},
+    firestore:{runRegistrationTransaction(callback){return callback(this)},
+      async getDocument(collection){if(documents[collection])return documents[collection];throw Error("firestore_document_not_found")},
       async commitDocuments(batch){writes=batch}}
   };
   const request=new Request("https://example.invalid/agent");

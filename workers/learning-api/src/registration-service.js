@@ -65,6 +65,16 @@ export async function submitAgentRegistration(request, config, input, options = 
       !INPUT_KEYS.every(key => typeof input[key] === "string" && ID.test(input[key]))) {
     return { ok:false,status:400,error:"registration_input_invalid" };
   }
+  if (!options.registrationKey || typeof options.firestore?.runRegistrationTransaction !== "function") return unavailable;
+  try {
+    return await options.firestore.runRegistrationTransaction(firestore =>
+      submitInTransaction(request, config, input, { ...options, firestore }));
+  } catch {
+    return unavailable;
+  }
+}
+
+async function submitInTransaction(request, config, input, options) {
   const source = await authorizeLearningBeneficiary(
     request, config, "learning.beneficiaries.read", input.beneficiaryId,input.sourceEnrollmentId,options
   );
@@ -77,7 +87,6 @@ export async function submitAgentRegistration(request, config, input, options = 
   if (destination.principal.uid !== actorUid) return { ok:false,status:403,error:"registration_actor_changed" };
   const { groupId,programId,structureId,siteId,periodId } = destination.resource;
   if (!periodId) return { ok:false,status:409,error:"registration_group_period_required" };
-  if (!options.registrationKey) return unavailable;
   return persistVerifiedRegistration({
     firestore:options.firestore,key:options.registrationKey,namespace:"agent:"+actorUid,
     operationId:input.operationId,actorUid,

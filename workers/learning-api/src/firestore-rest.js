@@ -115,9 +115,11 @@ export function createFirestoreRestClient(config, options = {}) {
       encodeURIComponent(collection) + "/" + encodeURIComponent(id);
   };
 
-  return Object.freeze({
-    async getDocument(collection, id) {
-      const response = await authorizedRequest(documentUrl(collection, id, true));
+  const operationsUrl = API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents:";
+  const client = Object.freeze({
+    async getDocument(collection, id, transaction) {
+      const url = documentUrl(collection, id, true);
+      const response = await authorizedRequest(transaction ? url + "?transaction=" + encodeURIComponent(transaction) : url);
       return parseResponse(response);
     },
 
@@ -147,12 +149,39 @@ export function createFirestoreRestClient(config, options = {}) {
       return parseResponse(response);
     },
 
-    async commitDocuments(writes) {
+    async runRegistrationTransaction(run) {
+      const { transaction } = await parseResponse(await authorizedRequest(operationsUrl + "beginTransaction", {
+        method: "POST", body: JSON.stringify({ options: { readWrite: {} } })
+      }));
+      if (typeof transaction !== "string" || !transaction) throw new Error("firestore_transaction_invalid");
+      let committed = false;
+      try {
+        return await run({
+          getDocument: (collection,id) => client.getDocument(collection,id,transaction),
+          async commitDocuments(writes) {
+            const result = await client.commitDocuments(writes,transaction);
+            committed = true;
+            return result;
+          }
+        });
+      } finally {
+        if (!committed) {
+          try {
+            await authorizedRequest(operationsUrl + "rollback", {
+              method: "POST", body: JSON.stringify({ transaction })
+            });
+          } catch { /* Preserve the application result, including on transport failure. */ }
+        }
+      }
+    },
+
+    async commitDocuments(writes, transaction) {
       if (!Array.isArray(writes) || writes.length < 2 || writes.length > 10) {
         throw new Error("firestore_commit_writes_invalid");
       }
       const registration = writes.some(write =>
         write?.collection === "learningEnrollments" || write?.collection === "learningRegistrationReceipts");
+      if (transaction && !registration) throw new Error("firestore_transaction_target_invalid");
       const allowed = registration
         ? ["learningEnrollments", "learningRegistrationReceipts", "learningAuditLogs"]
         : ["learningStaffAssignments", "learningAssignmentReceipts", "learningAuditLogs"];
@@ -203,10 +232,11 @@ export function createFirestoreRestClient(config, options = {}) {
         };
       });
       const response = await authorizedRequest(
-        API_ROOT + "/projects/wat-connect-staging/databases/(default)/documents:commit",
-        { method: "POST", body: JSON.stringify({ writes: normalized }) },
+        operationsUrl + "commit",
+        { method: "POST", body: JSON.stringify({ writes: normalized, ...(transaction ? { transaction } : {}) }) },
       );
       return parseResponse(response);
     },
   });
+  return client;
 }
