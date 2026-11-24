@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-test("un changement de session libère les formulaires Programmes et Projets", async () => {
+test("un changement de session libère les formulaires Programmes, Projets et Activités", async () => {
   for (const [file, forms] of [
     ["programmes.html", {programForm:"saveButton"}],
-    ["projets.html", {projectForm:"saveButton", assignmentForm:"assignButton"}]
+    ["projets.html", {projectForm:"saveButton", assignmentForm:"assignButton"}],
+    ["activites.html", {activityForm:"saveActivity", attendanceForm:"saveAttendance"}]
   ]) {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
     const clear = html.match(/function clearPrivateView\(\)\{[^\n]*?\}(?=async function init|\r?\n)/)?.[0];
@@ -20,7 +21,7 @@ test("un changement de session libère les formulaires Programmes et Projets", a
     };
     const context = vm.createContext({$:element, user:{uid:"old"}, canManage:true,
       projects:[], programs:[], volunteers:[], activities:[], scopes:[],
-      canAssign:true, canProjectsRead:true, canActivitiesRead:true, authGeneration:1, isCurrentStaffSession:()=>true});
+      attendanceRecords:[], clubVolunteers:[], linkedProjects:[], canAttendanceRead:true, canAttendanceManage:true, canSelectClubVolunteers:true, canLinkProject:true, canAssign:true, canProjectsRead:true, canActivitiesRead:true, authGeneration:1, isCurrentStaffSession:()=>true});
     for (const [id, button] of Object.entries(forms)) {
       const handler = html.split('$("' + id + '").addEventListener("submit",')[1]?.split(/\r?\n/)[0];
       assert.ok(handler, id);
