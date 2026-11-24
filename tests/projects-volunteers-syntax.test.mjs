@@ -20,7 +20,7 @@ test("un changement de session libère les formulaires des registres", async () 
       });
       return elements.get(id);
     };
-    const context = vm.createContext({$:element, user:{uid:"old"}, currentUser:{uid:"old"}, members:[], records:[], applications:[], canRead:true, canAssignmentsRead:true, editingId:"old", canManage:true,
+    const context = vm.createContext({$:element, user:{uid:"old"}, currentUser:{uid:"old"}, pendingMemberStatuses:new Set(["old"]), members:[], records:[], applications:[], canRead:true, canAssignmentsRead:true, editingId:"old", canManage:true,
       projects:[], programs:[], volunteers:[], activities:[], scopes:[],
       canAssign:true, canProjectsRead:true, canActivitiesRead:true, authGeneration:1, isCurrentStaffSession:()=>true});
     for (const [id, button] of Object.entries(forms)) {

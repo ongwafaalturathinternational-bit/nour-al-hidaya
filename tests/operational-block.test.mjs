@@ -70,8 +70,8 @@ test("la création de fiches membres invalide les sessions administratives obsol
   assert.match(administration, /const actor=currentUser,generation=authGeneration;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
   assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.add\(data\)/);
   assert.match(administration, /finally\{if\(generation===authGeneration\)b\.disabled=false\}/);
-  assert.match(administration, /async function changeStatus\(id,status\)\{const generation=authGeneration,actor=currentUser;if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\)return/);
-  assert.match(administration, /if\(!isCurrentStaffSession\(actor,generation\)\)return;await WATFirebase\.db\.collection\("members"\)\.doc\(id\)\.update/);
+  assert.match(administration, /async function changeStatus\(id, status\)\s*\{\s*const generation=authGeneration, actor=currentUser;\s*if\(!canManage\|\|!isCurrentStaffSession\(actor,generation\)\|\|pendingMemberStatuses\.has\(id\)\)return/);
+  assert.match(administration, /pendingMemberStatuses\.add\(id\);\s*try\s*\{\s*await WATFirebase\.db\.collection\("members"\)\.doc\(id\)\.update[\s\S]*?if\(!isCurrentStaffSession\(actor,generation\)\)return;\s*await loadMembers\(generation\)/);
 });
 
 
