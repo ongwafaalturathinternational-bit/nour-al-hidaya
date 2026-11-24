@@ -26,3 +26,12 @@ Sur c3aa7ed, le contrôle API 45316554636 est réussi. Il couvre la dérivation 
 | NH-10 | Interrompre l’écriture entre les deux opérations du parcours de test | Aucun dossier orphelin et aucun reçu annonçant une réussite sans dossier. Vérifier après reprise que le total final est un dossier. |
 
 Compléter la preuve avec la référence opaque, l’issue affichée après reprise et les décomptes serveur. Utiliser exclusivement des dossiers fictifs. Ces scénarios restent à exécuter.
+
+## Qualification de la route agent — #61 et #62
+
+#61 raccorde le service via une configuration serveur staging explicite. Les routes publiques et le Worker par défaut restent fermés. #62 rapporte 128 tests locaux simulés, dont le rejeu HTTP à identifiant identique. L’activation et la recette dans Firebase staging ne sont pas établies par ces preuves.
+
+- Avant NH-07, relever la PR, le SHA, le projet Firebase autorisé, le profil agent fictif et les décomptes initiaux. Exécuter deux demandes identiques avec la même référence et comparer la référence renvoyée, le dossier, le reçu et la trace d’audit.
+- Ajouter NH-11 : une référence d’opération invalide est refusée avant transaction. Les décomptes dossier et reçu restent identiques. Vérifier que le message ne divulgue pas le contenu de la demande.
+- Ajouter NH-12 : retirer l’affectation ou changer la période pendant une reprise. Vérifier le refus selon le périmètre en vigueur et l’absence de nouvelle inscription.
+- Contrôle pédagogique distinct, lié à #63 : provoquer un échec de retrait de file locale après confirmation d’un envoi fictif. Vérifier que l’entrée demeure à reprendre et que l’interface ne la compte pas comme terminée. Reprendre puis contrôler l’état local et distant. Les 8 tests ciblés sont rapportés par la PR; la recette sur appareil reste à exécuter.
