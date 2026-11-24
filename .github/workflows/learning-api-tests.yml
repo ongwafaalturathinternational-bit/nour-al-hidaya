@@ -53,3 +53,44 @@ jobs:
         env:
           WRANGLER_SEND_METRICS: "false"
         run: npx --yes wrangler@4.165.0 deploy --dry-run --config workers/learning-api/wrangler.jsonc --outdir "$RUNNER_TEMP/nh1-worker"
+
+      - name: Smoke-test the compiled Worker without remote services
+        run: |
+          cp "$RUNNER_TEMP/nh1-worker/index.js" "$RUNNER_TEMP/nh1-worker/index.mjs"
+          node --input-type=module - "$RUNNER_TEMP/nh1-worker/index.mjs" <<'NODE'
+          import assert from "node:assert/strict";
+          import { pathToFileURL } from "node:url";
+
+          const { default: worker } = await import(pathToFileURL(process.argv[2]).href);
+          const env = {
+            WAT_ENV: "staging",
+            FIREBASE_PROJECT_ID: "wat-connect-staging",
+            WAT_ENABLE_AGENT_REGISTRATION: "false",
+          };
+          globalThis.fetch = () => assert.fail("Closed Worker attempted an upstream request");
+          const base = "https://worker.invalid";
+          const health = await worker.fetch(new Request(base + "/health"), env);
+          assert.equal(health.status, 200);
+          assert.equal((await health.json()).status, "not-configured");
+          const agent = await worker.fetch(new Request(base + "/api/learning/registrations/agent", {
+            method: "POST",
+          }), env);
+          assert.equal(agent.status, 503);
+          assert.equal((await agent.json()).error, "service_not_configured");
+
+          const enabled = {
+            ...env,
+            WAT_ENABLE_AGENT_REGISTRATION: "true",
+            FIREBASE_CLIENT_EMAIL: "fixture@wat-connect-staging.iam.gserviceaccount.com",
+            FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nTEST_ONLY\n-----END PRIVATE KEY-----",
+            TURNSTILE_SECRET_KEY: "test-only-placeholder",
+            WAT_REGISTRATION_HMAC_HEX: "ab".repeat(32),
+          };
+          const activeHealth = await worker.fetch(new Request(base + "/health"), enabled);
+          assert.equal((await activeHealth.json()).acceptsAgentRegistrations, true);
+          const unsigned = await worker.fetch(new Request(base + "/api/learning/registrations/agent", {
+            method: "POST",
+          }), enabled);
+          assert.equal(unsigned.status, 401);
+          assert.equal(unsigned.headers.get("www-authenticate"), "Bearer");
+          NODE
