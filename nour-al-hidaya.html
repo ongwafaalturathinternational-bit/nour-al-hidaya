@@ -1505,6 +1505,8 @@ async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
  });
 }
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
+ if(!isCurrentFirebaseSession(uid,generation))return false;
+ readLearningQueue(uid).forEach(item=>applyLearningRecord(uid,item.data,true));
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
  if(!isCurrentFirebaseSession(uid,generation))return false;
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
