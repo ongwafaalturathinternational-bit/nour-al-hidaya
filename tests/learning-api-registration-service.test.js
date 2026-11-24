@@ -138,6 +138,30 @@ test("agent registration checks both perimeters and uses the server group period
   options.firestore.commitDocuments=async()=>{throw Error("firestore_document_conflict")};
   assert.equal((await submitAgentRegistration(request,{},input,options)).error,"registration_transaction_conflict");
   assert.equal(attempts,2);
+
+  // The real staff policy must re-read the account after a transaction conflict.
+  let tokenChecks = 0, accountReads = 0, disabled = false;
+  delete options.authorizeStaff;
+  options.verifyToken = async () => {
+    tokenChecks++;
+    return { uid: "agent", emailVerified: true, claims: { auth_time: 100 } };
+  };
+  options.lookupAuthUser = async () => {
+    accountReads++;
+    return { uid: "agent", emailVerified: true, disabled, validSince: 0 };
+  };
+  documents.staffAccess = doc({ active: true, scopes });
+  attempts = 0;
+  options.firestore.commitDocuments = async () => {
+    disabled = true;
+    throw Error("firestore_document_conflict");
+  };
+  const revoked = await worker.fetch(routeRequest("agent"));
+  assert.equal(revoked.status, 403);
+  assert.deepEqual(await revoked.json(), { error: "firebase_staff_account_inactive" });
+  assert.equal(tokenChecks, 1);
+  assert.equal(attempts, 2);
+  assert.equal(accountReads, 3);
 });
 
 test("un jeton Firebase non valide ne déclenche aucune transaction d’inscription agent", async () => {
