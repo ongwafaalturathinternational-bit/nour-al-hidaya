@@ -69,4 +69,21 @@ test("agent registration checks both perimeters and uses the server group period
   assert.equal(writes[0].fields.periodId,"trusted-period");
   assert.equal(writes[0].fields.groupId,"target");
   assert.equal(writes[2].fields.actorUid,"agent");
+
+  let attempts=0, commits=0;
+  options.firestore.runRegistrationTransaction=function(callback){attempts++;return callback(this)};
+  options.firestore.commitDocuments=async()=>{
+    commits++;
+    documents.learningStaffAssignments=doc({active:true,assignments:[{...assignment,groupIds:["source-group"]}]});
+    throw Error("firestore_document_conflict");
+  };
+  assert.equal((await submitAgentRegistration(request,{},input,options)).status,403);
+  assert.equal(attempts,2);
+  assert.equal(commits,1);
+
+  attempts=0;
+  documents.learningStaffAssignments=doc({active:true,assignments:[assignment]});
+  options.firestore.commitDocuments=async()=>{throw Error("firestore_document_conflict")};
+  assert.equal((await submitAgentRegistration(request,{},input,options)).error,"registration_transaction_conflict");
+  assert.equal(attempts,2);
 });

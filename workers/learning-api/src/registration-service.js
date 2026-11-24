@@ -4,6 +4,7 @@ import { authorizeLearningBeneficiary, authorizeLearningGroup } from "./learning
 
 const receipts = "learningRegistrationReceipts";
 const unavailable = { ok: false, status: 503, error: "registration_unavailable" };
+const isTransactionConflict = error => error?.message === "firestore_document_conflict";
 
 async function findReceipt(firestore, identity) {
   let document;
@@ -22,7 +23,7 @@ async function findReceipt(firestore, identity) {
 }
 
 // L'appelant serveur résout le bénéficiaire et les références, et contrôle le périmètre.
-export async function persistVerifiedRegistration({ firestore, namespace, operationId, key, enrollment, actorUid }) {
+export async function persistVerifiedRegistration({ firestore, namespace, operationId, key, enrollment, actorUid, retryTransaction = false }) {
   const { beneficiaryId, programId, structureId, periodId, siteId = null, groupId = null } = enrollment ?? {};
   const pending = { beneficiaryId, programId, structureId, periodId, siteId, groupId, status: "pending" };
   if (!validateLearningEnrollment(pending).ok) {
@@ -47,7 +48,8 @@ export async function persistVerifiedRegistration({ firestore, namespace, operat
       })
     ]);
     return { ok: true, enrollmentId, status: "pending" };
-  } catch {
+  } catch (error) {
+    if (retryTransaction && isTransactionConflict(error)) throw error;
     try {
       return await findReceipt(firestore, identity) ?? unavailable;
     } catch {
@@ -66,12 +68,15 @@ export async function submitAgentRegistration(request, config, input, options = 
     return { ok:false,status:400,error:"registration_input_invalid" };
   }
   if (!options.registrationKey || typeof options.firestore?.runRegistrationTransaction !== "function") return unavailable;
-  try {
-    return await options.firestore.runRegistrationTransaction(firestore =>
-      submitInTransaction(request, config, input, { ...options, firestore }));
-  } catch {
-    return unavailable;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await options.firestore.runRegistrationTransaction(firestore =>
+        submitInTransaction(request, config, input, { ...options, firestore }));
+    } catch (error) {
+      if (!isTransactionConflict(error)) return unavailable;
+    }
   }
+  return { ok:false,status:409,error:"registration_transaction_conflict" };
 }
 
 async function submitInTransaction(request, config, input, options) {
@@ -89,7 +94,7 @@ async function submitInTransaction(request, config, input, options) {
   if (!periodId) return { ok:false,status:409,error:"registration_group_period_required" };
   return persistVerifiedRegistration({
     firestore:options.firestore,key:options.registrationKey,namespace:"agent:"+actorUid,
-    operationId:input.operationId,actorUid,
+    operationId:input.operationId,actorUid,retryTransaction:true,
     enrollment:{beneficiaryId:source.resource.beneficiaryId,groupId,programId,structureId,siteId,periodId}
   });
 }

@@ -193,3 +193,6 @@ Branche codex/nour-inscription-agent, sur #57 (5d1f254, CI API réussie). Le ser
 
 ## Transaction des inscriptions par agent
 Branche codex/nour-inscription-transaction sur #58 (`9bc81bf`, CI API réussie). Les lectures Firestore du contrôle agent, des références et du reçu passent par la même transaction que le lot d’écriture; si l’opération n’écrit rien, l’adaptateur demande l’annulation. 128 tests API locaux, transport HTTP simulé. La vérification de l’identité Firebase Auth reste extérieure à la transaction. Aucun accès distant et aucune route activée. La recette staging devra vérifier les écritures refusées si une référence change pendant la décision.
+
+## Reprise après conflit d’inscription
+Branche codex/nour-inscription-conflit, sur #59 (32db82d, CI API réussie). Après un conflit Firestore à l’écriture, une seule nouvelle transaction revalide les droits et les références. Le test simule un retrait du droit entre les tentatives : aucun second commit n’est lancé. Deux conflits successifs produisent un résultat 409. Suite locale 128 tests. La recette de concurrence sur l’environnement staging et l’ouverture des routes restent à faire.
