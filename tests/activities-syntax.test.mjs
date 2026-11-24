@@ -245,3 +245,15 @@ test("les formulaires Activités et Présences bloquent les doubles soumissions 
     assert.ok(handler.indexOf("await WATFirebase.db.collection") > disable);
   }
 });
+
+test("un rappel incomplet reste inéligible même si les champs absents coïncident", () => {
+  const event = { status: "published", id: "event", revision: 1, audience: ["member"] };
+  const recipient = { uid: "member", active: true, optInChannels: ["push"] };
+  const scheduled = { eventId: "event", recipientUid: "member", revision: 1, channel: "push" };
+  assert.equal(prepareReminder({ event, scheduled }), null);
+  assert.equal(prepareReminder({ event: { ...event, revision: undefined }, recipient,
+    scheduled: { ...scheduled, revision: undefined } }), null);
+  assert.equal(prepareReminder({ event, recipient: { ...recipient, optInChannels: [""] },
+    scheduled: { ...scheduled, channel: "" } }), null);
+  assert.ok(prepareReminder({ event, scheduled, recipient }));
+});
