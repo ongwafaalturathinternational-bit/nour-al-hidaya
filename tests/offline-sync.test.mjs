@@ -252,3 +252,34 @@ test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", 
   assert.equal(state.subs[0].text, "devoir modifié");
   assert.equal(state.subs[0].pending, false);
 });
+
+test("la reprise restaure un devoir local même si la lecture distante échoue", async () => {
+  const state = { subs: [] };
+  const user = { emailVerified: true };
+  const firebase = {
+    ready: true,
+    auth: { currentUser: user },
+    db: {
+      collection() { return this; },
+      doc() { return this; },
+      async get() { throw Error("cache distant indisponible"); }
+    }
+  };
+  const load = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\nloadFirebaseLearning",
+    {
+      S: state,
+      WATFirebase: firebase,
+      localStorage: { getItem: () => JSON.stringify([{
+        recordId: "submission_1",
+        data: { kind: "submission", itemId: "1", value: "test", date: "2026-11-24" }
+      }]) },
+      isCurrentFirebaseSession: () => true,
+      firebaseAuthGeneration: 0
+    }
+  );
+  await assert.rejects(load("learner"), /cache distant indisponible/);
+  assert.equal(state.subs[0].text, "test");
+  assert.equal(state.subs[0].pending, true);
+});
