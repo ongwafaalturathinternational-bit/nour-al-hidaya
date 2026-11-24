@@ -13,3 +13,10 @@ Dernière mise à jour : 24 novembre 2026 UTC. Point de reprise non graphique. L
 **Prochains lots.** Vérifier la CI Activités. Procédure et cas de recette Agenda/notifications dans docs/RECETTE-AGENDA-ET-RAPPELS.md. Poursuivre les cas de recette fonctionnelle des registres et le contrôle des accès, puis les chantiers indépendants agenda, notifications, actions sociales et administration après inventaire de leur état réel. Actualiser ce fichier à chaque lot. Les résultats staging avec comptes fictifs autorisés restent à obtenir pour Club, équipe, purge Firebase et Nour multi-onglets. Le développement Finance conserve la dépendance de validation du lot 8.
 
 **Cadre permanent.** La Présidence conçoit les maquettes. Les anciennes propositions restent des archives. Aucune intégration graphique non validée, fusion, mise en production, dépense ni modification des orientations sans autorisation. Les tâches planifiées reprennent à leur cadence.
+
+## Reprise Annuaire, Club et Nour
+
+- `codex/annuaire-club-continuite`, empilée sur #44 (`49056e3`). L’Annuaire et le registre des bénévoles bloquent une soumission répétée pendant l’écriture et réactivent la commande au changement de session. 122 tests locaux hors émulateur passent.
+- La #45 (`9bc827a`) recoupe le correctif Activités de #44. Les deux brouillons et leurs historiques sont conservés. La suite Annuaire/Club part de #44 et la pile de recette ne doit inclure qu’une variante Activités.
+- Centralisation Nour #22, `c6d0223`. Les 119 tests API passent localement sur une archive du SHA. Les routes d’inscription restent fermées jusqu’à la configuration et à la validation de l’identité serveur, de l’adaptateur Firestore et des contrôles d’accès staging.
+- Prochain lot indépendant : vérifier la reprise des écritures et des rappels locale à partir des procédures de #44. Poursuivre la recette authentifiée avec des comptes de test autorisés quand ils sont disponibles.
