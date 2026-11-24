@@ -283,3 +283,27 @@ test("la reprise restaure un devoir local même si la lecture distante échoue",
   assert.equal(state.subs[0].text, "test");
   assert.equal(state.subs[0].pending, true);
 });
+
+test("la reprise restaure un résultat de quiz avant une lecture distante indisponible", async () => {
+  const state = { done: {} };
+  const db = {
+    collection() { return this; },
+    doc() { return this; },
+    async get() { throw Error("cache distant indisponible"); }
+  };
+  const load = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\nloadFirebaseProgress",
+    {
+      S: state,
+      AVAIL: [1],
+      WATFirebase: { db },
+      localStorage: { getItem: () => JSON.stringify([{ lessonId: "1", score: 2, total: 3 }]) },
+      isCurrentFirebaseSession: () => true,
+      firebaseAuthGeneration: 0
+    }
+  );
+  await assert.rejects(load("learner"), /cache distant indisponible/);
+  assert.equal(state.done.learner[1].s, 2);
+  assert.equal(state.done.learner[1].t, 3);
+});
