@@ -37,3 +37,13 @@ test("l’export refuse les brouillons, les dates invalides et les identifiants 
     {startsAt:"2026-11-26T10:00:00+01:00"}
   ]) assert.throws(() => exportCalendarEvent({...event,...invalid}));
 });
+
+test("le calendrier conserve le libellé générique UTF-8 et omet les données privées", () => {
+  const calendar = exportCalendarEvent({
+    ...event, title: "Réunion privée", location: "Lieu confidentiel", audience: ["profil-fictif"],
+  });
+  const bytes = new TextEncoder().encode(calendar);
+  const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  assert.ok(decoded.split("\r\n").includes("SUMMARY:Événement WAT Connect"));
+  assert.doesNotMatch(decoded, /Réunion privée|Lieu confidentiel|profil-fictif/);
+});
