@@ -44,5 +44,6 @@ jobs:
           node --check workers/learning-api/src/learning-schema.js
           node --check workers/learning-api/src/learning-resource-resolver.js
           node --check workers/learning-api/src/registration-request.js
+          node --check workers/learning-api/src/registration-idempotency.js
       - name: Run NH-1 tests
         run: npm run test:learning-api
