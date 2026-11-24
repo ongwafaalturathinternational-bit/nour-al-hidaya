@@ -25,3 +25,9 @@ Fiche de résultat par cas : [PR / SHA] · [environnement] · [rôle] · [action
 
 ## Reprise
 Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter la filiation et les preuves de CI. En parallèle, préparer la recette Présidence–Secrétariat à partir des modèles #36 et #41, avec un dossier fictif traversant convocation, décision, version du PV et preuve de clôture. Pour une recette avec comptes Firebase staging, utiliser des profils fictifs autorisés.
+
+## Lots documentaires livrés
+
+- PR #50, branche work/suivi-qualite-wat. Arbitrage demandé à Codex dans la [discussion de #45](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/45#issuecomment-7119243219).
+- Dossier fictif Présidence–Secrétariat dans docs/RECETTE-PRESIDENCE-SECRETARIAT.md (commit a2a3c35). Les contrôles d’application restent à exécuter.
+- PR #49 repérée lors du second inventaire. Vérifier avec Codex les preuves de réservation d’un rappel avant de préparer la recette complète, en réutilisant la fiche Agenda.
