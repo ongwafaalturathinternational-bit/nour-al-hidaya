@@ -56,3 +56,5 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Spécifications neutralisées GED, Finance, Achats et Contrats dans docs/EXIGENCES-GED-FINANCE-ACHATS.md (1063f08). Points de départ applicatifs contrôlés : #12 et #69–71 pour Finance; réutilisation des registres #72–75 et de l’Agenda #76–82.
 - Les originaux, l’inventaire nominatif et l’audit détaillé relèvent de l’espace privé. Aucune pièce administrative ou financière n’est rattachée à la PR.
 - Reprise Work : vérifier les nouvelles PR et les versions attestées. Qualifier la recette GED et QR sur documents fictifs; compléter le rapprochement comptable côté privé lorsque journaux, conventions et pièces sont disponibles. L’activation des paramètres officiels dépend de la validation du régime, des mandats et des seuils. Continuer les contrôles indépendants si ces éléments sont en attente.
+
+- Six scénarios de recette GED et authenticité sur documents fictifs préparés dans docs/RECETTE-GED-ET-AUTHENTICITE.md (1f0a82f). À exécuter sur staging.
