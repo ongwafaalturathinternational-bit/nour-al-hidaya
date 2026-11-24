@@ -64,3 +64,10 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Onze documents autonomes, six modèles Word et cinq annexes de travail préparés dans l’espace privé. Contrôle d’export PDF réussi pour les 22 documents.
 - Spécifications neutralisées pour les six circuits documentaires dans docs/SPECIFICATIONS-PROCEDURES-ET-MODELES-WAT.md (5723f48). Le caractère répétable de l’émission, l’accès au document via le QR et la séparation des axes financiers sont spécifiés pour la recette.
 - Reprise : poursuivre la revue du référentiel comptable compte par compte, relever la page et les conditions d’emploi, rapprocher les imputations du catalogue applicatif et confirmer les pouvoirs dans les statuts et le règlement intérieur en vigueur. Les données réelles nécessaires à la détermination du régime restent à documenter par la Trésorerie. Poursuivre en parallèle les recettes fictives et les procédures administratives indépendantes.
+
+## Contrôle d’exhaustivité — lot du 24 novembre 2026
+
+- PR ouvertes examinées jusqu’à #95. Matrice v0.1 dans docs/MATRICE-EXIGENCES-WAT.md (d5ef5a3), couverture initiale de 35 exigences et quatre dossiers de validation préparatoires.
+- Addendum administration, interconnexion et services externes dans docs/ADDENDUM-ADMINISTRATION-WAT.md (3bca4b2). Huit modèles Word distincts préparés en privé, intégrité de l’archive et huit exports PDF vérifiés. Recettes staging à exécuter.
+- Contrôles Finance dans docs/CONTROLES-FINANCE-SYCEBNL-WAT.md (fa81dd8). Revue ciblée du fonds affecté et de la classe 9 dans les références OHADA, rapprochement documentaire des PR #12 et #69–71. Revue exhaustive compte par compte et validation métier à poursuivre.
+- Reprise : vérifier les PR ouvertes et actualiser la matrice après chaque lot. Éclater les lignes composites, compléter la référence au cahier des charges et rapprocher Finance avec le catalogue applicatif. Qualifier les contrôles sur staging dès disponibilité. Compléter les dossiers de validation et la bibliothèque par série. Directive ajoutée à la tâche horaire existante.
