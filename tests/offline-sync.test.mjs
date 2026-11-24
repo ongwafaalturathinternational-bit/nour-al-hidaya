@@ -307,3 +307,35 @@ test("la reprise restaure un résultat de quiz avant une lecture distante indisp
   assert.equal(state.done.learner[1].s, 2);
   assert.equal(state.done.learner[1].t, 3);
 });
+
+test("une lecture distante refusée ne bloque pas l’envoi des files au démarrage en ligne", async () => {
+  const stored = new Map([
+    ["nh_progress_queue_learner", JSON.stringify([{ lessonId: "1", score: 2, total: 3 }])],
+    ["nh_learning_queue_learner", JSON.stringify([{ recordId: "reflection_1",
+      data: { kind: "reflection", itemId: "1", value: "test" } }])]
+  ]);
+  const sent = [];
+  const db = {
+    collection() { return this; },
+    doc() { return this; },
+    async get() { throw Error("lecture indisponible"); },
+    async set(data) { sent.push(data); }
+  };
+  const WATFirebase = { ready: true, auth: { currentUser: { emailVerified: true } }, db };
+  const app = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({loadFirebaseProgress,loadFirebaseLearning})",
+    {
+      S: { done: {}, reflect: {} }, AVAIL: [1],
+      window: { WATFirebase }, WATFirebase, navigator: { onLine: true },
+      localStorage: { getItem: key => stored.get(key), setItem: (key, value) => stored.set(key, value) },
+      firebase: { firestore: { FieldValue: { serverTimestamp() {} } } },
+      isCurrentFirebaseSession: () => true, firebaseAuthGeneration: 0, console
+    }
+  );
+  await assert.rejects(app.loadFirebaseProgress("learner"), /lecture indisponible/);
+  await assert.rejects(app.loadFirebaseLearning("learner"), /lecture indisponible/);
+  assert.equal(sent.length, 2);
+  assert.equal(stored.get("nh_progress_queue_learner"), "[]");
+  assert.equal(stored.get("nh_learning_queue_learner"), "[]");
+});
