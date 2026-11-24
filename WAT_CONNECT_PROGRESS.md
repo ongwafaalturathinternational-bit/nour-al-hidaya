@@ -176,3 +176,5 @@ Les deux contrôles qui étaient encore en cours lors du point précédent sont 
 
 ## Reprise contrôle des affectations
 Le contrôle de lecture valide la période et les doublons de droits de chaque affectation avant toute autorisation. Le service d’écriture et la politique d’accès partagent la même validation de période. La branche codex/nour-perimetres-registre couvre un registre mêlant une affectation autorisée et une affectation mal formée. Les routes publiques restent fermées en attente des prérequis staging.
+
+PR #54, branche codex/nour-perimetres-registre. Les 120 tests API et les contrôles de syntaxe passent localement. Le filtre de CI inclut désormais la branche de centralisation comme cible de PR pour les changements API. Le résultat distant doit être vérifié après publication.
