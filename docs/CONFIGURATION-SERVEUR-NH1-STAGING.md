@@ -1,6 +1,6 @@
 # Préparation de la connexion NH-1 — Cloudflare staging et Firebase
 
-**Statut : préparation du contrat de configuration uniquement.** Aucune connexion à Firebase n'est ouverte et aucune donnée n'est lue ou écrite.
+**Statut : route agent préparée dans la PR #87.** La route reste fermée par défaut. Les contrôles de cette PR utilisent des dépendances simulées et aucune recette Firebase staging réelle n’a été exécutée.
 
 ## Cible strictement autorisée
 
@@ -16,11 +16,13 @@ Le fichier `.firebaserc` utilise `demo-wat-connect` par défaut, réserve l'alia
 Variables non secrètes du Worker staging :
 - `WAT_ENV=staging`
 - `FIREBASE_PROJECT_ID=wat-connect-staging`
+- `WAT_ENABLE_AGENT_REGISTRATION=true` uniquement pour la durée d’une recette staging autorisée.
 
 Secrets à enregistrer uniquement dans le magasin de secrets Cloudflare du Worker staging :
 - `FIREBASE_CLIENT_EMAIL` : adresse de l'identité de service dédiée ;
 - `FIREBASE_PRIVATE_KEY` : clé privée PKCS#8 de cette identité ;
-- `TURNSTILE_SECRET_KEY` : secret de validation anti-robot.
+- `TURNSTILE_SECRET_KEY` : secret anti-robot exigé par le validateur partagé.
+- `WAT_REGISTRATION_HMAC_HEX` : clé dédiée de 32 octets encodée en 64 caractères hexadécimaux. Conserver la même clé pendant toute la fenêtre de rejeu.
 
 Ne jamais mettre une clé privée dans Git, une variable de configuration publique, le navigateur, le dépôt APK ou un message ChatGPT. Ne jamais réutiliser une identité de production dans staging.
 
@@ -37,16 +39,16 @@ La création de l'identité, l'attribution IAM et la génération de la clé res
 - Il vérifie le format de l'adresse de compte de service, de la clé PEM et la présence du secret Turnstile.
 - Il normalise les retours à la ligne PEM échappés.
 - Les diagnostics ne reproduisent jamais les valeurs secrètes.
-- Les routes NH-1 restent fermées en `503`, même si les variables existent : le validateur n'est pas une preuve d'authentification ni une connexion Firestore.
+- La route agent nécessite l’activation explicite et les paramètres valides. La route publique et les routes de traitement restent fermées.
 
-## Travaux techniques restant avant toute activation
+## Recette agent sur données fictives
 
-1. Implémenter l'obtention et le renouvellement OAuth serveur à partir de l'identité de service.
-2. Implémenter l'accès Firestore REST limité aux collections NH-1.
-3. Vérifier cryptographiquement les Firebase ID tokens des agents, puis revérifier leur état actif et leurs scopes côté serveur.
-4. Implémenter la validation Turnstile côté serveur pour les inscriptions publiques.
-5. Ajouter les limites de débit, limites de taille, idempotence, détection de doublons et journal d'audit.
-6. Ajouter les tests d'intégration contre un projet staging isolé et vérifier les règles Firestore.
-7. Faire une revue de sécurité avant d'autoriser les écritures.
+Avant activation, vérifier l’identité dédiée et les autorisations de lecture, de transaction et de création requises dans staging. Préparer un agent avec les périmètres source et destination, un second compte dépourvu d’un périmètre, un bénéficiaire fictif et son inscription source, ainsi qu’un groupe destination actif.
 
-**Aucun déploiement, aucune création IAM, aucune génération de clé, aucun changement de facturation et aucune écriture Firestore ne sont autorisés par cette préparation.**
+1. Activation absente ou configuration hors staging. La route agent doit répondre `503`.
+2. En staging autorisé, effectuer l’inscription avec le premier agent. La réponse doit contenir l’identifiant et l’état `pending`. Contrôler l’inscription, le reçu et l’audit sur données fictives.
+3. Rejouer la même opération avec la même charge et le même agent. Vérifier que l’identifiant est identique et que le nombre d’inscriptions et d’écritures d’audit reste stable.
+4. Refaire l’essai avec le second compte et vérifier le refus sans création de dossier. Après retrait d’une autorisation de test, vérifier également le refus d’une nouvelle demande du premier compte.
+5. Désactiver la route et relever le retour à `503`. Consigner le SHA, les identifiants fictifs et les résultats. Garder les valeurs des secrets et les jetons hors du compte rendu.
+
+Les [contrôles API de la PR #87](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45367285593) ont réussi. La préparation de cette fiche ne modifie aucun projet Firebase ni accès.
