@@ -180,3 +180,23 @@ test("les files Nour isolent les entrées locales illisibles et gardent les él�
   assert.equal(readProgressQueue("learner").length, 0);
   assert.equal(readLearningQueue("learner").length, 0);
 });
+
+test("Nour signale un refus du stockage local pour les deux files", async () => {
+  const messages = [];
+  const queues = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({queueAndSyncProgress,queueAndSyncLearning})",
+    {
+      localStorage: {
+        getItem: () => "[]",
+        setItem: () => { throw Error("quota"); }
+      },
+      toast: message => messages.push(message),
+      console: { error() {} }
+    }
+  );
+  await queues.queueAndSyncProgress("learner", "1", 1, 2);
+  await queues.queueAndSyncLearning("learner", "reflection_1", { value: "test" });
+  assert.equal(messages.length, 2);
+  assert.ok(messages.every(message => /file de synchronisation/.test(message)));
+});
