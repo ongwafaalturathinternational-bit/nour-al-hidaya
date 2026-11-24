@@ -1465,7 +1465,7 @@ async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
   }
  });
  applyPendingProgress(uid);
- await syncPendingProgress(uid);
+ await syncPendingProgress(uid,generation);
  return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- synchronisation des autres données pédagogiques de l'apprenant ---------- */
@@ -1529,7 +1529,7 @@ async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
  const pending=readLearningQueue(uid);
  pending.forEach(item=>applyLearningRecord(uid,item.data,true));
- await syncPendingLearning(uid);
+ await syncPendingLearning(uid,generation);
  return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- authentification Firebase ---------- */
