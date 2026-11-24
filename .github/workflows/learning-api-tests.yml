@@ -8,6 +8,7 @@ on:
     branches:
       - fix/lot8-club-onboarding-and-access
       - feature/nour-central-management-foundation
+      - "codex/nour-*"
     paths:
       - "workers/learning-api/**"
       - "tests/learning-api-*.test.js"
@@ -42,5 +43,6 @@ jobs:
           node --check workers/learning-api/src/learning-audit.js
           node --check workers/learning-api/src/learning-schema.js
           node --check workers/learning-api/src/learning-resource-resolver.js
+          node --check workers/learning-api/src/registration-request.js
       - name: Run NH-1 tests
         run: npm run test:learning-api

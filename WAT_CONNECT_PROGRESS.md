@@ -178,3 +178,6 @@ Les deux contrôles qui étaient encore en cours lors du point précédent sont 
 Le contrôle de lecture valide la période et les doublons de droits de chaque affectation avant toute autorisation. Le service d’écriture et la politique d’accès partagent la même validation de période. La branche codex/nour-perimetres-registre couvre un registre mêlant une affectation autorisée et une affectation mal formée. Les routes publiques restent fermées en attente des prérequis staging.
 
 PR #54, branche codex/nour-perimetres-registre. Les 120 tests API et les contrôles de syntaxe passent localement. Le filtre de CI inclut désormais la branche de centralisation comme cible de PR pour les changements API. Le résultat distant doit être vérifié après publication.
+
+## Reprise frontière HTTP des demandes d’inscription
+Branche codex/nour-inscription-demande, sur #54 (3d4d603, CI API verte). Le lecteur serveur accepte un objet JSON UTF-8 et borne le flux à 16 Kio par défaut même sans taille déclarée fiable. Suite API : 122 tests locaux. Le lecteur ne vérifie pas encore les champs métier et n’est relié à aucune route. Champs indispensables, protection anti-abus, écriture atomique et recette staging restent à traiter. Le filtre CI couvre les PR API empilées sur les branches codex/nour-*.
