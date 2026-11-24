@@ -1439,7 +1439,16 @@ async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
   onError:error=>console.error("Synchronisation progression :",error)
  });
 }
+function applyPendingProgress(uid){
+ S.done[uid]=S.done[uid]||{};
+ readProgressQueue(uid).forEach(p=>{
+  const lessonId=Number(p.lessonId);
+  if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
+ });
+}
 async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
+ if(!isCurrentFirebaseSession(uid,generation))return false;
+ applyPendingProgress(uid);
  const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
  if(!isCurrentFirebaseSession(uid,generation))return false;
  S.done[uid]=S.done[uid]||{};
@@ -1449,11 +1458,7 @@ async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
    S.done[uid][lessonId]={s:p.score,t:p.total};
   }
  });
- // Les résultats encore en attente hors connexion restent prioritaires sur la copie distante.
- readProgressQueue(uid).forEach(p=>{
-  const lessonId=Number(p.lessonId);
-  if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
- });
+ applyPendingProgress(uid);
  await syncPendingProgress(uid);
  return isCurrentFirebaseSession(uid,generation);
 }
