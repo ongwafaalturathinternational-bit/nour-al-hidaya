@@ -200,3 +200,46 @@ test("Nour signale un refus du stockage local pour les deux files", async () => 
   assert.equal(messages.length, 2);
   assert.ok(messages.every(message => /file de synchronisation/.test(message)));
 });
+
+test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", async () => {
+  const stored = new Map();
+  const state = { subs: [] };
+  let confirm;
+  const user = { emailVerified: true };
+  const firebase = {
+    ready: true,
+    auth: { currentUser: user },
+    db: {
+      collection() { return this; },
+      doc() { return this; },
+      set() { return new Promise(resolve => { confirm = resolve; }); }
+    }
+  };
+  const queues = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({queueAndSyncLearning,syncPendingLearning})",
+    {
+      S: state,
+      navigator,
+      localStorage: { getItem: key => stored.get(key), setItem: (key, value) => stored.set(key, value) },
+      window: { WATFirebase: firebase },
+      WATFirebase: firebase,
+      firebase: { firestore: { FieldValue: { serverTimestamp() {} } } },
+      firebaseAuthGeneration: 0,
+      isCurrentFirebaseSession: () => true,
+      render() {},
+      console
+    }
+  );
+
+
+  const data = { kind: "submission", itemId: "1", value: "devoir", date: "2026-11-24" };
+  await queues.queueAndSyncLearning("learner", "submission_1", data);
+  assert.equal(state.subs[0].pending, true);
+  navigator.onLine = true;
+  const flush = queues.syncPendingLearning("learner");
+  assert.equal(state.subs[0].pending, true);
+  confirm();
+  assert.equal(await flush, 1);
+  assert.equal(state.subs[0].pending, false);
+});
