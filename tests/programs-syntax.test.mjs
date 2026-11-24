@@ -26,3 +26,39 @@ test("les fiches programmes relient projets et activités avec des droits indép
   assert.match(html, /Projets rattachés/);
   assert.match(html, /Activités des projets/);
 });
+
+test("le registre utilise les identifiants Firestore pour relier programmes, projets et activités", async () => {
+  const html = readFileSync(new URL("../programmes.html", import.meta.url), "utf8");
+  const load = html.match(/^async function load\(generation=authGeneration\).*$/m)?.[0];
+  const links = html.match(/^function linkedProjects\(p\).*$/m)?.[0];
+  assert.ok(load && links);
+  const records = {
+    programs: ["programme", { id: "ancien-programme" }],
+    projects: ["projet", { id: "ancien-projet", programId: "programme" }],
+    activities: ["activité", { id: "ancienne-activité", projectId: "projet" }],
+  };
+  const results = [];
+  const user = { uid: "staff" };
+  const WATFirebase = {
+    auth: { currentUser: user },
+    db: { collection: name => ({
+      get: async () => {
+        const [id, data] = records[name];
+        return { docs: [{ id, data: () => data }] };
+      },
+    }) },
+  };
+  const read = vm.runInNewContext(`
+    let authGeneration = 1, canProjectsRead = true, canActivitiesRead = true;
+    let programs, projects, activities;
+    ${links}
+    ${load}
+    function render() {
+      const program = programs[0];
+      results.push(program.id, linkedProjects(program)[0]?.id, linkedActivities(program)[0]?.id);
+    }
+    load
+  `, { user, WATFirebase, results });
+  await read();
+  assert.deepEqual(results, ["programme", "projet", "activité"]);
+});
