@@ -1,5 +1,5 @@
 import test from "node:test";
-import { distributeReminder, prepareReminder, reserveReminder } from "../lib/wat-reminders.mjs";
+import { distributeReminder, prepareReminder, reconcileReminder, reserveReminder } from "../lib/wat-reminders.mjs";
 
 test("un rappel exige la révision courante, une audience et un consentement actifs", () => {
   const event = {id:"e1", revision:1, status:"published", audience:["u1"], title:"Dossier privé"};
@@ -27,7 +27,8 @@ test("la distribution conserve un résultat incertain sans réexpédier", async 
     ]);
     const db = {runTransaction:callback=>callback({
       get:async ref=>({id:ref.id,exists:documents.has(ref.id),data:()=>documents.get(ref.id)}),
-      create:(ref,value)=>documents.set(ref.id,value)
+      create:(ref,value)=>documents.set(ref.id,value),
+      update:(ref,value)=>documents.set(ref.id,value)
     })};
     let sent=0;
     const receipts={doc:id=>({id,async update(value){documents.set(id,value)}})};
@@ -45,6 +46,35 @@ test("la distribution conserve un résultat incertain sans réexpédier", async 
     assert.deepEqual(await distributeReminder(input),{status:"already-reserved"});
     assert.equal(sent,1);
   }
+});
+
+test("un rapprochement confirmé ne peut pas être écrasé par la fin tardive de l’envoi", async () => {
+  const key='["event",1,"u1","push"]';
+  const documents=new Map([
+    ["event",{status:"published",revision:1,audience:["u1"]}],
+    ["u1",{active:true,optInChannels:["push"]}]
+  ]);
+  const read=async ref=>({id:ref.id,exists:documents.has(ref.id),data:()=>documents.get(ref.id)});
+  const write=(ref,data)=>documents.set(ref.id,data);
+  const db={runTransaction:callback=>callback({get:read,create:write,update:write})};
+  const receipts={doc:id=>({id,get:()=>read({id})})};
+  let failSend, startSend;
+  const started=new Promise(resolve=>{startSend=resolve});
+  const distribution=distributeReminder({
+    db,receipts,eventRef:{id:"event"},recipientRef:{id:"u1"},
+    scheduled:{eventId:"event",revision:1,recipientUid:"u1",channel:"push"},
+    send:()=>new Promise((_,reject)=>{failSend=reject;startSend()})
+  });
+  await started;
+  const input={db,receipts,key};
+  assert.deepEqual(await reconcileReminder({...input,lookup:async()=>({accepted:false})}),{status:"reserved"});
+  assert.deepEqual(await reconcileReminder({...input,lookup:async({idempotencyKey})=>{
+    assert.equal(idempotencyKey,key);
+    return {accepted:true};
+  }}),{status:"accepted"});
+  failSend(new Error("réponse perdue"));
+  assert.deepEqual(await distribution,{status:"accepted"});
+  assert.deepEqual(await reconcileReminder({...input,lookup:assert.fail}),{status:"accepted"});
 });
 
 test("la réservation relit l’éligibilité et une seule tentative reçoit le rappel", async () => {
