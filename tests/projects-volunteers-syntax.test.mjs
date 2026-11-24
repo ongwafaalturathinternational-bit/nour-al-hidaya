@@ -258,3 +258,41 @@ test("les mutations activités et présences restent liées à la session initia
   assert.match(html, /if\(generation===authGeneration\)\$\("saveAttendance"\)\.disabled=false/);
   assert.match(html, /expectedGeneration===authGeneration/);
 });
+
+test("les affectations utilisent les identifiants Firestore des projets et bénévoles", async () => {
+  const html = readFileSync(new URL("../projets.html", import.meta.url), "utf8");
+  const source = html.match(/^async function load\(generation=authGeneration\).*$/m)?.[0];
+  assert.ok(source);
+  const selectors = Object.fromEntries(["volunteerId", "programId", "assignmentProject"].map(id => [id, {
+    options: [],
+    replaceChildren(...options) { this.options = options; },
+    append(option) { this.options.push(option); },
+  }]));
+  const records = {
+    projects: ["projet", { id: "ancien-projet", name: "Projet" }],
+    programs: ["programme", { id: "ancien-programme", name: "Programme" }],
+    activities: ["activité", { id: "ancienne-activité" }],
+    volunteers: ["bénévole", { id: "ancien-bénévole", fullName: "Bénévole", status: "actif" }],
+  };
+  const db = { collection: name => ({ get: async () => {
+    const [id, data] = records[name];
+    return { docs: [{ id, data: () => data }] };
+  } }) };
+  const load = vm.runInNewContext(`
+    let projects, programs, activities, volunteers;
+    const authGeneration = 1, user = {}, canActivitiesRead = true, canAssign = true;
+    const scopes = ["programs.read"], WATFirebase = { db };
+    const isCurrentStaffSession = () => true;
+    function loadAssignments() {}
+    function render() { assert.equal(activities[0].id, "activité"); }
+    ${source}
+    load
+  `, {
+    db, assert, $: id => selectors[id], document: { createElement: () => ({}) },
+    Option: function (label, value) { this.value = value; },
+  });
+  await load();
+  assert.equal(selectors.assignmentProject.options[0].value, "projet");
+  assert.equal(selectors.programId.options[1].value, "programme");
+  assert.equal(selectors.volunteerId.options[0].value, "bénévole");
+});
