@@ -113,3 +113,47 @@ test("le formulaire Club rend la transition invitée et attend le jeton avant de
   assert.deepEqual(order, ["jeton", "lecture"]);
   assert.equal(nodes.get("applicationPanel").hidden, false);
 });
+
+test("le renvoi de vérification Club ignore les demandes simultanées d’un même compte", async () => {
+  const html = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const start = html.indexOf('$("resend").addEventListener');
+  const end = html.indexOf('$("refresh").addEventListener', start);
+  assert.ok(start >= 0 && end > start);
+  let click, resolve, sends = 0;
+  const button = { disabled: false, addEventListener: (_, callback) => { click = callback; } };
+  const user = { emailVerified: false, sendEmailVerification() {
+    sends++;
+    return new Promise(done => { resolve = done; });
+  } };
+  const messages = [];
+  const auth = { currentUser: user };
+  user.uid = "candidate-a";
+  const context = vm.createContext({
+    currentUser: user, authGeneration: 1, WATFirebase: { auth },
+    $: () => button, say: message => messages.push(message),
+  });
+  const guard = html.slice(html.indexOf("function isCurrentSession"), html.indexOf("function clearPrivateView"));
+  vm.runInContext(guard + html.slice(start, end), context);
+  const first = click();
+  assert.equal(button.disabled, true);
+  await click();
+  assert.equal(sends, 1);
+
+  const secondUser = { ...user, uid: "candidate-b" };
+  auth.currentUser = secondUser;
+  context.currentUser = secondUser;
+  context.authGeneration++;
+  button.disabled = false;
+  const finishFirst = resolve;
+  const second = click();
+  assert.equal(sends, 2);
+  finishFirst();
+  await first;
+  assert.equal(button.disabled, true);
+  assert.deepEqual(messages, []);
+
+  resolve();
+  await second;
+  assert.equal(button.disabled, false);
+  assert.equal(messages.length, 1);
+});
