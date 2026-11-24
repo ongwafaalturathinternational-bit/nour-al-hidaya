@@ -139,3 +139,19 @@ test("agent registration checks both perimeters and uses the server group period
   assert.equal((await submitAgentRegistration(request,{},input,options)).error,"registration_transaction_conflict");
   assert.equal(attempts,2);
 });
+
+test("un jeton Firebase non valide ne déclenche aucune transaction d’inscription agent", async () => {
+  const request = new Request("https://example.invalid/agent", {
+    headers: { authorization: "Bearer " + "a".repeat(20) },
+  });
+  let transactions = 0;
+  const result = await submitAgentRegistration(request, { firebaseProjectId: "wat-connect-staging" }, {
+    beneficiaryId: "beneficiary", sourceEnrollmentId: "source", groupId: "target",
+    operationId: "a87160d1-1f0a-4d4c-92b0-63e79f5322bc",
+  }, {
+    registrationKey: {},
+    firestore: { runRegistrationTransaction() { transactions++; } },
+  });
+  assert.deepEqual(result, { ok: false, status: 401, error: "authentication_invalid" });
+  assert.equal(transactions, 0);
+});

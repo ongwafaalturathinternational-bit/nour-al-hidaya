@@ -1,3 +1,4 @@
+import { verifyStaffIdentity } from "./staff-auth.js";
 import { validateLearningEnrollment } from "./learning-schema.js";
 import { isRegistrationOperationId, registrationOperation } from "./registration-idempotency.js";
 import { authorizeLearningBeneficiary, authorizeLearningGroup } from "./learning-authorization.js";
@@ -71,6 +72,15 @@ export async function submitAgentRegistration(request, config, input, options = 
     return { ok: false, status: 400, error: "registration_operation_id_invalid" };
   }
   if (!options.registrationKey || typeof options.firestore?.runRegistrationTransaction !== "function") return unavailable;
+  // Keep live account state and scope checks inside each transaction attempt.
+  if (!options.authorizeStaff) {
+    const verified = await verifyStaffIdentity(request, config, {
+      verifyToken: options.verifyToken ?? options.staffOptions?.verifyToken,
+      tokenOptions: options.staffOptions?.tokenOptions,
+    });
+    if (!verified.ok) return verified;
+    options = { ...options, verifyToken: async () => verified.identity };
+  }
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return await options.firestore.runRegistrationTransaction(firestore =>
