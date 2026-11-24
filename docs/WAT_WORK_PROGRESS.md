@@ -43,3 +43,10 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Nour #56 (c3aa7ed), CI API 45316554636 réussie. Quatre cas NH-07 à NH-10 ajoutés au dossier d’admission (3f26707). L’écriture atomique de la demande et de son reçu reste à raccorder par Codex.
 - Dossier Finance chiffré dans docs/RECETTE-FINANCE-CONTROLE-BAILLEURS.md (18e95ce). Résultats calculés sur données fictives, recette staging non exécutée. La dépendance du lot 8 et la validation institutionnelle restent applicables.
 - Reprise : relire les PR ouvertes. Examiner les résultats nouvellement disponibles, puis préparer les circuits de recette Projets et Club à partir des modèles existants. Mode objectif autonome sans exécution planifiée : aucun contrôle d’activation exposé à cette session.
+
+## Reprise horaire — 24 novembre 2026
+
+- Tâche existante de coordination mise à jour, fréquence horaire (fuseau Africa/Porto-Novo). Consigne de vérifier l’absence d’autre exécution Work active et de reprendre depuis ce journal. Aucune nouvelle tâche. La vérification de SHA refuse l’écrasement concurrent du journal; elle ne garantit pas un verrou global.
+- Projet et Club lot 8 : docs/RECETTE-PROJETS-CLUB-LOT8.md (67acae3), six cas prêts sur un assemblage staging à identifier après arbitrage #44/#45.
+- Nour : complément au dossier d’admission (3d36b8f), contrôles #61–62 pour le rejeu et les périmètres, et cas de reprise locale distinct sur #63. Résultats d’application et comptes staging fictifs restent à obtenir.
+- Reprendre en vérifiant les nouvelles PR, le suivi #44/#45 et l’éligibilité du SHA de recette. Continuer les contrôles indépendants si la qualification staging est bloquée.
