@@ -2,13 +2,51 @@ import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, runTransaction, serverTimestamp } from "firebase/firestore";
+import { reserveReminder } from "../lib/wat-reminders.mjs";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-wat-connect",
   firestore: { rules: fs.readFileSync("firestore.rules", "utf8") }
 });
 after(async () => env.cleanup());
+
+test("deux transactions de rappel concurrentes produisent une seule réservation dans Firestore", async () => {
+  const key = encodeURIComponent(JSON.stringify(["agenda-test-event", 1, "agenda-test-user", "push"]));
+  const path = "agendaTestReceipts/" + key;
+  await env.withSecurityRulesDisabled(async context => {
+    const firestore = context.firestore();
+    const eventRef = doc(firestore, "agendaTestEvents", "agenda-test-event");
+    const recipientRef = doc(firestore, "agendaTestRecipients", "agenda-test-user");
+    await setDoc(eventRef, {status:"published",revision:1,audience:["agenda-test-user"]});
+    await setDoc(recipientRef, {active:true,optInChannels:["push"]});
+
+    // Le SDK Web simule create par set après une lecture négative dans la transaction.
+    const db = {
+      runTransaction: callback => runTransaction(firestore, transaction => callback({
+        get: async reference => {
+          const snapshot = await transaction.get(reference);
+          return {id:snapshot.id,exists:snapshot.exists(),data:()=>snapshot.data()};
+        },
+        create: (reference,value) => transaction.set(reference,value)
+      }))
+    };
+    const input = {
+      db,eventRef,recipientRef,receipts:{doc:id=>doc(firestore,"agendaTestReceipts",id)},
+      scheduled:{eventId:eventRef.id,revision:1,recipientUid:recipientRef.id,channel:"push"}
+    };
+    const outcomes = await Promise.all([reserveReminder(input),reserveReminder(input)]);
+    assert.deepEqual(outcomes.map(outcome=>outcome.status).sort(),["already-reserved","reserved"]);
+    assert.deepEqual((await getDoc(doc(firestore,path))).data(),{status:"reserved"});
+
+    await setDoc(recipientRef,{active:true,optInChannels:[]});
+    assert.deepEqual(await reserveReminder(input),{status:"ineligible"});
+  });
+
+  const client = env.authenticatedContext("agenda-test-user",{email_verified:true}).firestore();
+  await assertFails(getDoc(doc(client,path)));
+  await assertFails(setDoc(doc(client,path),{status:"reserved"}));
+});
 
 async function seed(uid, scopes, active = true) {
   await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(), "staffAccess", uid), {
