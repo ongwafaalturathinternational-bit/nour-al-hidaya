@@ -150,3 +150,18 @@ test("le registre Activités efface les formulaires privés au changement de ses
  const html=readFileSync(new URL("../activites.html",import.meta.url),"utf8");
  assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("activityForm"\)\.reset\(\);\$\("attendanceForm"\)\.reset\(\)/);
 });
+
+test("les formulaires Activités et Présences bloquent les doubles soumissions et réinitialisent les boutons", () => {
+  const page = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  const reset = page.slice(page.indexOf("function clearPrivateView"), page.indexOf("async function init(account)"));
+  assert.match(reset, /\$\("saveActivity"\)\.disabled=false/);
+  assert.match(reset, /\$\("saveAttendance"\)\.disabled=true/);
+  for (const [form, button] of [["activityForm", "saveActivity"], ["attendanceForm", "saveAttendance"]]) {
+    const start = page.indexOf('$("' + form + '").addEventListener("submit"');
+    const handler = page.slice(start, page.indexOf("\n", start));
+    const guard = handler.indexOf('if($("' + button + '").disabled)return');
+    const disable = handler.indexOf('$("' + button + '").disabled=true');
+    assert.ok(start >= 0 && guard >= 0 && disable > guard);
+    assert.ok(handler.indexOf("await WATFirebase.db.collection") > disable);
+  }
+});
