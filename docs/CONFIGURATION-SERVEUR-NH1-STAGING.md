@@ -79,3 +79,11 @@ Sur le build de la [PR #92](https://github.com/ongwafaalturathinternational-bit/
 | JSON invalide ou racine qui n’est pas un objet | HTTP 400, `registration_json_invalid` ou `registration_object_required`. |
 
 Aucune de ces requêtes ne doit ouvrir une transaction. Le [workflow API de la PR #92](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45409377820) a réussi. La recette sur un staging autorisé reste à exécuter.
+
+## Reprise après une réponse d’inscription perdue
+
+Le client conserve l’`operationId` de la soumission jusqu’à son résultat définitif. Après une coupure réseau ou un `503`, il renvoie le même identifiant et le même contenu avec le même agent authentifié. Si la première écriture a abouti, la route relit le reçu et renvoie le dossier existant au statut `pending`. Si le compte ou les droits ont changé entre les deux demandes, le serveur vérifie les droits à nouveau avant de rendre le résultat.
+
+En cas de réponse `409 registration_operation_conflict`, interrompre le rejeu et faire vérifier le dossier avant toute nouvelle soumission. Une nouvelle opération n’est créée que pour une nouvelle demande métier confirmée.
+
+Reproduire la perte de réponse avec le transport simulé du dépôt. Le premier appel renvoie `503`, le second renvoie l’identifiant déjà enregistré et le compteur d’écritures reste à un. Sur staging, vérifier le rejeu à l’identique avec une inscription et un agent fictifs. [PR #93](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/93), commit `1965cb6526b3ce302744ebaa594422a2817af584`, [CI API réussie](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45409872329).
