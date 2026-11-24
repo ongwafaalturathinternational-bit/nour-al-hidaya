@@ -157,3 +157,36 @@ test("le renvoi de vérification Club ignore les demandes simultanées d’un m�
   assert.equal(button.disabled, false);
   assert.equal(messages.length, 1);
 });
+
+test("le Club sérialise l’actualisation et permet une nouvelle tentative après un échec", async () => {
+  const html = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const source = html.match(/^\$\("refresh"\)\.addEventListener[\s\S]*?^\}\);/m)?.[0];
+  assert.ok(source);
+  const guard = html.slice(html.indexOf("function isCurrentSession"), html.indexOf("function clearPrivateView"));
+  let click, reject, reloads = 0;
+  const button = { disabled: false, addEventListener: (_, callback) => { click = callback; } };
+  const user = { uid: "candidate", emailVerified: false, reload() {
+    reloads++;
+    if (reloads === 1) return new Promise((_, fail) => { reject = fail; });
+    this.emailVerified = true;
+    return Promise.resolve();
+  } };
+  const updates = [], messages = [];
+  vm.runInNewContext(guard + source, {
+    WATFirebase: { auth: { currentUser: user } }, currentUser: user, authGeneration: 1,
+    $: () => button, updateAccount: account => updates.push(account.emailVerified),
+    say: (_, level) => messages.push(level),
+  });
+  const first = click();
+  assert.equal(button.disabled, true);
+  await click();
+  assert.equal(reloads, 1);
+  reject(Error("indisponible"));
+  await first;
+  assert.deepEqual(messages, ["error"]);
+  assert.equal(button.disabled, false);
+  await click();
+  assert.deepEqual(updates, [true]);
+  await click();
+  assert.equal(reloads, 2);
+});
