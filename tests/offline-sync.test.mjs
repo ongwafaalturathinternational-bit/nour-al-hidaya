@@ -205,6 +205,7 @@ test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", 
   const stored = new Map();
   const state = { subs: [] };
   let confirm;
+  const navigator = { onLine: false };
   const user = { emailVerified: true };
   const firebase = {
     ready: true,
@@ -231,7 +232,6 @@ test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", 
       console
     }
   );
-
 
   const data = { kind: "submission", itemId: "1", value: "devoir", date: "2026-11-24" };
   await queues.queueAndSyncLearning("learner", "submission_1", data);
