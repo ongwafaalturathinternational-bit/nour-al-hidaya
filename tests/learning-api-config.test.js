@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readServerConfig } from "../workers/learning-api/src/config.js";
@@ -63,4 +64,21 @@ test("configuration errors never include secret values", () => {
   const diagnostic = result.errors.join(" ");
   assert.equal(diagnostic.includes("private-secret-value"), false);
   assert.equal(diagnostic.includes("turnstile-secret-value"), false);
+});
+
+test("the isolated Wrangler entry point stays closed without a public route", () => {
+  const directory = new URL("../workers/learning-api/", import.meta.url);
+  const config = JSON.parse(readFileSync(new URL("wrangler.jsonc", directory), "utf8"));
+  assert.equal(config.name, "wat-connect-learning-api-staging");
+  assert.equal(config.main, "src/index.js");
+  assert.doesNotThrow(() => readFileSync(new URL(config.main, directory)));
+  assert.equal(config.workers_dev, false);
+  assert.equal(config.preview_urls, false);
+  assert.equal(config.routes, undefined);
+  assert.equal(config.route, undefined);
+  assert.deepEqual(config.vars, {
+    WAT_ENV: "staging",
+    FIREBASE_PROJECT_ID: "wat-connect-staging",
+    WAT_ENABLE_AGENT_REGISTRATION: "false",
+  });
 });
