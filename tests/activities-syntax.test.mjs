@@ -1,5 +1,5 @@
 import test from "node:test";
-import { prepareReminder } from "../lib/wat-reminders.mjs";
+import { prepareReminder, reserveReminder } from "../lib/wat-reminders.mjs";
 
 test("un rappel exige la révision courante, une audience et un consentement actifs", () => {
   const event = {id:"e1", revision:1, status:"published", audience:["u1"], title:"Dossier privé"};
@@ -18,6 +18,42 @@ test("un rappel exige la révision courante, une audience et un consentement act
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+
+test("la réservation relit l’éligibilité et une seule tentative reçoit le rappel", async () => {
+  const eventRef = "event";
+  const recipientRef = "recipient";
+  const records = new Map([
+    [eventRef, {id:"e1", revision:1, status:"published", audience:["u1"]}],
+    [recipientRef, {id:"u1", active:true, optInChannels:["push"]}]
+  ]);
+  let pending = Promise.resolve();
+  const db = {
+    runTransaction(run) {
+      const execution = pending.then(() => run({
+        async get(ref) {
+          return {exists:records.has(ref), id:records.get(ref)?.id, data:()=>records.get(ref)};
+        },
+        create(ref, value) {
+          assert.equal(records.has(ref),false);
+          records.set(ref,value);
+        }
+      }));
+      pending = execution;
+      return execution;
+    }
+  };
+  const input = {db,eventRef,recipientRef,receipts:{doc:id=>"receipts/"+id},
+    scheduled:{eventId:"e1", revision:1, recipientUid:"u1", channel:"push"}};
+  const results = await Promise.all([reserveReminder(input), reserveReminder(input)]);
+  assert.deepEqual(results.map(result=>result.status),["reserved","already-reserved"]);
+  assert.equal(results[0].reminder.message,"Vous avez un rappel WAT Connect.");
+  assert.equal(records.size,3);
+  records.set(eventRef, {...records.get(eventRef), revision:2});
+  assert.deepEqual(await reserveReminder(input),{status:"ineligible"});
+  records.set(recipientRef, {...records.get(recipientRef), optInChannels:[]});
+  assert.deepEqual(await reserveReminder({...input, scheduled:{...input.scheduled, revision:2}}),{status:"ineligible"});
+  assert.equal(records.size,3);
+});
 
 test("le module des activités contient un JavaScript valide", () => {
   const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
