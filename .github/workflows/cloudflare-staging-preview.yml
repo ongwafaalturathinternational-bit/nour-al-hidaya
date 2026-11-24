@@ -36,6 +36,15 @@ jobs:
           node --check web-dist/firebase-init.js
           grep -Fxq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
 
+      - name: Conserver le paquet web staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: wat-connect-cloudflare-web-staging
+          path: web-dist/
+          if-no-files-found: error
+          retention-days: 14
+
+
   deploy-staging:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/lot8-club-onboarding-and-access'
     runs-on: ubuntu-latest
