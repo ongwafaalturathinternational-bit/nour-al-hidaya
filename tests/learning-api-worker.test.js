@@ -125,4 +125,16 @@ test("le point d’entrée Worker exige une activation explicite et les paramèt
   const response = await worker.fetch(authenticatedShape, env);
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "registration_json_invalid" });
+
+  const rejected = await worker.fetch(new Request(request().url, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer " + "a".repeat(20) },
+    body: JSON.stringify({
+      beneficiaryId: "beneficiary", sourceEnrollmentId: "source", groupId: "target",
+      operationId: "a87160d1-1f0a-4d4c-92b0-63e79f5322bc",
+    }),
+  }), env);
+  assert.equal(rejected.status, 401);
+  assert.equal(rejected.headers.get("www-authenticate"), "Bearer");
+  assert.deepEqual(await rejected.json(), { error: "authentication_invalid" });
 });
