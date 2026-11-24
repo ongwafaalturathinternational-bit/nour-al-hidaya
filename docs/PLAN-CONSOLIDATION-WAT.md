@@ -50,3 +50,16 @@ Sur le même téléphone de test, lier un programme, un projet et une activité 
 La [PR #80](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/80), au commit `1beb4e55462db12f09941cff5fcfe4b277581e38`, étend #75 à la pile Agenda. Les deux suites de tests Activités ont été conservées après résolution du conflit. L’assemblage a passé 142 tests locaux hors émulateur, les [contrôles Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45361788486) et le build Android. Son [APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45361788521/artifacts/14904124527) est disponible jusqu’au 2026-12-08T09:06:49Z.
 
 Pour le téléphone, reprendre le scénario du build combiné #75 avec cet APK. Pour l’Agenda, exécuter séparément l’export iCalendar et le suivi des reçus sur données et transport simulés. Les fonctions d’export et de distribution sont validées par les tests du dépôt et leur raccordement à un parcours utilisateur ou à un transport actif reste à réaliser.
+
+## Build de référence pour la recette mobile
+
+La [PR #86](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/86) rassemble le socle de #80, les traductions et l’accessibilité de Nour (#82 et #83), ainsi que les correctifs Club (#84 à #86). Le commit `7b2fb1e793da9a7dcf7a192408737ba062dd7e08` a passé 148 tests locaux hors émulateur, les [contrôles Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45366438755) et le build Android. Utiliser les artefacts de ce même SHA, l’[APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45366438765/artifacts/14907595637) et l’[archive web](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45366438765/artifacts/14906258966).
+
+| Parcours | Preuve à relever sur l’appareil de test |
+| --- | --- |
+| Nour, langue et navigation | Sélectionner l’arabe, relancer l’app, vérifier la direction RTL et les libellés d’accès. Changer de langue, vérifier l’annonce de la sélection avec TalkBack et revenir à WAT Connect. |
+| Nour, reprise hors connexion | Sur un compte fictif vérifié, saisir une progression ou une réflexion hors ligne, rétablir le réseau et relire le résultat dans la même session. |
+| Club, candidature | Avec une adresse de test, renvoyer le lien, vérifier l’adresse, actualiser l’état et déposer une seule candidature. Confirmer son statut dans l’espace candidat après réouverture. |
+| WAT, registres et session | Lier les fiches fictives Programme, Projet et Activité, affecter un volontaire et mettre à jour une présence. Après déconnexion, vérifier l’isolation des données entre comptes. |
+
+Consigner le SHA, le modèle de téléphone, la version Android, le rôle du compte fictif, le résultat et les écarts. Les simulations Edge couvrent la navigation et les traitements asynchrones Club. L’appareil physique, TalkBack et les opérations avec Firebase staging restent à vérifier.
