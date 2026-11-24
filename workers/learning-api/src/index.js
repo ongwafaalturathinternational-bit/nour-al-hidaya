@@ -75,7 +75,7 @@ export function createLearningWorker({ agentRegistration } = {}) {
           const result = await submitAgentRegistration(request, agentRegistration.config, decoded.data, agentRegistration.options);
           return result.ok
             ? json({ enrollmentId: result.enrollmentId, status: result.status })
-            : json({ error: result.error }, result.status);
+            : json({ error: result.error }, result.status, result.status === 401 ? { "www-authenticate": "Bearer" } : {});
         }
         return json(NOT_CONFIGURED, 503);
       }
