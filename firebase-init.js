@@ -88,6 +88,23 @@
             return false;
           })
       : Promise.resolve(false);
+    let signOutInFlight;
+    let firestoreTerminated = false;
+    async function performSignOut() {
+      await persistenceReady;
+      if (persistenceEnabled) {
+        if (!firestoreTerminated) {
+          if (!navigator.onLine) throw new Error("Reconnectez-vous pour synchroniser les modifications en attente et effacer les données locales avant la déconnexion.");
+          await db.waitForPendingWrites();
+          await db.terminate();
+          firestoreTerminated = true;
+        }
+        await db.clearPersistence();
+      }
+      await window.firebase.auth().signOut();
+      window.location.assign("index.html");
+    }
+
     window.WATFirebase = {
       ready: true,
       app: app,
@@ -98,15 +115,12 @@
       persistenceReady: persistenceReady,
       get persistenceEnabled() { return persistenceEnabled; },
       get persistenceStatus() { return persistenceStatus; },
-      async signOutSafely() {
-        if (persistenceEnabled) {
-          if (!navigator.onLine) throw new Error("Reconnectez-vous pour synchroniser les modifications en attente et effacer les données locales avant la déconnexion.");
-          await db.waitForPendingWrites();
-          await db.terminate();
-          await db.clearPersistence();
-        }
-        await window.firebase.auth().signOut();
-        window.location.assign("index.html");
+      signOutSafely() {
+        signOutInFlight ??= performSignOut().catch(error => {
+          signOutInFlight = undefined;
+          throw error;
+        });
+        return signOutInFlight;
       }
     };
     persistenceReady.then(() => window.WATRefreshNetworkNotice?.());
