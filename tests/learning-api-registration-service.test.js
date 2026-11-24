@@ -100,6 +100,28 @@ test("agent registration checks both perimeters and uses the server group period
   assert.deepEqual(body, { status: "pending" });
   assert.equal(writes[2].fields.actorUid, "agent");
 
+  const firstTransaction = options.firestore.runRegistrationTransaction;
+  options.firestore.runRegistrationTransaction = () => assert.fail("Invalid operation opened a transaction");
+  const invalid = await worker.fetch(routeRequest("agent", JSON.stringify({
+    ...input, operationId: "invalid",
+  })));
+  assert.equal(invalid.status, 400);
+  assert.deepEqual(await invalid.json(), { error: "registration_operation_id_invalid" });
+  options.firestore.runRegistrationTransaction = firstTransaction;
+
+  const receipt = writes[1];
+  const getDocument = options.firestore.getDocument;
+  options.firestore.getDocument = function (collection, id) {
+    if (collection === receipt.collection && id === receipt.id) return doc(receipt.fields);
+    return getDocument.call(this, collection, id);
+  };
+  writes = undefined;
+  const replay = await worker.fetch(routeRequest("agent"));
+  assert.equal(replay.status, 200);
+  assert.deepEqual(await replay.json(), { enrollmentId, status: "pending" });
+  assert.equal(writes, undefined);
+  options.firestore.getDocument = getDocument;
+
   let attempts=0, commits=0;
   options.firestore.runRegistrationTransaction=function(callback){attempts++;return callback(this)};
   options.firestore.commitDocuments=async()=>{
