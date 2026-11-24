@@ -85,6 +85,28 @@ test("Firestore assignment, idempotency receipt and audit writes commit atomical
   assert.equal(writes[2].update.name, "projects/wat-connect-staging/databases/(default)/documents/learningAuditLogs/event-1");
 });
 
+test("the registration commit requires all three create-only writes in staging", async () => {
+  let request;
+  const client = createFirestoreRestClient(config, {
+    getAccessToken:async()=>token,
+    fetch:async(url,init)=>{
+      request={url,init};
+      return new Response("{}",{status:200});
+    }
+  });
+  const writes=["learningEnrollments","learningRegistrationReceipts","learningAuditLogs"].map(collection=>({
+    collection,id:"test-1",operation:"create",fields:{status:"pending"},precondition:{exists:false}
+  }));
+  await assert.rejects(()=>client.commitDocuments(writes.slice(0,2)),/registration_commit_invalid/);
+  await assert.rejects(()=>client.commitDocuments([{...writes[0],operation:"update"},...writes.slice(1)]),/registration_commit_invalid/);
+  assert.equal(request,undefined);
+  await client.commitDocuments(writes);
+  assert.match(request.url,/projects\/wat-connect-staging\/databases\/\(default\)\/documents:commit$/);
+  const batch=JSON.parse(request.init.body).writes;
+  assert.equal(batch.length,3);
+  assert.ok(batch.every(write=>write.currentDocument.exists===false));
+});
+
 test("Firestore atomic commit refuses audit mutation, missing preconditions and unrelated collections", async () => {
   const client = createFirestoreRestClient(config, {
     getAccessToken: async () => token,

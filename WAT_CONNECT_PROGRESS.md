@@ -184,3 +184,6 @@ Branche codex/nour-inscription-demande, sur #54 (3d4d603, CI API verte). Le lect
 
 ## Reprise des demandes Nour par identifiant d’opération
 Branche codex/nour-idempotence-demande sur #55 (61bb8ea, CI API verte). Le serveur dérive une clé de reçu par contexte et UUID, puis une empreinte HMAC de la charge validée. Une répétition de la même demande reproduit les deux valeurs; un contenu différent sous le même UUID change l’empreinte. 124 tests API locaux. Cette étape ne définit aucune unicité métier. Il reste à rattacher ces valeurs à une écriture atomique, définir la durée de conservation et garantir la stabilité ou la lecture des anciennes clés durant toute la fenêtre de reprise. Aucun secret réel utilisé et aucune route ouverte.
+
+## Reprise de l’écriture atomique Nour
+Branche codex/nour-inscription-atomique sur #56 (c3aa7ed, CI API réussie). Le service interne crée ensemble l’inscription en attente, son reçu et le journal. Une réponse perdue est rapprochée par le reçu existant. 126 tests API locaux. Le bénéficiaire et le périmètre doivent être résolus et autorisés par le futur appelant. La création du nouveau bénéficiaire et le trajet public restent à traiter. Aucun appel distant ni modification des règles.

@@ -151,10 +151,20 @@ export function createFirestoreRestClient(config, options = {}) {
       if (!Array.isArray(writes) || writes.length < 2 || writes.length > 10) {
         throw new Error("firestore_commit_writes_invalid");
       }
+      const registration = writes.some(write =>
+        write?.collection === "learningEnrollments" || write?.collection === "learningRegistrationReceipts");
+      const allowed = registration
+        ? ["learningEnrollments", "learningRegistrationReceipts", "learningAuditLogs"]
+        : ["learningStaffAssignments", "learningAssignmentReceipts", "learningAuditLogs"];
+      if (registration && (writes.length !== allowed.length ||
+          allowed.some(collection => !writes.some(write => write?.collection === collection)) ||
+          writes.some(write => write?.operation !== "create"))) {
+        throw new Error("firestore_registration_commit_invalid");
+      }
       const targets = new Set();
       const normalized = writes.map((write) => {
         if (!write || !["create", "update"].includes(write.operation) ||
-            !["learningStaffAssignments", "learningAssignmentReceipts", "learningAuditLogs"].includes(write.collection)) {
+            !allowed.includes(write.collection)) {
           throw new Error("firestore_commit_target_invalid");
         }
         if (write.collection === "learningAuditLogs" && write.operation !== "create") {
