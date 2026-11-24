@@ -1,3 +1,4 @@
+import { readStaffBearerToken } from "./staff-auth.js";
 import { readServerConfig } from "./config.js";
 import { createFirestoreRestClient } from "./firestore-rest.js";
 import { readRegistrationRequest } from "./registration-request.js";
@@ -66,6 +67,9 @@ export function createLearningWorker({ agentRegistration } = {}) {
         }
 
         if (agentEnabled && url.pathname === "/api/learning/registrations/agent") {
+          if (!readStaffBearerToken(request)) {
+            return json({ error: "authentication_required" }, 401, { "www-authenticate": "Bearer" });
+          }
           const decoded = await readRegistrationRequest(request);
           if (!decoded.ok) return json({ error: decoded.error }, decoded.status);
           const result = await submitAgentRegistration(request, agentRegistration.config, decoded.data, agentRegistration.options);

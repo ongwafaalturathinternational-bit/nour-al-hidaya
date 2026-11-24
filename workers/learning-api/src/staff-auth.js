@@ -19,19 +19,23 @@ function stringArrayField(fields, name) {
   return scopes;
 }
 
+export function readStaffBearerToken(request) {
+  const authorization = request.headers.get("authorization") ?? "";
+  return /^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(authorization)?.[1] ?? null;
+}
+
 export async function authorizeStaffScope(request, config, scope, options = {}) {
   if (typeof scope !== "string" || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,4}$/.test(scope)) {
     throw new Error("staff_scope_invalid");
   }
 
-  const authorization = request.headers.get("authorization") ?? "";
-  const match = /^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(authorization);
-  if (!match) return { ok: false, status: 401, error: "authentication_required" };
+  const token = readStaffBearerToken(request);
+  if (!token) return { ok: false, status: 401, error: "authentication_required" };
 
   let identity;
   try {
     identity = await (options.verifyToken ?? verifyFirebaseIdToken)(
-      match[1], config.firebaseProjectId, options.tokenOptions ?? {},
+      token, config.firebaseProjectId, options.tokenOptions ?? {},
     );
   } catch {
     return { ok: false, status: 401, error: "authentication_invalid" };
