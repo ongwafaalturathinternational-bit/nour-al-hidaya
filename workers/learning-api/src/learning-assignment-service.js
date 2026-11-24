@@ -1,3 +1,4 @@
+import { validAssignmentPeriod } from "./assignment-policy.js";
 import { lookupFirebaseAuthUser } from "./google-auth.js";
 import { authorizeStaffScope } from "./staff-auth.js";
 import { resolveLearningGroup } from "./learning-resource-resolver.js";
@@ -73,19 +74,6 @@ function validRequest(input) {
     typeof input.reason === "string" && input.reason.trim().length >= 8 &&
     input.reason.trim().length <= 500 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(input.reason);
 }
-function validTimestamp(value) {
-  if (value === null) return true;
-  if (typeof value !== "string") return false;
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?Z$/.exec(value);
-  if (!match) return false;
-  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
-  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
-  const hour = Number(hourText), minute = Number(minuteText), second = Number(secondText);
-  if (year < 1 || month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59) return false;
-  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return day >= 1 && day <= daysInMonth[month - 1];
-}
 function validateDraft(draft) {
   const draftFields = new Set([
     "scopeGrants", "structureIds", "siteIds", "groupIds", "programIds", "validFrom", "validUntil",
@@ -115,8 +103,7 @@ function validateDraft(draft) {
   if (draft.groupIds && (!draft.structureIds || !draft.programIds)) {
     return { ok: false, error: "assignment_perimeter_incomplete" };
   }
-  if (!validTimestamp(draft.validFrom) || !validTimestamp(draft.validUntil) ||
-      (draft.validFrom !== null && draft.validUntil !== null && Date.parse(draft.validUntil) <= Date.parse(draft.validFrom))) {
+  if (!validAssignmentPeriod(draft.validFrom, draft.validUntil)) {
     return { ok: false, error: "assignment_dates_invalid" };
   }
   return { ok: true };

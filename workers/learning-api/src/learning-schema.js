@@ -1,3 +1,5 @@
+import { validAssignmentPeriod } from "./assignment-policy.js";
+
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
 const TYPES = new Set(["mosque", "center", "school", "partner_site", "other"]);
 const GROUP_STATUSES = new Set(["active", "paused", "closed"]);
@@ -67,7 +69,8 @@ export function validateLearningAssignmentRecord(value) {
   for (const item of value.assignments) {
     if (!record(item) || !id(item.assignmentId) || seen.has(item.assignmentId) ||
         typeof item.active !== "boolean" || !Array.isArray(item.scopeGrants) ||
-        !item.scopeGrants.length || !item.scopeGrants.every((scope) =>
+      !item.scopeGrants.length || new Set(item.scopeGrants).size !== item.scopeGrants.length ||
+      !validAssignmentPeriod(item.validFrom,item.validUntil) || !item.scopeGrants.every((scope) =>
           typeof scope === "string" && /^learning\.[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){0,3}$/.test(scope))) {
       return { ok: false, error: "assignment_record_invalid" };
     }

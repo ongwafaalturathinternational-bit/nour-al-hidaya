@@ -182,6 +182,20 @@ test("denies a non-array assignment register", async () => {
   assert.equal(result.error, "learning_assignment_invalid");
 });
 
+test("rejects invalid assignment periods and duplicate grants even beside a valid assignment", async () => {
+  for (const override of [
+    {validFrom:"2026-02-30T00:00:00Z"},
+    {validUntil:"2026-10-31T00:00:00Z"},
+    {scopeGrants:["learning.beneficiaries.read","learning.beneficiaries.read"]}
+  ]) {
+    const invalid={...assignment,assignmentId:"invalid-assignment",...override};
+    const assignments={fields:{active:encode(true),assignments:encode([assignment,invalid])}};
+    const result=await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",setup({assignments}));
+    assert.equal(result.ok,false);
+    assert.equal(result.error,"learning_assignment_invalid");
+  }
+});
+
 test("does not accept a group without every currently required canonical link", async () => {
   const incomplete = { fields: { siteId: encode("site-a"), mosqueId: encode("mosque-a") } };
   const result = await authorizeLearningGroup(request, {}, "learning.beneficiaries.read", "group-a",

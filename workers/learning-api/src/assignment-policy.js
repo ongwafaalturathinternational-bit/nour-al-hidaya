@@ -22,6 +22,11 @@ function validTimestamp(value) {
   return day >= 1 && day <= daysInMonth[month - 1];
 }
 
+export function validAssignmentPeriod(from, until) {
+  return validTimestamp(from) && validTimestamp(until) &&
+    (from === null || until === null || Date.parse(from) < Date.parse(until));
+}
+
 /** Pure fail-closed policy check. The resource must come from trusted server-side resolution. */
 export function evaluateLearningAssignment({ assignment, scope, resource, now = new Date() }) {
   if (!assignment || typeof assignment !== "object" || Array.isArray(assignment)) {
@@ -36,7 +41,7 @@ export function evaluateLearningAssignment({ assignment, scope, resource, now = 
       !assignment.scopeGrants.includes(scope)) {
     return { allowed: false, reason: "assignment_scope_denied" };
   }
-  if (!validTimestamp(assignment.validFrom) || !validTimestamp(assignment.validUntil)) {
+  if (!validAssignmentPeriod(assignment.validFrom, assignment.validUntil)) {
     return { allowed: false, reason: "assignment_dates_invalid" };
   }
   const nowMs = now instanceof Date ? now.getTime() : NaN;

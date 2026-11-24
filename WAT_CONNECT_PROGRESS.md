@@ -173,3 +173,6 @@ Les deux contrôles qui étaient encore en cours lors du point précédent sont 
 - Le contrôle NH-1 a été relancé sur le commit code `eb7334b6cc2ebe0b893bb87d37b562a7dc138a4a` : **119/119 tests réussis, 0 échec** (runs API [45065153633](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065153633) et [45065159005](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45065159005)).
 - La vérification inclut les nouveaux cas de scopes malformés, dupliqués et de liste trop longue.
 - Les workflows Firestore Emulator et APK Android du commit documentaire `09fd181a66884c7189c40524af5bad163a21cfb8` étaient encore en cours au moment de la lecture. Ils ne sont pas annoncés comme réussis.
+
+## Reprise contrôle des affectations
+Le contrôle de lecture valide la période et les doublons de droits de chaque affectation avant toute autorisation. Le service d’écriture et la politique d’accès partagent la même validation de période. La branche codex/nour-perimetres-registre couvre un registre mêlant une affectation autorisée et une affectation mal formée. Les routes publiques restent fermées en attente des prérequis staging.
