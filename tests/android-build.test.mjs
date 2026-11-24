@@ -44,3 +44,14 @@ test("la préparation Android embarque la charte graphique facettée de WAT", ()
     assert.ok(css.includes(token), "élément de charte absent : " + token);
   }
 });
+
+test("la prévisualisation Cloudflare construit et vérifie Firebase staging avant publication", () => {
+  const preview = fs.readFileSync(".github/workflows/cloudflare-staging-preview.yml", "utf8");
+  assert.match(preview, /env:\s+WAT_FIREBASE_ENV: staging\s+run: \|\s+npm install[^\n]*\s+npm run build:android:web/);
+  const check = preview.indexOf(`test "$(head -n 1 web-dist/firebase-init.js)" = 'window.WAT_FIREBASE_ENV = "staging";'`);
+  const deploy = preview.indexOf("wrangler@4 deploy --config wrangler.staging.json");
+  assert.ok(check >= 0 && deploy > check);
+  const config = JSON.parse(fs.readFileSync("wrangler.staging.json", "utf8"));
+  assert.equal(config.name, "wat-connect-staging");
+  assert.equal(config.assets.directory, "./web-dist");
+});
