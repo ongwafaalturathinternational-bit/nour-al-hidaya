@@ -1,5 +1,12 @@
 # WAT Connect — rapport de progression
 
+## Nour — rejeu HTTP des inscriptions agent
+
+- Branche codex/nour-rejeu-http, empilée sur la PR #61 (01786feda857ed1c6d249f18b4b86f984a77a009).
+- Identifiant d’opération invalide refusé avant transaction. Le test HTTP confirme qu’un rejeu retourne le même dossier sans nouvelle écriture.
+- Tests API locaux : 128/128, dépendances simulées. Prochaine étape : recette du rejeu et de la révocation des droits avec des comptes Firebase staging autorisés.
+
+
 ## Nour — raccordement HTTP du parcours agent
 
 - Branche : codex/nour-route-agent-staging, basée sur la PR #60 (a127620351263abd48a1b9013c38c3dcc08d3a8e).

@@ -1,5 +1,5 @@
 import { validateLearningEnrollment } from "./learning-schema.js";
-import { registrationOperation } from "./registration-idempotency.js";
+import { isRegistrationOperationId, registrationOperation } from "./registration-idempotency.js";
 import { authorizeLearningBeneficiary, authorizeLearningGroup } from "./learning-authorization.js";
 
 const receipts = "learningRegistrationReceipts";
@@ -66,6 +66,9 @@ export async function submitAgentRegistration(request, config, input, options = 
   if (!input || typeof input !== "object" || Object.keys(input).some(key => !INPUT_KEYS.includes(key)) ||
       !INPUT_KEYS.every(key => typeof input[key] === "string" && ID.test(input[key]))) {
     return { ok:false,status:400,error:"registration_input_invalid" };
+  }
+  if (!isRegistrationOperationId(input.operationId)) {
+    return { ok: false, status: 400, error: "registration_operation_id_invalid" };
   }
   if (!options.registrationKey || typeof options.firestore?.runRegistrationTransaction !== "function") return unavailable;
   for (let attempt = 0; attempt < 2; attempt++) {

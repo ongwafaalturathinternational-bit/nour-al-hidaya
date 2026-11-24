@@ -1,5 +1,9 @@
 const OPERATION_ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 
+export function isRegistrationOperationId(value) {
+  return typeof value === "string" && OPERATION_ID.test(value);
+}
+
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
   if (value !== null && typeof value === "object") {
@@ -16,7 +20,7 @@ async function sign(key, value) {
 
 // Le serveur fournit l’espace de noms, la clé HMAC et la charge JSON déjà validée.
 export async function registrationOperation({ operationId, namespace, payload, key }) {
-  if (typeof operationId !== "string" || !OPERATION_ID.test(operationId)) {
+  if (!isRegistrationOperationId(operationId)) {
     return { ok: false, error: "registration_operation_id_invalid" };
   }
   if (typeof namespace !== "string" || !namespace.trim() || namespace.length > 200) {
