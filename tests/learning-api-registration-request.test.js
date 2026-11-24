@@ -28,3 +28,18 @@ test("counts UTF-8 bytes from the stream and cancels oversized bodies", async ()
   assert.equal(cancelled,true);
   assert.equal((await readRegistrationRequest(body("{}",{"content-length":"11"}),10)).status,413);
 });
+
+test("rejects invalid content-length before touching the request body", async () => {
+  for (const length of ["", "-1", "1e3", "0x10", "2, 2", "1.5"]) {
+    const request = {
+      headers: new Headers({ "content-type": "application/json", "content-length": length }),
+      get body() { assert.fail("invalid length reached the body"); },
+    };
+    assert.deepEqual(await readRegistrationRequest(request), {
+      ok: false, status: 400, error: "registration_content_length_invalid",
+    });
+  }
+  assert.deepEqual(await readRegistrationRequest(body("{}", { "content-length": "02" })), {
+    ok: true, data: {},
+  });
+});
