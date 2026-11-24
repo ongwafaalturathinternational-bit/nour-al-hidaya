@@ -64,6 +64,7 @@ export async function resolveLearningGroup(firestore, groupId) {
     structureId: group.structureId,
     structureType: structure.type,
     programId: group.programId,
+    ...(group.periodId ? { periodId: group.periodId } : {}),
   };
 
   if (group.siteId !== undefined && group.siteId !== null) {

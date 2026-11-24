@@ -187,3 +187,6 @@ Branche codex/nour-idempotence-demande sur #55 (61bb8ea, CI API verte). Le serve
 
 ## Reprise de l’écriture atomique Nour
 Branche codex/nour-inscription-atomique sur #56 (c3aa7ed, CI API réussie). Le service interne crée ensemble l’inscription en attente, son reçu et le journal. Une réponse perdue est rapprochée par le reçu existant. 126 tests API locaux. Le bénéficiaire et le périmètre doivent être résolus et autorisés par le futur appelant. La création du nouveau bénéficiaire et le trajet public restent à traiter. Aucun appel distant ni modification des règles.
+
+## Reprise parcours agent Nour
+Branche codex/nour-inscription-agent, sur #57 (5d1f254, CI API réussie). Le service interne vérifie séparément la lecture du bénéficiaire dans son inscription active et le droit de création dans le groupe cible, puis prend programme, structure, site et période du groupe serveur. L’audit consigne l’acteur. 127 tests locaux. Le scope proposé learning.beneficiaries.create n’est attribué à aucun compte et les routes restent fermées. Les essais staging et le contrôle à l’écriture des références modifiées pendant la décision restent à traiter.
