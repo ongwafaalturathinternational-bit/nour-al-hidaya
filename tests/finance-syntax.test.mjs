@@ -305,7 +305,7 @@ test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés a
   assert.match(html, /id="accountOpeningBalance"/);
   assert.match(html, /id="accountOpeningDate"/);
   assert.match(html, /openingBalances=accounts\.reduce/);
-  assert.match(html, /return opening\+income-expense\+incoming-outgoing/);
+  assert.match(html, /balance:opening\+income-expense\+incoming-outgoing/);
   assert.match(rules, /request\.resource\.data\.openingBalance is int/);
   assert.match(rules, /request\.resource\.data\.date >= get\(/);
   assert.match(rules, /request\.resource\.data\.openingBalance == resource\.data\.openingBalance/);
@@ -315,9 +315,26 @@ test("les soldes d'ouverture sont déclarés une fois, immuables et intégrés a
 test("les soldes de trésorerie et des comptes excluent les mouvements datés dans le futur", () => {
   const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
   assert.match(html, /asOf=todayLocal\(\),cashValid=valid\.filter\(t=>\(t\.date\|\|""\)<=asOf\)/);
-  assert.match(html, /const asOf=todayLocal\(\),valid=transactions\.filter\(t=>t\.accountId===a\.id&&t\.status==="validee"&&\(t\.date\|\|""\)<=asOf\)/);
-  assert.match(html, /t\.destinationAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
-  assert.match(html, /t\.sourceAccountId===a\.id&&\(t\.date\|\|""\)<=asOf/);
+  assert.match(html, /accountBalanceDetails\(a\.id,todayLocal\(\)\)/);
+  const helpers = html.match(/function accountBalanceDetails[^\n]+\nfunction accountComputedBalance[^\n]+/)?.[0];
+  assert.ok(helpers);
+  const balance = vm.runInNewContext(helpers + "; accountComputedBalance", {
+    accounts: [{ id: "a", openingDate: "2025-01-01", openingBalance: 100 }],
+    transactions: [
+      { accountId: "a", date: "2025-01-04", status: "validee", type: "recette", amount: 50 },
+      { accountId: "a", date: "2025-01-04", status: "validee", type: "recette", paymentMethod: "nature", amount: 900 },
+      { accountId: "a", date: "2025-01-04", status: "validee", type: "depense", amount: 30 },
+      { accountId: "a", date: "2025-02-01", status: "validee", type: "depense", amount: 90 },
+      { accountId: "a", date: "2025-01-04", status: "soumise", type: "depense", amount: 80 },
+    ],
+    transfers: [
+      { destinationAccountId: "a", date: "2025-01-04", status: "validee", amount: 25 },
+      { sourceAccountId: "a", date: "2025-02-01", status: "validee", amount: 55 },
+    ],
+  });
+  assert.equal(balance("a", "2024-12-31"), 0);
+  assert.equal(balance("a", "2025-01-04"), 145);
+  assert.equal(balance("a", "2025-02-01"), 0);
 });
 
 
