@@ -1,3 +1,5 @@
+import { readServerConfig } from "./config.js";
+import { createFirestoreRestClient } from "./firestore-rest.js";
 import { readRegistrationRequest } from "./registration-request.js";
 import { submitAgentRegistration } from "./registration-service.js";
 
@@ -79,4 +81,30 @@ export function createLearningWorker({ agentRegistration } = {}) {
   };
 }
 
-export default createLearningWorker();
+const disabledWorker = createLearningWorker();
+
+export default {
+  async fetch(request, env) {
+    if (env?.WAT_ENABLE_AGENT_REGISTRATION !== "true") return disabledWorker.fetch(request);
+
+    const config = readServerConfig(env);
+    const secret = env.WAT_REGISTRATION_HMAC_HEX;
+    if (!config.ok || typeof secret !== "string" || !/^[a-f0-9]{64}$/i.test(secret)) {
+      return disabledWorker.fetch(request);
+    }
+    const registrationKey = await crypto.subtle.importKey(
+      "raw",
+      Uint8Array.from(secret.match(/../g), byte => parseInt(byte, 16)),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    return createLearningWorker({
+      agentRegistration: {
+        enabled: true,
+        config: config.config,
+        options: { registrationKey, firestore: createFirestoreRestClient(config.config) },
+      },
+    }).fetch(request);
+  },
+};
