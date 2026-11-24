@@ -66,3 +66,16 @@ Tester la route activée sur le build de la [PR #91](https://github.com/ongwafaa
 | Agent actif et autorisé sur les deux périmètres | Inscription `pending`, puis même identifiant lors d’un rejeu identique. |
 
 En cas de conflit d’écriture, vérifier que le compte et les périmètres sont contrôlés de nouveau. Consigner les statuts et les résultats de la recette avec des références fictives. [CI API de la PR #91](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45368639841) réussie. Les scénarios Firebase staging restent à exécuter.
+
+## Contrôles du corps HTTP
+
+Sur le build de la [PR #92](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/92), commit `b030039ff1d155bf2f912ab86e2d4ed8c2753653`, vérifier également le contrat de validation du corps. Ces contrôles sont exécutés localement dans la suite API et doivent être distingués des essais de la route via le proxy staging.
+
+| Cas | Résultat attendu |
+| --- | --- |
+| Longueur annoncée mal formée et transmise au Worker | HTTP 400, `registration_content_length_invalid`, avant lecture du corps. Le proxy peut refuser l’en-tête avant le Worker. |
+| Longueur supérieure à 16 Kio ou flux qui dépasse 16 Kio | HTTP 413, `registration_body_too_large`. |
+| Type de contenu autre que JSON | HTTP 415, `registration_content_type`. |
+| JSON invalide ou racine qui n’est pas un objet | HTTP 400, `registration_json_invalid` ou `registration_object_required`. |
+
+Aucune de ces requêtes ne doit ouvrir une transaction. Le [workflow API de la PR #92](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45409377820) a réussi. La recette sur un staging autorisé reste à exécuter.
