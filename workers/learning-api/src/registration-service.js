@@ -1,5 +1,6 @@
 import { validateLearningEnrollment } from "./learning-schema.js";
 import { registrationOperation } from "./registration-idempotency.js";
+import { authorizeLearningBeneficiary, authorizeLearningGroup } from "./learning-authorization.js";
 
 const receipts = "learningRegistrationReceipts";
 const unavailable = { ok: false, status: 503, error: "registration_unavailable" };
@@ -21,7 +22,7 @@ async function findReceipt(firestore, identity) {
 }
 
 // L'appelant serveur résout le bénéficiaire et les références, et contrôle le périmètre.
-export async function persistVerifiedRegistration({ firestore, namespace, operationId, key, enrollment }) {
+export async function persistVerifiedRegistration({ firestore, namespace, operationId, key, enrollment, actorUid }) {
   const { beneficiaryId, programId, structureId, periodId, siteId = null, groupId = null } = enrollment ?? {};
   const pending = { beneficiaryId, programId, structureId, periodId, siteId, groupId, status: "pending" };
   if (!validateLearningEnrollment(pending).ok) {
@@ -41,7 +42,8 @@ export async function persistVerifiedRegistration({ firestore, namespace, operat
       create("learningEnrollments",enrollmentId,pending),
       create(receipts,identity.receiptId,{enrollmentId,fingerprint:identity.fingerprint}),
       create("learningAuditLogs",crypto.randomUUID(),{
-        action:"registration.submit",targetId:enrollmentId,occurredAt:new Date()
+        action:"registration.submit",targetId:enrollmentId,occurredAt:new Date(),
+        ...(actorUid ? { actorUid } : {})
       })
     ]);
     return { ok: true, enrollmentId, status: "pending" };
@@ -52,4 +54,33 @@ export async function persistVerifiedRegistration({ firestore, namespace, operat
       return unavailable;
     }
   }
+}
+
+const INPUT_KEYS = ["beneficiaryId", "sourceEnrollmentId", "groupId", "operationId"];
+const ID = /^[A-Za-z0-9_-]{1,128}$/;
+
+// Fonction interne. Le parcours HTTP reste fermé en attendant la recette staging.
+export async function submitAgentRegistration(request, config, input, options = {}) {
+  if (!input || typeof input !== "object" || Object.keys(input).some(key => !INPUT_KEYS.includes(key)) ||
+      !INPUT_KEYS.every(key => typeof input[key] === "string" && ID.test(input[key]))) {
+    return { ok:false,status:400,error:"registration_input_invalid" };
+  }
+  const source = await authorizeLearningBeneficiary(
+    request, config, "learning.beneficiaries.read", input.beneficiaryId,input.sourceEnrollmentId,options
+  );
+  if (!source.ok) return source;
+  const destination = await authorizeLearningGroup(
+    request, config, "learning.beneficiaries.create", input.groupId,options
+  );
+  if (!destination.ok) return destination;
+  const actorUid = source.principal.uid;
+  if (destination.principal.uid !== actorUid) return { ok:false,status:403,error:"registration_actor_changed" };
+  const { groupId,programId,structureId,siteId,periodId } = destination.resource;
+  if (!periodId) return { ok:false,status:409,error:"registration_group_period_required" };
+  if (!options.registrationKey) return unavailable;
+  return persistVerifiedRegistration({
+    firestore:options.firestore,key:options.registrationKey,namespace:"agent:"+actorUid,
+    operationId:input.operationId,actorUid,
+    enrollment:{beneficiaryId:source.resource.beneficiaryId,groupId,programId,structureId,siteId,periodId}
+  });
 }
