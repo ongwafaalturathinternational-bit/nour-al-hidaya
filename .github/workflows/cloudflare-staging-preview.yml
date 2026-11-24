@@ -30,9 +30,13 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo "::error::Secret CLOUDFLARE_ACCOUNT_ID manquant dans l'environnement staging." && exit 1)
 
       - name: Construire les ressources web
+        env:
+          WAT_FIREBASE_ENV: staging
         run: |
           npm install --no-audit --no-fund
           npm run build:android:web
+          node --check web-dist/firebase-init.js
+          grep -Fxq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
 
       - name: Publier uniquement le Worker de staging
         env:
