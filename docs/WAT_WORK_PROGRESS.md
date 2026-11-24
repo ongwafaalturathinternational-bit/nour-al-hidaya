@@ -37,3 +37,9 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Recette des reçus Agenda dans docs/RECETTE-AGENDA-RECONCILIATION.md (9860a2b). CI Firestore confirmée sur #49, #51, #52 et #53. Transport réel et affichage sur appareil restent à qualifier.
 - Recette de l’admission Nour dans docs/RECETTE-NOUR-ADMISSION-ET-PERIMETRES.md (fb3178c). CI API confirmée sur #54 et #55. Le parcours raccordé et des profils fictifs habilités restent nécessaires.
 - Prochaine reprise : relire les PR ouvertes et vérifier les éléments nouveaux sur les périmètres et la preuve d’admission. Compléter la recette transverse avec les modèles #36/#41. Aucun changement d’architecture ou de règles par Work.
+
+## Contrôles suivants — reprise continue
+
+- Nour #56 (c3aa7ed), CI API 45316554636 réussie. Quatre cas NH-07 à NH-10 ajoutés au dossier d’admission (3f26707). L’écriture atomique de la demande et de son reçu reste à raccorder par Codex.
+- Dossier Finance chiffré dans docs/RECETTE-FINANCE-CONTROLE-BAILLEURS.md (18e95ce). Résultats calculés sur données fictives, recette staging non exécutée. La dépendance du lot 8 et la validation institutionnelle restent applicables.
+- Reprise : relire les PR ouvertes. Examiner les résultats nouvellement disponibles, puis préparer les circuits de recette Projets et Club à partir des modèles existants. Mode objectif autonome sans exécution planifiée : aucun contrôle d’activation exposé à cette session.
