@@ -72,6 +72,14 @@ jobs:
           node --check web-dist/firebase-init.js
           grep -Fq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
 
+      - name: Conserver les ressources web de recette staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: wat-connect-web-staging
+          path: web-dist/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Générer le projet Android
         run: npx cap add android
 

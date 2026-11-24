@@ -44,3 +44,11 @@ test("la préparation Android embarque la charte graphique facettée de WAT", ()
     assert.ok(css.includes(token), "élément de charte absent : " + token);
   }
 });
+
+test("le build conserve un artefact web après vérification de Firebase staging", () => {
+  const verification = workflow.indexOf("grep -Fq");
+  const artifact = workflow.indexOf("name: wat-connect-web-staging");
+  const sync = workflow.indexOf("npx cap sync android");
+  assert.ok(verification >= 0 && artifact > verification && sync > artifact);
+  assert.match(workflow, /name: wat-connect-web-staging\s+path: web-dist\/\s+if-no-files-found: error/);
+});
