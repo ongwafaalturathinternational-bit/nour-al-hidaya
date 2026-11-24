@@ -60,3 +60,15 @@ test("le workflow APK restaure le cache Gradle après génération du projet", (
   assert.ok(generation >= 0 && cache > generation && build > cache);
   assert.match(workflow, /gradle\/actions\/setup-gradle@[a-f0-9]{40}[^\n]*\s+with:\s+cache-read-only: false/);
 });
+
+test("toute ressource du paquet Capacitor déclenche le build APK", () => {
+  const files = script.match(/const files = \[([\s\S]*?)\];/);
+  assert.ok(files);
+  const bundledFiles = JSON.parse("[" + files[1] + "]");
+  const watchedPaths = new Set(
+    [...workflow.matchAll(/^      - "([^"]+)"\s*$/gm)].map(match => match[1])
+  );
+  for (const file of [...bundledFiles, "assets/brand/wat/ICONE WC.png"]) {
+    assert.ok(watchedPaths.has(file), "ressource Android non surveillée : " + file);
+  }
+});
