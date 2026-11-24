@@ -204,7 +204,7 @@ test("Nour signale un refus du stockage local pour les deux files", async () => 
 test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", async () => {
   const stored = new Map();
   const state = { subs: [] };
-  let confirm;
+  const confirmations = [];
   const navigator = { onLine: false };
   const user = { emailVerified: true };
   const firebase = {
@@ -213,7 +213,7 @@ test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", 
     db: {
       collection() { return this; },
       doc() { return this; },
-      set() { return new Promise(resolve => { confirm = resolve; }); }
+      set() { return new Promise(resolve => { confirmations.push(resolve); }); }
     }
   };
   const queues = vm.runInNewContext(
@@ -239,7 +239,16 @@ test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", 
   navigator.onLine = true;
   const flush = queues.syncPendingLearning("learner");
   assert.equal(state.subs[0].pending, true);
-  confirm();
+  const edited = queues.queueAndSyncLearning("learner", "submission_1", {
+    ...data, value: "devoir modifié"
+  });
+  confirmations.shift()();
   assert.equal(await flush, 1);
+  assert.equal(state.subs[0].text, "devoir modifié");
+  assert.equal(state.subs[0].pending, true);
+  assert.equal(confirmations.length, 1);
+  confirmations.shift()();
+  await edited;
+  assert.equal(state.subs[0].text, "devoir modifié");
   assert.equal(state.subs[0].pending, false);
 });
