@@ -27,7 +27,7 @@ const $=id=>document.getElementById(id);let currentUser=null,authGeneration=0;
 function say(t,type=""){const e=$("message");e.textContent=t;e.className="message "+type;e.hidden=false}
 function list(v){return v.split(/[;,]/).map(x=>x.trim()).filter(Boolean).slice(0,20)}
 function isCurrentSession(user,generation){return !!user&&generation===authGeneration&&WATFirebase.auth.currentUser?.uid===user.uid}
-function clearPrivateView(){currentUser=null;$("resend").disabled=false;$("applicationPanel").hidden=true;$("applicationForm").reset();$("applicationForm").hidden=true;$("applicationForm").querySelectorAll("input,textarea,select,button").forEach(el=>{if(el.id!=="submitApplication")el.disabled=false});$("accountState").textContent="";$("applicationPanel").querySelectorAll("a").forEach(a=>a.remove())}
+function clearPrivateView(){currentUser=null;$("resend").disabled=false;$("refresh").disabled=false;$("applicationPanel").hidden=true;$("applicationForm").reset();$("applicationForm").hidden=true;$("applicationForm").querySelectorAll("input,textarea,select,button").forEach(el=>{if(el.id!=="submitApplication")el.disabled=false});$("accountState").textContent="";$("applicationPanel").querySelectorAll("a").forEach(a=>a.remove())}
 async function updateAccount(user){const generation=++authGeneration;clearPrivateView();$("registerPassword").value="";$("loginPassword").value="";$("accountPanel").hidden=false;$("registerBox").hidden=!!user;$("loginBox").hidden=!!user;$("resend").hidden=!user||user.emailVerified;$("refresh").hidden=!user||user.emailVerified;$("signout").hidden=!user;await WATFirebase.persistenceReady;if(generation!==authGeneration||WATFirebase.auth.currentUser?.uid!==user?.uid)return;currentUser=user;if(!user){$("accountState").textContent="Créez un compte ou connectez-vous pour déposer une candidature.";return} $("accountState").textContent="Connecté : "+(user.email||"adresse non renseignée")+". "+(user.emailVerified?"Adresse vérifiée.":"Adresse non vérifiée.");if(user.emailVerified){
   try{
     await user.getIdToken(true);
@@ -54,7 +54,19 @@ $("resend").addEventListener("click",async()=>{
   if(isCurrentSession(user,generation))button.disabled=false;
  }
 });
-$("refresh").addEventListener("click",async()=>{const previous=currentUser,generation=authGeneration;if(!isCurrentSession(previous,generation))return;try{await previous.reload();if(!isCurrentSession(previous,generation))return;const user=WATFirebase.auth.currentUser;await updateAccount(user)}catch(e){if(isCurrentSession(previous,generation))say("Actualisation impossible. Réessayez.","error")}});
+$("refresh").addEventListener("click",async()=>{
+ const user=currentUser,generation=authGeneration,button=$("refresh");
+ if(!isCurrentSession(user,generation)||user.emailVerified||button.disabled)return;
+ button.disabled=true;
+ try{
+  await user.reload();
+  if(isCurrentSession(user,generation))await updateAccount(WATFirebase.auth.currentUser);
+ }catch{
+  if(isCurrentSession(user,generation))say("Actualisation impossible. Réessayez.","error");
+ }finally{
+  if(isCurrentSession(user,generation))button.disabled=false;
+ }
+});
 $("signout").addEventListener("click",async()=>{try{await WATFirebase.signOutSafely()}catch(e){say(e.message||"Déconnexion impossible.","error")}});
 $("applicationForm").addEventListener("submit",async e=>{e.preventDefault();if(!navigator.onLine){say("Une connexion Internet est nécessaire pour déposer une candidature.","error");return}const actor=currentUser,generation=authGeneration;if(!isCurrentSession(actor,generation)){say("Connectez-vous ou créez votre compte avant de déposer la candidature.","error");return}if(!$("privacyConsent").checked){say("Votre consentement est requis pour envoyer la candidature.","error");return}const button=$("submitApplication");button.disabled=true;try{await actor.reload();if(!isCurrentSession(actor,generation))return;const active=WATFirebase.auth.currentUser;await active.getIdToken(true);if(!isCurrentSession(active,generation))return;if(!active.emailVerified){say("Votre adresse e-mail n’est pas encore vérifiée. Ouvrez le lien reçu, puis cliquez sur « J’ai vérifié mon adresse e-mail ».","error");return}const now=firebase.firestore.FieldValue.serverTimestamp();const data={fullName:$("fullName").value.trim(),email:active.email,phone:$("phone").value.trim(),category:$("category").value,skills:list($("skills").value),interests:list($("interests").value),availability:$("availability").value.trim(),privacyConsent:true,consentAt:now,status:"en_attente",createdAt:now,createdBy:active.uid,updatedAt:now,updatedBy:active.uid};await WATFirebase.db.collection("volunteerApplications").doc(active.uid).set(data);if(!isCurrentSession(active,generation))return;$("applicationForm").hidden=true;say("Candidature envoyée. Elle est enregistrée dans WAT Connect et attend l’examen des responsables autorisés du Club Khuddam Al-Turath.","success");const link=document.createElement("a");link.href="club-khuddam-espace.html";link.textContent="Consulter mon espace candidat";link.style.cssText="display:inline-block;margin-top:10px;font-weight:700;color:#102746";$("applicationPanel").append(link)}catch(err){console.error("Dépôt candidature Club :",err);if(isCurrentSession(actor,generation)){if(err.code==="permission-denied")say("Le serveur a refusé l’enregistrement (permission-denied). La session a été actualisée avant l’envoi. Vérifiez les informations et le consentement ; si le refus persiste, contactez l’administration WAT avec ce code.","error");else say("Impossible d’envoyer la candidature. Vérifiez votre connexion puis réessayez.","error")}}finally{button.disabled=false}});
 if(window.WATFirebase&&WATFirebase.ready){$("accountPanel").hidden=false;WATFirebase.auth.onAuthStateChanged(user=>updateAccount(user))}else say("Le service d’inscription est temporairement indisponible.","error");
