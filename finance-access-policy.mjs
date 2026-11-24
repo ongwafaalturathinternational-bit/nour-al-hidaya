@@ -58,11 +58,12 @@ const forbiddenControllerActions = new Set([
 
 export function canFinanceAction(role, action) {
   if (role === "financial_controller" && forbiddenControllerActions.has(action)) return false;
-  return permissions[role]?.has(action) === true;
+  return typeof role === "string" && Object.hasOwn(permissions, role) && permissions[role].has(action);
 }
 
 export function getFinancePermissions(role) {
-  return [...(permissions[role] || [])].sort();
+  if (typeof role !== "string" || !Object.hasOwn(permissions, role)) return [];
+  return [...permissions[role]].sort();
 }
 
 export function isFinancialControllerReadOnly(role) {

@@ -56,3 +56,10 @@ test("le contrôleur consulte les donateurs et bailleurs sans modifier les conve
   assert.equal(canFinanceAction("financial_manager", "grants.create"), true);
   assert.equal(canFinanceAction("financial_validator", "grants.approve"), true);
 });
+
+test("les noms hérités et les valeurs non textuelles ne confèrent aucun droit", () => {
+  for (const role of ["constructor", "toString", "__proto__", ["financial_manager"], null]) {
+    assert.equal(canFinanceAction(role, "finance.operations.create"), false);
+    assert.deepEqual(getFinancePermissions(role), []);
+  }
+});
