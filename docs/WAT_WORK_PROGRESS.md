@@ -50,3 +50,9 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Projet et Club lot 8 : docs/RECETTE-PROJETS-CLUB-LOT8.md (67acae3), six cas prêts sur un assemblage staging à identifier après arbitrage #44/#45.
 - Nour : complément au dossier d’admission (3d36b8f), contrôles #61–62 pour le rejeu et les périmètres, et cas de reprise locale distinct sur #63. Résultats d’application et comptes staging fictifs restent à obtenir.
 - Reprendre en vérifiant les nouvelles PR, le suivi #44/#45 et l’éligibilité du SHA de recette. Continuer les contrôles indépendants si la qualification staging est bloquée.
+
+## Référentiel institutionnel — 24 novembre 2026
+
+- Spécifications neutralisées GED, Finance, Achats et Contrats dans docs/EXIGENCES-GED-FINANCE-ACHATS.md (1063f08). Points de départ applicatifs contrôlés : #12 et #69–71 pour Finance; réutilisation des registres #72–75 et de l’Agenda #76–82.
+- Les originaux, l’inventaire nominatif et l’audit détaillé relèvent de l’espace privé. Aucune pièce administrative ou financière n’est rattachée à la PR.
+- Reprise Work : vérifier les nouvelles PR et les versions attestées. Qualifier la recette GED et QR sur documents fictifs; compléter le rapprochement comptable côté privé lorsque journaux, conventions et pièces sont disponibles. L’activation des paramètres officiels dépend de la validation du régime, des mandats et des seuils. Continuer les contrôles indépendants si ces éléments sont en attente.
