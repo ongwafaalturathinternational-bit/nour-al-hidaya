@@ -116,7 +116,13 @@ test("le point d’entrée Worker exige une activation explicite et les paramèt
   ]) {
     assert.equal((await worker.fetch(request(), { ...env, ...overrides })).status, 503);
   }
-  const response = await worker.fetch(request(), env);
+  const unauthorized = await worker.fetch(request(), env);
+  assert.equal(unauthorized.status, 401);
+  assert.equal(unauthorized.headers.get("www-authenticate"), "Bearer");
+  assert.deepEqual(await unauthorized.json(), { error: "authentication_required" });
+  const authenticatedShape = request();
+  authenticatedShape.headers.set("authorization", "Bearer " + "a".repeat(20));
+  const response = await worker.fetch(authenticatedShape, env);
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "registration_json_invalid" });
 });

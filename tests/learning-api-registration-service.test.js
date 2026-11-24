@@ -74,7 +74,7 @@ test("agent registration checks both perimeters and uses the server group period
   const routeRequest = (route, body = JSON.stringify(input)) =>
     new Request(`https://example.invalid/api/learning/registrations/${route}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", authorization: "Bearer " + "a".repeat(20) },
       body,
     });
   const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
