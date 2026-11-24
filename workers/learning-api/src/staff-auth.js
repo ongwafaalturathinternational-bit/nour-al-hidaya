@@ -24,11 +24,7 @@ export function readStaffBearerToken(request) {
   return /^Bearer ([A-Za-z0-9._~-]{20,8192})$/.exec(authorization)?.[1] ?? null;
 }
 
-export async function authorizeStaffScope(request, config, scope, options = {}) {
-  if (typeof scope !== "string" || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,4}$/.test(scope)) {
-    throw new Error("staff_scope_invalid");
-  }
-
+export async function verifyStaffIdentity(request, config, options = {}) {
   const token = readStaffBearerToken(request);
   if (!token) return { ok: false, status: 401, error: "authentication_required" };
 
@@ -44,6 +40,17 @@ export async function authorizeStaffScope(request, config, scope, options = {}) 
   if (identity.emailVerified !== true) {
     return { ok: false, status: 403, error: "verified_staff_email_required" };
   }
+  return { ok: true, identity };
+}
+
+export async function authorizeStaffScope(request, config, scope, options = {}) {
+  if (typeof scope !== "string" || !/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,4}$/.test(scope)) {
+    throw new Error("staff_scope_invalid");
+  }
+
+  const verified = await verifyStaffIdentity(request, config, options);
+  if (!verified.ok) return verified;
+  const { identity } = verified;
 
   let authUser;
   try {
