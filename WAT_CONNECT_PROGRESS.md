@@ -1,5 +1,13 @@
 # WAT Connect — rapport de progression
 
+## Nour — raccordement HTTP du parcours agent
+
+- Branche : codex/nour-route-agent-staging, basée sur la PR #60 (a127620351263abd48a1b9013c38c3dcc08d3a8e).
+- La fabrique du Worker relie le décodage HTTP au service transactionnel agent avec des dépendances injectées. L’activation exige le projet wat-connect-staging, un indicateur explicite et les dépendances serveur. Le Worker exporté par défaut conserve le 503.
+- Tests locaux : 128/128. Le parcours HTTP utilise Firestore et l’autorisation simulés. Il vérifie les refus hors staging, la fermeture du parcours public, le rejet du JSON invalide et la réponse minimale après écriture.
+- Reprise : vérifier les paramètres Cloudflare et les autorisations Firebase de staging avant tout raccordement effectif. Continuer la préparation des autres parcours hors ligne.
+
+
 Dernière mise à jour : 22 novembre 2026
 Branche suivie : feature/nour-central-management-foundation
 PR #20 : ouverte, brouillon, non fusionnée — fix/lot8-club-onboarding-and-access vers audit/wat-connect-lot8-projects-club-khuddam.

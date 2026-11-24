@@ -1,3 +1,4 @@
+import { createLearningWorker } from "../workers/learning-api/src/index.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { persistVerifiedRegistration, submitAgentRegistration } from "../workers/learning-api/src/registration-service.js";
@@ -69,6 +70,35 @@ test("agent registration checks both perimeters and uses the server group period
   assert.equal(writes[0].fields.periodId,"trusted-period");
   assert.equal(writes[0].fields.groupId,"target");
   assert.equal(writes[2].fields.actorUid,"agent");
+
+  const routeRequest = (route, body = JSON.stringify(input)) =>
+    new Request(`https://example.invalid/api/learning/registrations/${route}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+    });
+  const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
+  writes = undefined;
+  for (const agentRegistration of [
+    { config, options },
+    { enabled: true, config: { ...config, environment: "production" }, options },
+    { enabled: true, config: { ...config, firebaseProjectId: "wat-connect" }, options },
+    { enabled: true, config, options: {} },
+  ]) {
+    const disabled = createLearningWorker({ agentRegistration });
+    assert.equal((await disabled.fetch(routeRequest("agent"))).status, 503);
+  }
+  assert.equal(writes, undefined);
+  const worker = createLearningWorker({ agentRegistration: { enabled: true, config, options } });
+  assert.equal((await worker.fetch(routeRequest("public"))).status, 503);
+  assert.equal((await worker.fetch(routeRequest("agent", "{"))).status, 400);
+  assert.equal(writes, undefined);
+  const response = await worker.fetch(routeRequest("agent"));
+  assert.equal(response.status, 200);
+  const { enrollmentId, ...body } = await response.json();
+  assert.ok(enrollmentId);
+  assert.deepEqual(body, { status: "pending" });
+  assert.equal(writes[2].fields.actorUid, "agent");
 
   let attempts=0, commits=0;
   options.firestore.runRegistrationTransaction=function(callback){attempts++;return callback(this)};
