@@ -150,3 +150,33 @@ test("le registre Activités efface les formulaires privés au changement de ses
  const html=readFileSync(new URL("../activites.html",import.meta.url),"utf8");
  assert.match(html,/function clearPrivateView\(\)[\s\S]*?\$\("activityForm"\)\.reset\(\);\$\("attendanceForm"\)\.reset\(\)/);
 });
+
+test("les présences gardent l’identifiant du document retourné par Firestore", async () => {
+  const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  const source = html.match(/^async function loadAttendance\(generation=authGeneration\).*$/m)?.[0];
+  assert.ok(source);
+  const elements = {
+    selectedActivity: { value: "activité" },
+    attendanceRows: { replaceChildren() {} },
+  };
+  const db = {
+    collection(name) {
+      assert.equal(name, "attendance");
+      return { where(field, operator, id) {
+        assert.deepEqual([field, operator, id], ["activityId", "==", "activité"]);
+        return { get: async () => ({
+          docs: [{ id: "présence", data: () => ({ id: "ancien-id", activityId: id }) }],
+        }) };
+      } };
+    },
+  };
+  const load = vm.runInNewContext(`
+    let attendanceRecords;
+    const authGeneration = 1, user = {}, WATFirebase = { db };
+    const isCurrentStaffSession = () => true;
+    function renderAttendance() { assert.equal(attendanceRecords[0].id, "présence"); }
+    ${source}
+    loadAttendance
+  `, { db, assert, $: id => elements[id] });
+  await load();
+});
