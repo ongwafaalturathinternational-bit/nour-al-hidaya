@@ -8,6 +8,9 @@ export async function readRegistrationRequest(request, maxBytes = DEFAULT_MAX_BY
     return { ok: false, status: 415, error: "registration_content_type" };
   }
   const length = request.headers.get("content-length");
+  if (length !== null && !/^\d+$/.test(length)) {
+    return { ok: false, status: 400, error: "registration_content_length_invalid" };
+  }
   if (length !== null && Number(length) > maxBytes) {
     return { ok: false, status: 413, error: "registration_body_too_large" };
   }
