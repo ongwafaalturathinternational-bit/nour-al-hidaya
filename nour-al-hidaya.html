@@ -1449,7 +1449,13 @@ function applyPendingProgress(uid){
 async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
  if(!isCurrentFirebaseSession(uid,generation))return false;
  applyPendingProgress(uid);
- const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ let snap;
+ try {
+  snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ } catch(error) {
+  if(globalThis.navigator?.onLine&&isCurrentFirebaseSession(uid,generation))await syncPendingProgress(uid,generation);
+  throw error;
+ }
  if(!isCurrentFirebaseSession(uid,generation))return false;
  S.done[uid]=S.done[uid]||{};
  snap.forEach(doc=>{
@@ -1512,7 +1518,13 @@ async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  if(!isCurrentFirebaseSession(uid,generation))return false;
  readLearningQueue(uid).forEach(item=>applyLearningRecord(uid,item.data,true));
- const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ let snap;
+ try {
+  snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ } catch(error) {
+  if(globalThis.navigator?.onLine&&isCurrentFirebaseSession(uid,generation))await syncPendingLearning(uid,generation);
+  throw error;
+ }
  if(!isCurrentFirebaseSession(uid,generation))return false;
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
  const pending=readLearningQueue(uid);
