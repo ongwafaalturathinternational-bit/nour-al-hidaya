@@ -87,3 +87,9 @@ Le client conserve l’`operationId` de la soumission jusqu’à son résultat d
 En cas de réponse `409 registration_operation_conflict`, interrompre le rejeu et faire vérifier le dossier avant toute nouvelle soumission. Une nouvelle opération n’est créée que pour une nouvelle demande métier confirmée.
 
 Reproduire la perte de réponse avec le transport simulé du dépôt. Le premier appel renvoie `503`, le second renvoie l’identifiant déjà enregistré et le compteur d’écritures reste à un. Sur staging, vérifier le rejeu à l’identique avec une inscription et un agent fictifs. [PR #93](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/93), commit `1965cb6526b3ce302744ebaa594422a2817af584`, [CI API réussie](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45409872329).
+
+## Bundle API isolé pour validation
+
+La [PR #94](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/94) prépare un bundle API distinct du site statique de staging. La configuration `workers/learning-api/wrangler.jsonc` désactive l’URL workers.dev, les URL de prévisualisation et la route d’inscription agent par défaut. Elle ne définit aucune route publique. Le nom du Worker dans le fichier identifie uniquement la cible proposée pour le bundle. Le Worker statique existant reste en place.
+
+Le commit `60cf8ab2916838603520ac35746cfea3a6289c9b` a passé les 132 tests API et l’étape Wrangler de compilation à blanc en CI. Cette étape n’a ni créé une ressource distante ni vérifié les autorisations Firebase de staging. Pour l’essai réel, le raccordement par une route staging protégée et l’activation temporaire de l’inscription agent restent à valider. [Résultat du build à blanc](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45410481022).
