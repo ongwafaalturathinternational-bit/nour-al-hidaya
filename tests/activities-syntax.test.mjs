@@ -257,3 +257,26 @@ test("un rappel incomplet reste inéligible même si les champs absents coïncid
     scheduled: { ...scheduled, channel: "" } }), null);
   assert.ok(prepareReminder({ event, scheduled, recipient }));
 });
+
+test("un reçu non confirmé expose le résultat du transport sans réexpédier", async () => {
+  const documents = new Map([
+    ["event", { status: "published", revision: 1, audience: ["member"] }],
+    ["member", { active: true, optInChannels: ["push"] }],
+  ]);
+  const db = { runTransaction: callback => callback({
+    get: async ref => ({ id: ref.id, exists: documents.has(ref.id), data: () => documents.get(ref.id) }),
+    create: (ref, value) => documents.set(ref.id, value),
+  }) };
+  const receipts = { doc: id => ({ id, async update() { throw Error("indisponible"); } }) };
+  let sends = 0;
+  const input = {
+    db, receipts, eventRef: { id: "event" }, recipientRef: { id: "member" },
+    scheduled: { eventId: "event", recipientUid: "member", revision: 1, channel: "push" },
+    send: async () => { sends++; return { accepted: true }; },
+  };
+  assert.deepEqual(await distributeReminder(input), {
+    status: "receipt-unconfirmed", transportStatus: "accepted",
+  });
+  assert.deepEqual(await distributeReminder(input), { status: "already-reserved" });
+  assert.equal(sends, 1);
+});
