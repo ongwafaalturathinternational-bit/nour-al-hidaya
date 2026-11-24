@@ -38,3 +38,9 @@ Les 128 tests Node hors émulateur ont réussi sur une extraction de cet arbre. 
 ## Compatibilité des registres Programmes et Projets
 
 Le code des [PR #72](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/72) et [#73](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/73) a été combiné localement avec l’arbre de la [PR #67](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/67). La simulation Git n’a signalé aucun conflit. Les **131 tests Node hors émulateur** ont réussi sur l’arbre `1732842f1aadc18c8d9fb1170ebe858e4e74d6a3`. Les résultats CI par PR ne valent pas validation de l’émulateur sur cet arbre élargi.
+
+## APK combiné avec Activités et Présences
+
+La [PR #75](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/75) étend l’assemblage à la PR #74. Le commit `44dadbba23cc208717bdf0891e1a14c98786da10` a passé **132 tests locaux hors émulateur** sur l’arbre exact, les [contrôles Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45323587645) et le build Android. L’[APK staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45323587547/artifacts/14888787211) est disponible jusqu’au 2026-12-08T04:03:41Z.
+
+Sur le même téléphone de test, lier un programme, un projet et une activité fictifs, affecter un bénévole de test et modifier sa présence après rechargement. Poursuivre par la reprise du parcours Club, une synchronisation Nour après coupure de réseau et le changement de compte. Consigner l’appareil et les résultats par scénario. La recette réelle reste à effectuer.
