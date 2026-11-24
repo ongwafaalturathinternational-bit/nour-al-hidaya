@@ -1,7 +1,87 @@
 import test from "node:test";
+import { distributeReminder, prepareReminder, reserveReminder } from "../lib/wat-reminders.mjs";
+
+test("un rappel exige la révision courante, une audience et un consentement actifs", () => {
+  const event = {id:"e1", revision:1, status:"published", audience:["u1"], title:"Dossier privé"};
+  const scheduled = {eventId:"e1", revision:1, recipientUid:"u1", channel:"push"};
+  const recipient = {uid:"u1", active:true, optInChannels:["push"]};
+  const request = {event, scheduled, recipient};
+  const reminder = prepareReminder(request);
+  assert.deepEqual(reminder, {key:'["e1",1,"u1","push"]',channel:"push",message:"Vous avez un rappel WAT Connect."});
+  assert.deepEqual(prepareReminder(request), reminder);
+  for (const override of [
+    {event:{...event,status:"cancelled"}}, {event:{...event,revision:2}},
+    {event:{...event,audience:[]}}, {recipient:{...recipient,active:false}},
+    {recipient:{...recipient,optInChannels:[]}}, {recipient:{...recipient,uid:"u2"}}
+  ]) assert.equal(prepareReminder({...request,...override}),null);
+});
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+
+test("la distribution conserve un résultat incertain sans réexpédier", async () => {
+  for (const accepted of [true,false]) {
+    const documents = new Map([
+      ["event",{status:"published",revision:1,audience:["u1"]}],
+      ["u1",{active:true,optInChannels:["push"]}]
+    ]);
+    const db = {runTransaction:callback=>callback({
+      get:async ref=>({id:ref.id,exists:documents.has(ref.id),data:()=>documents.get(ref.id)}),
+      create:(ref,value)=>documents.set(ref.id,value)
+    })};
+    let sent=0;
+    const receipts={doc:id=>({id,async update(value){documents.set(id,value)}})};
+    const input={db,eventRef:{id:"event"},recipientRef:{id:"u1"},receipts,
+      scheduled:{eventId:"event",revision:1,recipientUid:"u1",channel:"push"},
+      send:async request=>{
+        sent++;
+        assert.equal(request.idempotencyKey,'["event",1,"u1","push"]');
+        if (!accepted) throw new Error("délai dépassé");
+        return {accepted:true};
+      }};
+    const status=accepted?"accepted":"uncertain";
+    assert.deepEqual(await distributeReminder(input),{status});
+    assert.deepEqual(documents.get(encodeURIComponent('["event",1,"u1","push"]')),{status});
+    assert.deepEqual(await distributeReminder(input),{status:"already-reserved"});
+    assert.equal(sent,1);
+  }
+});
+
+test("la réservation relit l’éligibilité et une seule tentative reçoit le rappel", async () => {
+  const eventRef = "event";
+  const recipientRef = "recipient";
+  const records = new Map([
+    [eventRef, {id:"e1", revision:1, status:"published", audience:["u1"]}],
+    [recipientRef, {id:"u1", active:true, optInChannels:["push"]}]
+  ]);
+  let pending = Promise.resolve();
+  const db = {
+    runTransaction(run) {
+      const execution = pending.then(() => run({
+        async get(ref) {
+          return {exists:records.has(ref), id:records.get(ref)?.id, data:()=>records.get(ref)};
+        },
+        create(ref, value) {
+          assert.equal(records.has(ref),false);
+          records.set(ref,value);
+        }
+      }));
+      pending = execution;
+      return execution;
+    }
+  };
+  const input = {db,eventRef,recipientRef,receipts:{doc:id=>"receipts/"+id},
+    scheduled:{eventId:"e1", revision:1, recipientUid:"u1", channel:"push"}};
+  const results = await Promise.all([reserveReminder(input), reserveReminder(input)]);
+  assert.deepEqual(results.map(result=>result.status),["reserved","already-reserved"]);
+  assert.equal(results[0].reminder.message,"Vous avez un rappel WAT Connect.");
+  assert.equal(records.size,3);
+  records.set(eventRef, {...records.get(eventRef), revision:2});
+  assert.deepEqual(await reserveReminder(input),{status:"ineligible"});
+  records.set(recipientRef, {...records.get(recipientRef), optInChannels:[]});
+  assert.deepEqual(await reserveReminder({...input, scheduled:{...input.scheduled, revision:2}}),{status:"ineligible"});
+  assert.equal(records.size,3);
+});
 
 test("le module des activités contient un JavaScript valide", () => {
   const html = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
@@ -179,4 +259,54 @@ test("les présences gardent l’identifiant du document retourné par Firestore
     loadAttendance
   `, { db, assert, $: id => elements[id] });
   await load();
+});
+
+test("les formulaires Activités et Présences bloquent les doubles soumissions et réinitialisent les boutons", () => {
+  const page = readFileSync(new URL("../activites.html", import.meta.url), "utf8");
+  const reset = page.slice(page.indexOf("function clearPrivateView"), page.indexOf("async function init(account)"));
+  assert.match(reset, /\$\("saveActivity"\)\.disabled=false/);
+  assert.match(reset, /\$\("saveAttendance"\)\.disabled=true/);
+  for (const [form, button] of [["activityForm", "saveActivity"], ["attendanceForm", "saveAttendance"]]) {
+    const start = page.indexOf('$("' + form + '").addEventListener("submit"');
+    const handler = page.slice(start, page.indexOf("\n", start));
+    const guard = handler.indexOf('if($("' + button + '").disabled)return');
+    const disable = handler.indexOf('$("' + button + '").disabled=true');
+    assert.ok(start >= 0 && guard >= 0 && disable > guard);
+    assert.ok(handler.indexOf("await WATFirebase.db.collection") > disable);
+  }
+});
+
+test("un rappel incomplet reste inéligible même si les champs absents coïncident", () => {
+  const event = { status: "published", id: "event", revision: 1, audience: ["member"] };
+  const recipient = { uid: "member", active: true, optInChannels: ["push"] };
+  const scheduled = { eventId: "event", recipientUid: "member", revision: 1, channel: "push" };
+  assert.equal(prepareReminder({ event, scheduled }), null);
+  assert.equal(prepareReminder({ event: { ...event, revision: undefined }, recipient,
+    scheduled: { ...scheduled, revision: undefined } }), null);
+  assert.equal(prepareReminder({ event, recipient: { ...recipient, optInChannels: [""] },
+    scheduled: { ...scheduled, channel: "" } }), null);
+  assert.ok(prepareReminder({ event, scheduled, recipient }));
+});
+
+test("un reçu non confirmé expose le résultat du transport sans réexpédier", async () => {
+  const documents = new Map([
+    ["event", { status: "published", revision: 1, audience: ["member"] }],
+    ["member", { active: true, optInChannels: ["push"] }],
+  ]);
+  const db = { runTransaction: callback => callback({
+    get: async ref => ({ id: ref.id, exists: documents.has(ref.id), data: () => documents.get(ref.id) }),
+    create: (ref, value) => documents.set(ref.id, value),
+  }) };
+  const receipts = { doc: id => ({ id, async update() { throw Error("indisponible"); } }) };
+  let sends = 0;
+  const input = {
+    db, receipts, eventRef: { id: "event" }, recipientRef: { id: "member" },
+    scheduled: { eventId: "event", recipientUid: "member", revision: 1, channel: "push" },
+    send: async () => { sends++; return { accepted: true }; },
+  };
+  assert.deepEqual(await distributeReminder(input), {
+    status: "receipt-unconfirmed", transportStatus: "accepted",
+  });
+  assert.deepEqual(await distributeReminder(input), { status: "already-reserved" });
+  assert.equal(sends, 1);
 });
