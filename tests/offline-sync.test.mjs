@@ -339,3 +339,33 @@ test("une lecture distante refusée ne bloque pas l’envoi des files au démarr
   assert.equal(stored.get("nh_progress_queue_learner"), "[]");
   assert.equal(stored.get("nh_learning_queue_learner"), "[]");
 });
+
+test("un chargement de progression lent ne bloque pas la reprise des saisies pédagogiques", async () => {
+  const startEntry = nour.indexOf("async function enterFirebaseUser");
+  const user = { uid: "learner", emailVerified: true, async reload() {} };
+  const started = [];
+  let finishProgress;
+  const entered = vm.runInNewContext(
+    nour.slice(startEntry, nour.indexOf("/* ---------- actions", startEntry)) + "\nenterFirebaseUser",
+    {
+      WATFirebase: {
+        auth: { currentUser: user },
+        db: { collection() { return this; }, doc() { return this; },
+          async get() { return { exists: true, data: () => ({ role: "apprenant" }) }; } }
+      },
+      S: { done: {} }, R: {}, learner: () => ({}),
+      isCurrentFirebaseSession: () => true,
+      loadFirebaseProgress: () => new Promise(resolve => {
+        started.push("progress");
+        finishProgress = resolve;
+      }),
+      loadFirebaseLearning: async () => { started.push("learning"); },
+      save() {}, render() {}, console
+    }
+  )(user, 0);
+
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(started, ["progress", "learning"]);
+  finishProgress();
+  assert.equal(await entered, true);
+});
