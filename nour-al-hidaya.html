@@ -1367,7 +1367,7 @@ function attestView(){
 
 /* ---------- synchronisation des résultats de quiz ---------- */
 const queueFlushes = new Map();
-function flushQueuedWrites({key, isActive, read, save, send, onError}) {
+function flushQueuedWrites({key, isActive, read, save, send, onError, onConfirmed}) {
  const previous = queueFlushes.get(key);
  const flush = async () => {
   if(!isActive())return 0;
@@ -1387,6 +1387,7 @@ function flushQueuedWrites({key, isActive, read, save, send, onError}) {
     break;
    }
    synced++;
+   onConfirmed?.(item);
   }
   return synced;
  };
@@ -1465,13 +1466,13 @@ function readLearningQueue(uid) {
  );
 }
 function writeLearningQueue(uid,items){try{localStorage.setItem(learningQueueKey(uid),JSON.stringify(items));return true}catch(e){console.error("File locale pédagogique indisponible",e);return false}}
-function applyLearningRecord(uid,data){
+function applyLearningRecord(uid,data,pending=false){
  const key=uid+":"+data.itemId;
  if(data.kind==="reflection"&&typeof data.value==="string")S.reflect[key]=data.value;
  if(data.kind==="practice"&&Array.isArray(data.value))S.practice[key]=data.value;
  if(data.kind==="submission"&&typeof data.value==="string"){
   S.subs=S.subs.filter(x=>!(x.hw===data.itemId&&x.u===uid));
-  S.subs.push({hw:data.itemId,u:uid,date:data.date||dayISO(),status:"rendu",pending:false,text:data.value});
+  S.subs.push({hw:data.itemId,u:uid,date:data.date||dayISO(),status:"rendu",pending,text:data.value});
  }
 }
 function enqueueLearning(uid,recordId,data){
@@ -1480,7 +1481,7 @@ function enqueueLearning(uid,recordId,data){
 }
 async function queueAndSyncLearning(uid,recordId,data){
  if(!enqueueLearning(uid,recordId,data)){toast("Impossible de mettre la saisie en file de synchronisation.");return}
- applyLearningRecord(uid,data);
+ applyLearningRecord(uid,data,true);
  if(navigator.onLine)await syncPendingLearning(uid);
 }
 async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
@@ -1494,7 +1495,13 @@ async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
   send:item=>WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   }),
-  onError:error=>console.error("Synchronisation pédagogique :",error)
+  onError:error=>console.error("Synchronisation pédagogique :",error),
+  onConfirmed:item=>{
+   if(item.data.kind==="submission"&&!readLearningQueue(uid).some(next=>next.recordId===item.recordId)){
+    applyLearningRecord(uid,item.data);
+    render();
+   }
+  }
  });
 }
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
@@ -1502,7 +1509,7 @@ async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
  if(!isCurrentFirebaseSession(uid,generation))return false;
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
  const pending=readLearningQueue(uid);
- pending.forEach(item=>applyLearningRecord(uid,item.data));
+ pending.forEach(item=>applyLearningRecord(uid,item.data,true));
  await syncPendingLearning(uid);
  return isCurrentFirebaseSession(uid,generation);
 }
