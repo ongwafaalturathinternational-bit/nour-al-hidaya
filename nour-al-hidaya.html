@@ -1399,8 +1399,21 @@ function flushQueuedWrites({key, isActive, read, save, send, onError}) {
  pending.then(cleanup,cleanup);
  return pending;
 }
+function readStoredQueue(key, isEntry) {
+ try {
+  const items = JSON.parse(localStorage.getItem(key) || "[]");
+  return Array.isArray(items) ? items.filter(item => item && typeof item === "object" && isEntry(item)) : [];
+ } catch {
+  return [];
+ }
+}
 const progressQueueKey=uid=>"nh_progress_queue_"+uid;
-function readProgressQueue(uid){try{return JSON.parse(localStorage.getItem(progressQueueKey(uid))||"[]")}catch(e){return[]}}
+function readProgressQueue(uid) {
+ return readStoredQueue(progressQueueKey(uid), item =>
+  (typeof item.lessonId === "string" || Number.isInteger(item.lessonId)) &&
+  Number.isFinite(item.score) && Number.isFinite(item.total)
+ );
+}
 function writeProgressQueue(uid,items){try{localStorage.setItem(progressQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale de progression indisponible",e)}}
 function enqueueProgress(uid,lessonId,score,total){
  const items=readProgressQueue(uid).filter(x=>String(x.lessonId)!==String(lessonId));
@@ -1445,7 +1458,12 @@ async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
 }
 /* ---------- synchronisation des autres données pédagogiques de l'apprenant ---------- */
 const learningQueueKey=uid=>"nh_learning_queue_"+uid;
-function readLearningQueue(uid){try{return JSON.parse(localStorage.getItem(learningQueueKey(uid))||"[]")}catch(e){return[]}}
+function readLearningQueue(uid) {
+ return readStoredQueue(learningQueueKey(uid), item =>
+  typeof item.recordId === "string" && item.recordId.length > 0 &&
+  item.data !== null && typeof item.data === "object" && !Array.isArray(item.data)
+ );
+}
 function writeLearningQueue(uid,items){try{localStorage.setItem(learningQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale pédagogique indisponible",e)}}
 function applyLearningRecord(uid,data){
  const key=uid+":"+data.itemId;

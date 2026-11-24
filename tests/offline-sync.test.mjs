@@ -155,3 +155,28 @@ test("un échec de confirmation locale ne compte pas l’écriture et interrompt
   assert.deepEqual(errors, ["stockage indisponible"]);
   assert.equal(items.length, 2);
 });
+
+test("les files Nour isolent les entrées locales illisibles et gardent les éléments valides", () => {
+  const readerSource = ["function readStoredQueue", "const progressQueueKey", "function readProgressQueue",
+    "const learningQueueKey", "function readLearningQueue"].map(marker => {
+    const offset = nour.indexOf(marker);
+    assert.notEqual(offset, -1);
+    const end = nour.indexOf(marker.startsWith("const") ? "\n" : "\n}", offset);
+    return nour.slice(offset, end + (marker.startsWith("const") ? 0 : 2));
+  }).join("\n");
+  const storage = new Map();
+  const { readProgressQueue, readLearningQueue } = vm.runInNewContext(
+    readerSource + "\n({ readProgressQueue, readLearningQueue })",
+    { localStorage: { getItem: key => storage.get(key) } },
+  );
+  const progress = { lessonId: 1, score: 2, total: 3 };
+  const learning = { recordId: "reflection_1", data: { kind: "reflection", value: "" } };
+  storage.set("nh_progress_queue_learner", JSON.stringify([null, {}, progress]));
+  storage.set("nh_learning_queue_learner", JSON.stringify([null, { recordId: "bad", data: [] }, learning]));
+  assert.deepEqual(JSON.parse(JSON.stringify(readProgressQueue("learner"))), [progress]);
+  assert.deepEqual(JSON.parse(JSON.stringify(readLearningQueue("learner"))), [learning]);
+  storage.set("nh_progress_queue_learner", "{}");
+  storage.set("nh_learning_queue_learner", "[");
+  assert.equal(readProgressQueue("learner").length, 0);
+  assert.equal(readLearningQueue("learner").length, 0);
+});
