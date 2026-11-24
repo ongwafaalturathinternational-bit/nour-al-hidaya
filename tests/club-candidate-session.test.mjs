@@ -190,3 +190,34 @@ test("le Club sérialise l’actualisation et permet une nouvelle tentative apr�
   await click();
   assert.equal(reloads, 2);
 });
+
+test("un dépôt Club en cours bloque une deuxième soumission de la même session", async () => {
+  const html = fs.readFileSync(new URL("../club-khuddam-inscription.html", import.meta.url), "utf8");
+  const source = html.match(/^\$\("applicationForm"\)\.addEventListener.*$/m)?.[0];
+  assert.ok(source);
+  let submit, reject, reloads = 0;
+  const actor = { uid: "candidate", reload() {
+    reloads++;
+    return new Promise((_, fail) => { reject = fail; });
+  } };
+  const messages = [];
+  const elements = {
+    applicationForm: { addEventListener: (_, callback) => { submit = callback; } },
+    privacyConsent: { checked: true },
+    submitApplication: { disabled: false },
+  };
+  vm.runInNewContext(source, {
+    navigator: { onLine: true }, currentUser: actor, authGeneration: 1,
+    $: id => elements[id], isCurrentSession: () => true,
+    console: { error() {} }, say: (_, level) => messages.push(level),
+  });
+  const event = { preventDefault() {} };
+  const pending = submit(event);
+  assert.equal(elements.submitApplication.disabled, true);
+  await submit(event);
+  assert.equal(reloads, 1);
+  reject(Error("hors réseau"));
+  await pending;
+  assert.equal(elements.submitApplication.disabled, false);
+  assert.deepEqual(messages, ["error"]);
+});
