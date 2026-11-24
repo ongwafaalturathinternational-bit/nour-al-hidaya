@@ -52,3 +52,17 @@ Avant activation, vérifier l’identité dédiée et les autorisations de lectu
 5. Désactiver la route et relever le retour à `503`. Consigner le SHA, les identifiants fictifs et les résultats. Garder les valeurs des secrets et les jetons hors du compte rendu.
 
 Les [contrôles API de la PR #87](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45367285593) ont réussi. La préparation de cette fiche ne modifie aucun projet Firebase ni accès.
+
+## Vérifications du jeton avant inscription
+
+Tester la route activée sur le build de la [PR #90](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/90), commit `b35351e3527a8a260cc896a8d90873d4aa41e028`, après validation de ses dépendances.
+
+| Cas sur un compte fictif | Résultat attendu |
+| --- | --- |
+| En-tête Bearer absent ou mal formé | HTTP 401 et en-tête `WWW-Authenticate: Bearer`. Aucune transaction. |
+| Jeton signé pour un autre projet de test ou jeton expiré | HTTP 401. Aucune transaction. |
+| Jeton valide avec adresse non vérifiée | HTTP 403. Aucune transaction. |
+| Compte désactivé ou périmètre retiré après obtention du jeton | Refus. Aucun dossier, reçu ni audit de création. |
+| Agent actif et autorisé sur les deux périmètres | Inscription `pending`, puis même identifiant lors d’un rejeu identique. |
+
+En cas de conflit d’écriture, vérifier que le compte et les périmètres sont contrôlés de nouveau. Consigner les statuts et les résultats de la recette avec des références fictives. [CI API du commit #90](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45368083513) réussie. Les scénarios Firebase staging restent à exécuter.
