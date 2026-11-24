@@ -93,3 +93,30 @@ test("unknown paths return 404", async () => {
   const response = await worker.fetch(new Request("https://example.test/api/other"));
   assert.equal(response.status, 404);
 });
+
+test("le point d’entrée Worker exige une activation explicite et les paramètres staging", async () => {
+  const env = {
+    WAT_ENABLE_AGENT_REGISTRATION: "true",
+    WAT_ENV: "staging",
+    FIREBASE_PROJECT_ID: "wat-connect-staging",
+    FIREBASE_CLIENT_EMAIL: "fake@wat-connect-staging.iam.gserviceaccount.com",
+    FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nFAKE\n-----END PRIVATE KEY-----",
+    TURNSTILE_SECRET_KEY: "test-only-placeholder",
+    WAT_REGISTRATION_HMAC_HEX: "ab".repeat(32),
+  };
+  const request = () => new Request("https://example.test/api/learning/registrations/agent", {
+    method: "POST", headers: { "content-type": "application/json" }, body: "{",
+  });
+  for (const overrides of [
+    { WAT_ENABLE_AGENT_REGISTRATION: "false" },
+    { WAT_ENV: "production" },
+    { FIREBASE_PROJECT_ID: "wat-connect" },
+    { WAT_REGISTRATION_HMAC_HEX: "invalid" },
+    { FIREBASE_PRIVATE_KEY: undefined },
+  ]) {
+    assert.equal((await worker.fetch(request(), { ...env, ...overrides })).status, 503);
+  }
+  const response = await worker.fetch(request(), env);
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "registration_json_invalid" });
+});
