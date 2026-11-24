@@ -56,6 +56,7 @@ test("rejects malformed or incomplete canonical records", () => {
 test("validates assignment registry and rejects duplicate or empty perimeter IDs", () => {
   const valid = { active: true, assignments: [{
     assignmentId: "assignment-a", active: true, scopeGrants: ["learning.groups.read"],
+    validFrom: null, validUntil: null,
     structureIds: ["structure-a"], programIds: ["program-a"],
   }] };
   assert.equal(validateLearningAssignmentRecord(valid).ok, true);

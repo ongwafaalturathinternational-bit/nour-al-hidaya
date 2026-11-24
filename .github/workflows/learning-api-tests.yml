@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - fix/lot8-club-onboarding-and-access
+      - feature/nour-central-management-foundation
     paths:
       - "workers/learning-api/**"
       - "tests/learning-api-*.test.js"
