@@ -2,13 +2,42 @@ name: Cloudflare staging preview
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/cloudflare-staging-preview.yml'
+      - 'wrangler.staging.json'
+      - 'scripts/prepare-capacitor-web.mjs'
+      - 'package.json'
 
 permissions:
   contents: read
 
 jobs:
+  validate-staging:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+
+      - name: Construire les ressources web
+        env:
+          WAT_FIREBASE_ENV: staging
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:android:web
+          node --check web-dist/firebase-init.js
+          grep -Fxq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
+
   deploy-staging:
-    if: github.ref == 'refs/heads/fix/lot8-club-onboarding-and-access'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/lot8-club-onboarding-and-access'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: staging
