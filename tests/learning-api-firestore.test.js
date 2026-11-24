@@ -85,6 +85,31 @@ test("Firestore assignment, idempotency receipt and audit writes commit atomical
   assert.equal(writes[2].update.name, "projects/wat-connect-staging/databases/(default)/documents/learningAuditLogs/event-1");
 });
 
+test("registration reads and writes share the same staging transaction and denied work rolls back", async () => {
+  const calls=[];
+  const client=createFirestoreRestClient(config,{
+    getAccessToken:async()=>token,
+    fetch:async(url,init)=>{
+      calls.push({url,body:init.body?JSON.parse(init.body):null});
+      return new Response(url.endsWith(":beginTransaction")?'{"transaction":"dHg="}':"{}",{status:200});
+    }
+  });
+  await client.runRegistrationTransaction(async firestore=>{
+    await firestore.getDocument("learningGroups","group-1");
+    await firestore.commitDocuments(["learningEnrollments","learningRegistrationReceipts","learningAuditLogs"].map(collection=>({
+      collection,id:"test-1",operation:"create",fields:{status:"pending"},precondition:{exists:false}
+    })));
+  });
+  assert.match(calls[0].url,/documents:beginTransaction$/);
+  assert.equal(new URL(calls[1].url).searchParams.get("transaction"),"dHg=");
+  assert.match(calls[2].url,/documents:commit$/);
+  assert.equal(calls[2].body.transaction,"dHg=");
+  assert.equal(calls.length,3);
+  await client.runRegistrationTransaction(async()=>({ok:false,status:403}));
+  assert.match(calls[4].url,/documents:rollback$/);
+  assert.deepEqual(calls[4].body,{transaction:"dHg="});
+});
+
 test("the registration commit requires all three create-only writes in staging", async () => {
   let request;
   const client = createFirestoreRestClient(config, {

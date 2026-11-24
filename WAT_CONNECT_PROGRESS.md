@@ -190,3 +190,6 @@ Branche codex/nour-inscription-atomique sur #56 (c3aa7ed, CI API réussie). Le s
 
 ## Reprise parcours agent Nour
 Branche codex/nour-inscription-agent, sur #57 (5d1f254, CI API réussie). Le service interne vérifie séparément la lecture du bénéficiaire dans son inscription active et le droit de création dans le groupe cible, puis prend programme, structure, site et période du groupe serveur. L’audit consigne l’acteur. 127 tests locaux. Le scope proposé learning.beneficiaries.create n’est attribué à aucun compte et les routes restent fermées. Les essais staging et le contrôle à l’écriture des références modifiées pendant la décision restent à traiter.
+
+## Transaction des inscriptions par agent
+Branche codex/nour-inscription-transaction sur #58 (`9bc81bf`, CI API réussie). Les lectures Firestore du contrôle agent, des références et du reçu passent par la même transaction que le lot d’écriture; si l’opération n’écrit rien, l’adaptateur demande l’annulation. 128 tests API locaux, transport HTTP simulé. La vérification de l’identité Firebase Auth reste extérieure à la transaction. Aucun accès distant et aucune route activée. La recette staging devra vérifier les écritures refusées si une référence change pendant la décision.
