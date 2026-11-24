@@ -31,3 +31,9 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - PR #50, branche work/suivi-qualite-wat. Arbitrage demandé à Codex dans la [discussion de #45](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/45#issuecomment-7119243219).
 - Dossier fictif Présidence–Secrétariat dans docs/RECETTE-PRESIDENCE-SECRETARIAT.md (commit a2a3c35). Les contrôles d’application restent à exécuter.
 - PR #49 repérée lors du second inventaire. Vérifier avec Codex les preuves de réservation d’un rappel avant de préparer la recette complète, en réutilisant la fiche Agenda.
+
+## Reprise immédiate — Agenda et Nour
+
+- Recette des reçus Agenda dans docs/RECETTE-AGENDA-RECONCILIATION.md (9860a2b). CI Firestore confirmée sur #49, #51, #52 et #53. Transport réel et affichage sur appareil restent à qualifier.
+- Recette de l’admission Nour dans docs/RECETTE-NOUR-ADMISSION-ET-PERIMETRES.md (fb3178c). CI API confirmée sur #54 et #55. Le parcours raccordé et des profils fictifs habilités restent nécessaires.
+- Prochaine reprise : relire les PR ouvertes et vérifier les éléments nouveaux sur les périmètres et la preuve d’admission. Compléter la recette transverse avec les modèles #36/#41. Aucun changement d’architecture ou de règles par Work.
