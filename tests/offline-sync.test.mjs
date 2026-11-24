@@ -136,3 +136,22 @@ test("deux onglets coordonnent l’envoi d’une même file quand Web Locks est 
   assert.deepEqual(sent, ["1"]);
   assert.deepEqual(items, []);
 });
+
+test("un échec de confirmation locale ne compte pas l’écriture et interrompt l’envoi", async () => {
+  const flush = createFlusher();
+  const items = [{ lessonId: "1" }, { lessonId: "2" }];
+  const sent = [];
+  const errors = [];
+  const count = await flush({
+    key: "progress:learner",
+    isActive: () => true,
+    read: () => items.slice(),
+    save: () => { throw Error("stockage indisponible"); },
+    send: async item => sent.push(item.lessonId),
+    onError: error => errors.push(error.message),
+  });
+  assert.equal(count, 0);
+  assert.deepEqual(sent, ["1"]);
+  assert.deepEqual(errors, ["stockage indisponible"]);
+  assert.equal(items.length, 2);
+});

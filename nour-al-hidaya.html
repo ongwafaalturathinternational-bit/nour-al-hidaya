@@ -1380,7 +1380,12 @@ function flushQueuedWrites({key, isActive, read, save, send, onError}) {
    catch(error){if(isActive())onError(error);continue}
    if(!isActive())break;
    // La file peut avoir changé pendant l’écriture. Retirer seulement le contenu confirmé.
-   save(read().filter(candidate=>JSON.stringify(candidate)!==serialized));
+   try {
+    save(read().filter(candidate=>JSON.stringify(candidate)!==serialized));
+   } catch(error) {
+    onError(error);
+    break;
+   }
    synced++;
   }
   return synced;
@@ -1412,7 +1417,7 @@ async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
   key:progressQueueKey(uid),
   isActive:()=>navigator.onLine&&isCurrentFirebaseSession(uid,generation),
   read:()=>readProgressQueue(uid),
-  save:items=>writeProgressQueue(uid,items),
+  save:items=>localStorage.setItem(progressQueueKey(uid),JSON.stringify(items)),
   send:item=>WATFirebase.db.collection("users").doc(uid).collection("progress").doc(String(item.lessonId)).set({
     lessonId:String(item.lessonId),score:Number(item.score),total:Number(item.total),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -1466,7 +1471,7 @@ async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
   key:learningQueueKey(uid),
   isActive:()=>navigator.onLine&&isCurrentFirebaseSession(uid,generation),
   read:()=>readLearningQueue(uid),
-  save:items=>writeLearningQueue(uid,items),
+  save:items=>localStorage.setItem(learningQueueKey(uid),JSON.stringify(items)),
   send:item=>WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   }),
