@@ -15,3 +15,7 @@ Dernière mise à jour : 24 novembre 2026 UTC. Point de reprise non graphique. L
 **Prochains lots.** Vérifier la CI Activités. Procédure et cas de recette Agenda/notifications dans docs/RECETTE-AGENDA-ET-RAPPELS.md. Poursuivre les cas de recette fonctionnelle des registres et le contrôle des accès, puis les chantiers indépendants agenda, notifications, actions sociales et administration après inventaire de leur état réel. Actualiser ce fichier à chaque lot. Les résultats staging avec comptes fictifs autorisés restent à obtenir pour Club, équipe, purge Firebase et Nour multi-onglets. Le développement Finance conserve la dépendance de validation du lot 8.
 
 **Cadre permanent.** La Présidence conçoit les maquettes. Les anciennes propositions restent des archives. Aucune intégration graphique non validée, fusion, mise en production, dépense ni modification des orientations sans autorisation. Les tâches planifiées reprennent à leur cadence.
+
+## Contrôles Agenda en cours
+
+Sur PR #47, la branche codex/agenda-controle-rappels prépare une notification à titre générique uniquement pour la révision publiée, un compte actif et un canal consenti. La clé est stable par événement, révision, destinataire et canal. Le futur traitement devra relire les droits et enregistrer cette clé atomiquement avant tout envoi.
