@@ -1,4 +1,5 @@
 const STAGING_PROJECT_ID = "wat-connect-staging";
+const STAGING_SERVICE_ACCOUNT_DOMAIN = STAGING_PROJECT_ID + ".iam.gserviceaccount.com";
 
 export function readServerConfig(env = {}) {
   const errors = [];
@@ -12,8 +13,9 @@ export function readServerConfig(env = {}) {
   }
 
   const clientEmail = String(env.FIREBASE_CLIENT_EMAIL ?? "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.iam\.gserviceaccount\.com$/.test(clientEmail)) {
-    errors.push("FIREBASE_CLIENT_EMAIL is missing or invalid");
+  const [accountName, domain, ...extra] = clientEmail.split("@");
+  if (!/^[a-z0-9-]+$/.test(accountName) || domain !== STAGING_SERVICE_ACCOUNT_DOMAIN || extra.length) {
+    errors.push("FIREBASE_CLIENT_EMAIL must belong to the approved staging project");
   }
 
   const privateKey = String(env.FIREBASE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n").trim();
