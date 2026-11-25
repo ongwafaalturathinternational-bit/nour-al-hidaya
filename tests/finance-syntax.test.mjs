@@ -594,6 +594,7 @@ test("le chargeur Finance résout les liens malgré les identifiants hérités",
   };
   const select = { value: "", replaceChildren() {}, add() {} };
   const context = {
+    financeSession: 1,
     canRead: true, canBudgetRead: true, canProjectsRead: true, canAccountsRead: true, canPeriodsRead: true,
     WATFirebase: { db: { collection(name) {
       return { async get() {
@@ -635,4 +636,24 @@ test("le chargeur Finance résout les liens malgré les identifiants hérités",
   }
   assert.equal(context.budgets[0].id, "financeBudgets-actual");
   assert.equal(context.budgets[0].projectName, "projects");
+});
+
+test("une lecture Finance tardive ne remplace pas les données de la nouvelle session", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\n").find(line => line.startsWith("async function load()"));
+  let finish;
+  const context = {
+    financeSession: 1,
+    canRead: false, canBudgetRead: true, canProjectsRead: false,
+    canAccountsRead: false, canPeriodsRead: false,
+    budgets: [{ id: "current" }],
+    WATFirebase: { db: { collection: () => ({
+      get: () => new Promise(resolve => { finish = resolve; })
+    }) } }
+  };
+  const pending = vm.runInNewContext(source + "\nload()", context);
+  context.financeSession++;
+  finish({ docs: [{ id: "old", data: () => ({}) }] });
+  await pending;
+  assert.equal(context.budgets[0].id, "current");
 });
