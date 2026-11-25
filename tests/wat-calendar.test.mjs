@@ -40,6 +40,20 @@ const event = {
   updatedAt:"2026-11-24T12:01:02Z"
 };
 
+test("le point d’entrée Agenda accepte uniquement la configuration Google de staging", async () => {
+  const request = new Request("https://staging.example/api/agenda/conseil-01/calendar.ics");
+  const env = {
+    WAT_ENV: "staging",
+    FIREBASE_PROJECT_ID: "wat-connect-staging",
+    WAT_ENABLE_AGENDA_EXPORT: "true",
+    FIREBASE_CLIENT_EMAIL: "agenda-test@wat-connect-staging.iam.gserviceaccount.com",
+    FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\\nfictif\\n-----END PRIVATE KEY-----"
+  };
+  assert.equal((await agendaWorker.fetch(request, env)).status, 401);
+  assert.equal((await agendaWorker.fetch(request, { ...env, FIREBASE_CLIENT_EMAIL: "agenda@prod.iam.gserviceaccount.com" })).status, 404);
+  assert.equal((await agendaWorker.fetch(request, { ...env, FIREBASE_PRIVATE_KEY: undefined })).status, 404);
+});
+
 test("un report et une annulation préservent l’identifiant et expriment la révision", () => {
   const first = exportCalendarEvent(event);
   const update = exportCalendarEvent({...event, revision:1, startsAt:"2026-11-26T09:30:00Z"});

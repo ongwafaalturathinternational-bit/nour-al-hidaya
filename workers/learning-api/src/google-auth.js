@@ -1,0 +1,195 @@
+const TOKEN_URI = "https://oauth2.googleapis.com/token";
+const FIREBASE_JWKS_URI = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
+const FIREBASE_ISSUER = "https://securetoken.google.com/";
+
+const encoder = new TextEncoder();
+const base64url = (bytes) => {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+};
+const encodeJson = (value) => base64url(encoder.encode(JSON.stringify(value)));
+const decodeJson = (value) => {
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) throw new Error("firebase_token_encoding_invalid");
+  const decoded = JSON.parse(atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4)));
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) throw new Error("firebase_token_payload_invalid");
+  return decoded;
+};
+
+function pemToBytes(pem) {
+  const body = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
+  const binary = atob(body);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+async function importPrivateKey(pem) {
+  return crypto.subtle.importKey(
+    "pkcs8",
+    pemToBytes(pem),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+}
+
+export async function createGoogleAccessToken(config, options = {}) {
+  const now = Math.floor((options.now ?? Date.now()) / 1000);
+  const fetcher = options.fetch ?? fetch;
+  const scope = options.scope ?? "https://www.googleapis.com/auth/datastore";
+  if (!["https://www.googleapis.com/auth/datastore",
+    "https://www.googleapis.com/auth/identitytoolkit"].includes(scope)) {
+    throw new Error("google_oauth_scope_not_allowed");
+  }
+  const assertionHeader = encodeJson({ alg: "RS256", typ: "JWT" });
+  const assertionClaims = encodeJson({
+    iss: config.firebaseClientEmail,
+    scope,
+    aud: TOKEN_URI,
+    iat: now,
+    exp: now + 3600,
+  });
+  const signingInput = assertionHeader + "." + assertionClaims;
+  const key = await importPrivateKey(config.firebasePrivateKey);
+  const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, encoder.encode(signingInput));
+  const assertion = signingInput + "." + base64url(new Uint8Array(signature));
+
+  const response = await fetcher(TOKEN_URI, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion,
+    }),
+  });
+  if (!response.ok) throw new Error("google_oauth_token_exchange_failed");
+  const payload = await response.json();
+  if (typeof payload.access_token !== "string" || !payload.access_token || payload.token_type !== "Bearer") {
+    throw new Error("google_oauth_invalid_token_response");
+  }
+  const expiresIn = Number(payload.expires_in);
+  if (!Number.isFinite(expiresIn) || expiresIn <= 0 || expiresIn > 3600) {
+    throw new Error("google_oauth_invalid_expiry");
+  }
+  return Object.freeze({ accessToken: payload.access_token, expiresAt: now + expiresIn });
+}
+
+/** Reads, but never changes, a Firebase Auth user record in the configured project. */
+export async function lookupFirebaseAuthUser(uid, config, options = {}) {
+  if (config?.environment !== "staging" || config?.firebaseProjectId !== "wat-connect-staging") {
+    throw new Error("firebase_auth_staging_configuration_required");
+  }
+  if (typeof uid !== "string" || !/^[A-Za-z0-9:_-]{1,128}$/.test(uid)) {
+    throw new Error("firebase_auth_uid_invalid");
+  }
+  const fetcher = options.fetch ?? fetch;
+  const token = await (options.getAccessToken ?? createGoogleAccessToken)(config, {
+    fetch: fetcher, now: options.now, scope: "https://www.googleapis.com/auth/identitytoolkit",
+  });
+  if (typeof token?.accessToken !== "string" || !token.accessToken) {
+    throw new Error("firebase_auth_access_token_invalid");
+  }
+  const response = await fetcher(
+    "https://identitytoolkit.googleapis.com/v1/projects/wat-connect-staging/accounts:lookup",
+    {
+      method: "POST",
+      redirect: "error",
+      headers: {
+        authorization: "Bearer " + token.accessToken,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ localId: [uid] }),
+    },
+  );
+  if (!response.ok) throw new Error("firebase_auth_lookup_failed_" + response.status);
+  const payload = await response.json();
+  if (!Array.isArray(payload?.users) || payload.users.length !== 1) return null;
+  const user = payload.users[0];
+  if (user?.localId !== uid || typeof user.disabled !== "boolean" ||
+      typeof user.emailVerified !== "boolean" || typeof user.validSince !== "string" ||
+      !/^\d+$/.test(user.validSince) || !Number.isFinite(Number(user.validSince))) {
+    throw new Error("firebase_auth_user_record_invalid");
+  }
+  return Object.freeze({
+    uid: user.localId,
+    disabled: user.disabled,
+    emailVerified: user.emailVerified,
+    validSince: Number(user.validSince),
+  });
+}
+
+let cachedKeys = null;
+let cachedKeysUntil = 0;
+
+export async function verifyFirebaseIdToken(token, projectId, options = {}) {
+  if (typeof token !== "string" || token.length > 8192) throw new Error("firebase_token_invalid");
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("firebase_token_invalid");
+
+  const header = decodeJson(parts[0]);
+  const claims = decodeJson(parts[1]);
+  if (header.alg !== "RS256" || typeof header.kid !== "string" || header.kid.length === 0 || header.kid.length > 256) throw new Error("firebase_token_header_invalid");
+
+  const now = Math.floor((options.now ?? Date.now()) / 1000);
+  const fetcher = options.fetch ?? fetch;
+  let keys = options.keys;
+  if (!keys) {
+    if (!cachedKeys || now >= cachedKeysUntil) {
+      const response = await fetcher(FIREBASE_JWKS_URI, { headers: { accept: "application/json" } });
+      if (!response.ok) throw new Error("firebase_signing_keys_unavailable");
+      const body = await response.json();
+      if (!Array.isArray(body.keys)) throw new Error("firebase_signing_keys_invalid");
+      cachedKeys = body.keys;
+      const cacheControl = response.headers.get("cache-control") ?? "";
+      const maxAge = Number(cacheControl.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1] ?? 300);
+      cachedKeysUntil = now + Math.min(Math.max(maxAge, 0), 3600);
+    }
+    keys = cachedKeys;
+  }
+  let jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
+  if (!jwk && !options.keys) {
+    cachedKeysUntil = 0;
+    const refresh = await fetcher(FIREBASE_JWKS_URI, { headers: { accept: "application/json" } });
+    if (!refresh.ok) throw new Error("firebase_signing_keys_unavailable");
+    const refreshed = await refresh.json();
+    if (!Array.isArray(refreshed.keys)) throw new Error("firebase_signing_keys_invalid");
+    cachedKeys = refreshed.keys;
+    const cacheControl = refresh.headers.get("cache-control") ?? "";
+    const maxAge = Number(cacheControl.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1] ?? 300);
+    cachedKeysUntil = now + Math.min(Math.max(maxAge, 60), 3600);
+    keys = cachedKeys;
+    jwk = keys.find((item) => item.kid === header.kid && item.kty === "RSA" && item.use === "sig");
+  }
+  if (!jwk) throw new Error("firebase_signing_key_not_found");
+
+  const publicKey = await crypto.subtle.importKey(
+    "jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"],
+  );
+  const signature = Uint8Array.from(atob(parts[2].replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - parts[2].length % 4) % 4)), (c) => c.charCodeAt(0));
+  const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKey, signature, encoder.encode(parts[0] + "." + parts[1]));
+  if (!valid) throw new Error("firebase_token_signature_invalid");
+
+  if (claims.aud !== projectId || claims.iss !== FIREBASE_ISSUER + projectId) throw new Error("firebase_token_project_invalid");
+  if (typeof claims.sub !== "string" || claims.sub.length === 0 || claims.sub.length > 128) throw new Error("firebase_token_subject_invalid");
+  if (!Number.isFinite(claims.exp) || claims.exp <= now) throw new Error("firebase_token_expired");
+  if (!Number.isFinite(claims.iat) || claims.iat > now + 300 || claims.exp - claims.iat > 3600) {
+    throw new Error("firebase_token_issued_at_invalid");
+  }
+  if (!Number.isFinite(claims.auth_time) || claims.auth_time > now + 300 || claims.auth_time > claims.iat) {
+    throw new Error("firebase_token_auth_time_invalid");
+  }
+  if (claims.nbf !== undefined && (!Number.isFinite(claims.nbf) || claims.nbf > now + 300)) {
+    throw new Error("firebase_token_not_yet_valid");
+  }
+
+  return Object.freeze({
+    uid: claims.sub,
+    email: typeof claims.email === "string" ? claims.email : null,
+    emailVerified: claims.email_verified === true,
+    claims,
+  });
+}
+
+export function resetFirebaseSigningKeyCacheForTests() {
+  cachedKeys = null;
+  cachedKeysUntil = 0;
+}
