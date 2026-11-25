@@ -1,0 +1,32 @@
+name: Paquet Agenda staging
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/agenda-staging-package.yml'
+      - 'wrangler.agenda.staging.json'
+      - 'workers/agenda-api/**'
+      - 'workers/learning-api/src/google-auth.js'
+      - 'lib/wat-calendar.mjs'
+      - 'tests/wat-calendar.test.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tester le parcours Agenda
+        run: node --test tests/wat-calendar.test.mjs
+      - name: Vérifier le paquet sans déploiement
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx --yes wrangler@4 deploy --dry-run --config wrangler.agenda.staging.json
