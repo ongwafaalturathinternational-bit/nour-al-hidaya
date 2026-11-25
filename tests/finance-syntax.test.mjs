@@ -657,3 +657,30 @@ test("une lecture Finance tardive ne remplace pas les données de la nouvelle se
   await pending;
   assert.equal(context.budgets[0].id, "current");
 });
+
+test("seule une erreur de la session Finance active est affichée", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const observer = html.split("\n").find(line => line.includes("WATFirebase.auth.onAuthStateChanged"));
+  const failures = [];
+  const messages = [];
+  let notify;
+  const WATFirebase = { ready: true, auth: { onAuthStateChanged: callback => { notify = callback; } } };
+  const context = {
+    window: { WATFirebase }, WATFirebase, financeSession: 0,
+    init() {
+      context.financeSession++;
+      return new Promise((_, reject) => { failures.push(reject); });
+    },
+    say: message => messages.push(message),
+    console: { error() {} }
+  };
+  vm.runInNewContext(observer, context);
+  notify({ uid: "former" });
+  notify({ uid: "current" });
+  failures[0](Error("former"));
+  await Promise.resolve();
+  assert.equal(messages.length, 0);
+  failures[1](Error("current"));
+  await Promise.resolve();
+  assert.equal(messages.length, 1);
+});
