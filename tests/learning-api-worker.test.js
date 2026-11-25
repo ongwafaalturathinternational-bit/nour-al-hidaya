@@ -111,6 +111,7 @@ test("le point d’entrée Worker exige une activation explicite et les paramèt
     { WAT_ENABLE_AGENT_REGISTRATION: "false" },
     { WAT_ENV: "production" },
     { FIREBASE_PROJECT_ID: "wat-connect" },
+    { FIREBASE_CLIENT_EMAIL: "fake@wat-connect.iam.gserviceaccount.com" },
     { WAT_REGISTRATION_HMAC_HEX: "invalid" },
     { FIREBASE_PRIVATE_KEY: undefined },
   ]) {
