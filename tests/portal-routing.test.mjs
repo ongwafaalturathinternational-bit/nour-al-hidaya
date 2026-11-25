@@ -67,3 +67,24 @@ test("le paquet conjoint contient la page Finance proposée au contrôleur", () 
   assert.match(read("../scripts/prepare-capacitor-web.mjs"), /"finance\.html"/);
   assert.match(read("../finance.html"), /financeSession/);
 });
+
+test("le raccourci Nour suit le profil accepté par le parcours apprenant", () => {
+  const portal = read("../index.html");
+  const source = portal.match(/^function show\(user,profile,staff,application\).*?^}/ms)?.[0];
+  assert.ok(source);
+  assert.match(read("../nour-al-hidaya.html"), /snap\.data\(\)\.role!=="apprenant"/);
+  const elements = { modules: { replaceChildren() {} } };
+  const links = [];
+  const show = vm.runInNewContext(source + "\nshow", {
+    roles: {},
+    $: id => elements[id] ??= {},
+    addModule: (...args) => links.push(args.at(-1))
+  });
+  show({}, {}, { scopes: ["learning.beneficiaries.create", "finance.control.read"] }, null);
+  assert.equal(elements.welcome.textContent, "Bienvenue, membre WAT");
+  assert.ok(links.includes("finance.html"));
+  assert.ok(!links.includes("nour-al-hidaya.html"));
+  links.length = 0;
+  show({}, { role: "apprenant" }, { scopes: [] }, null);
+  assert.ok(links.includes("nour-al-hidaya.html"));
+});
