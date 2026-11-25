@@ -575,3 +575,11 @@ test("l’interface financière charge l’identité visuelle WAT partagée", ()
   assert.match(brand, /--wat-deep:#103047/);
   assert.match(brand, /\.wat-crystal-surface/);
 });
+
+test("le chargement Finance conserve les identifiants des sept collections", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const load = html.split("\n").find(line => line.includes("async function load()"));
+  assert.ok(load);
+  assert.equal([...load.matchAll(/\{\.\.\.d\.data\(\),id:d\.id\}/g)].length, 7);
+  assert.doesNotMatch(load, /\{id:d\.id,\.\.\.d\.data\(\)\}/);
+});
