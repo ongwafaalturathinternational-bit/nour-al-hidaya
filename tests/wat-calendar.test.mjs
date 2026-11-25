@@ -1,6 +1,37 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createAgendaSessionVerifier } from "../workers/agenda-api/src/firebase-session.mjs";
 import { createCalendarReaders } from "../workers/agenda-api/src/calendar-readers.mjs";
+
+test("l’Agenda vérifie le compte Firebase et la révocation de sa session", async () => {
+  const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
+  const token = "jeton-fictif-non-utilisable";
+  const request = new Request("https://staging.example/agenda", {
+    headers: { Authorization: "Bearer " + token }
+  });
+  let validSince = 10;
+  let lookups = 0;
+  const dependencies = {
+    config,
+    async verifyFirebaseIdToken(received, project) {
+      assert.equal(received, token);
+      assert.equal(project, config.firebaseProjectId);
+      return { uid: "invite", emailVerified: true, claims: { auth_time: 10 } };
+    },
+    async lookupFirebaseAuthUser(uid, settings) {
+      lookups++;
+      assert.equal(settings, config);
+      return { uid, disabled: false, emailVerified: true, validSince };
+    }
+  };
+  const authenticate = createAgendaSessionVerifier(dependencies);
+  assert.equal(await authenticate(new Request(request.url)), null);
+  assert.equal(lookups, 0);
+  assert.deepEqual(await authenticate(request), { uid: "invite", emailVerified: true });
+  validSince = 11;
+  assert.equal(await authenticate(request), null);
+  assert.throws(() => createAgendaSessionVerifier({ ...dependencies, config: { ...config, environment: "prod" } }));
+});
 import agendaWorker, { createAgendaFirestoreWorker, createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
 import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 

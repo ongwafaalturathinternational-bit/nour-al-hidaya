@@ -1,5 +1,6 @@
 import { routeCalendarExport } from "../../../lib/wat-calendar.mjs";
 import { createAgendaFirestore, createCalendarReaders } from "./calendar-readers.mjs";
+import { createAgendaSessionVerifier } from "./firebase-session.mjs";
 
 export function createAgendaWorker({ calendar } = {}) {
   return {
@@ -27,4 +28,15 @@ export function createAgendaFirestoreWorker({ authenticate, getAccessToken, fetc
   if (typeof getAccessToken !== "function") return createAgendaWorker();
   const firestore = createAgendaFirestore({ getAccessToken, fetchDocument });
   return createAgendaWorker({ calendar: { authenticate, ...createCalendarReaders(firestore) } });
+}
+
+export function createAgendaFirebaseWorker({
+  config, verifyFirebaseIdToken, lookupFirebaseAuthUser, createGoogleAccessToken, fetchDocument
+}) {
+  const authenticate = createAgendaSessionVerifier({ config, verifyFirebaseIdToken, lookupFirebaseAuthUser });
+  return createAgendaFirestoreWorker({
+    authenticate,
+    getAccessToken: () => createGoogleAccessToken(config),
+    fetchDocument
+  });
 }
