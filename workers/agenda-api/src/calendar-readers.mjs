@@ -48,7 +48,7 @@ export function createCalendarReaders(firestore) {
         revision: Number(fields.revision?.integerValue ?? NaN),
         startsAt: fields.startsAt?.timestampValue,
         endsAt: fields.endsAt?.timestampValue,
-        updatedAt: fields.updatedAt?.timestampValue
+        updatedAt: fields.updatedAt?.timestampValue?.replace(/\.\d{1,9}Z$/, "Z")
       };
     }
   };

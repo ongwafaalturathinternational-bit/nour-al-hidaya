@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createAgendaSessionVerifier } from "../workers/agenda-api/src/firebase-session.mjs";
 import { createCalendarReaders } from "../workers/agenda-api/src/calendar-readers.mjs";
+import agendaWorker, { createAgendaFirebaseWorker, createAgendaFirestoreWorker, createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
+import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 
 test("l’Agenda vérifie le compte Firebase et la révocation de sa session", async () => {
   const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
@@ -32,9 +34,6 @@ test("l’Agenda vérifie le compte Firebase et la révocation de sa session", a
   assert.equal(await authenticate(request), null);
   assert.throws(() => createAgendaSessionVerifier({ ...dependencies, config: { ...config, environment: "prod" } }));
 });
-import agendaWorker, { createAgendaFirestoreWorker, createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
-import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
-
 const event = {
   id:"conseil-01", revision:0, status:"published",
   startsAt:"2026-11-26T09:00:00Z", endsAt:"2026-11-26T10:00:00Z",
@@ -53,6 +52,48 @@ test("un report et une annulation préservent l’identifiant et expriment la r�
   assert.match(update, /SEQUENCE:1/);
   assert.match(cancelled, /SEQUENCE:2/);
   assert.match(cancelled, /STATUS:CANCELLED/);
+});
+
+test("le parcours Agenda contrôle la session et remet un calendrier Firestore complet", async () => {
+  const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
+  const env = { WAT_ENV: "staging", FIREBASE_PROJECT_ID: config.firebaseProjectId, WAT_ENABLE_AGENDA_EXPORT: "true" };
+  const request = new Request("https://staging.example/api/agenda/" + event.id + "/calendar.ics", {
+    headers: { Authorization: "Bearer compte-de-recette-fictif" }
+  });
+  const root = "projects/wat-connect-staging/databases/(default)/documents/";
+  let audience = "invite";
+  let validSince = 10;
+  let firestoreRequests = 0;
+  const worker = createAgendaFirebaseWorker({
+    config,
+    verifyFirebaseIdToken: async () => ({ uid: "invite", emailVerified: true, claims: { auth_time: 10 } }),
+    lookupFirebaseAuthUser: async () => ({ uid: "invite", disabled: false, emailVerified: true, validSince }),
+    createGoogleAccessToken: async () => "oauth-fictif",
+    async fetchDocument(url) {
+      firestoreRequests++;
+      const name = url.slice("https://firestore.googleapis.com/v1/".length);
+      if (name === root + "agendaRecipients/invite") {
+        return Response.json({ name, fields: { active: { booleanValue: true } } });
+      }
+      assert.equal(name, root + "agendaEvents/" + event.id);
+      return Response.json({ name, fields: {
+        audience: { arrayValue: { values: [{ stringValue: audience }] } },
+        status: { stringValue: event.status },
+        revision: { integerValue: String(event.revision) },
+        startsAt: { timestampValue: event.startsAt },
+        endsAt: { timestampValue: event.endsAt },
+        updatedAt: { timestampValue: event.updatedAt.replace("Z", ".123456Z") }
+      } });
+    }
+  });
+  const allowed = await worker.fetch(request, env);
+  assert.equal(allowed.status, 200);
+  assert.equal(await allowed.text(), exportCalendarEvent(event));
+  audience = "autre";
+  assert.equal((await worker.fetch(request, env)).status, 404);
+  validSince = 11;
+  assert.equal((await worker.fetch(request, env)).status, 401);
+  assert.equal(firestoreRequests, 4);
 });
 
 test("l’export local plie les longues lignes et omet les données privées", () => {
