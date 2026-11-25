@@ -1,0 +1,16 @@
+{
+  "agendaRecipients": {
+    "recette-agenda-invite": { "active": { "booleanValue": true } },
+    "recette-agenda-exterieur": { "active": { "booleanValue": true } }
+  },
+  "agendaEvents": {
+    "recette-agenda-conseil": {
+      "audience": { "arrayValue": { "values": [{ "stringValue": "recette-agenda-invite" }] } },
+      "status": { "stringValue": "published" },
+      "revision": { "integerValue": "0" },
+      "startsAt": { "timestampValue": "2026-11-26T09:00:00Z" },
+      "endsAt": { "timestampValue": "2026-11-26T10:00:00Z" },
+      "updatedAt": { "timestampValue": "2026-11-24T12:01:02.123456Z" }
+    }
+  }
+}

@@ -9,6 +9,7 @@ on:
       - 'workers/learning-api/src/google-auth.js'
       - 'lib/wat-calendar.mjs'
       - 'tests/wat-calendar.test.mjs'
+      - 'tests/fixtures/agenda-staging.json'
 
 permissions:
   contents: read

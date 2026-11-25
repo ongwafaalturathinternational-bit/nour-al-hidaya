@@ -29,6 +29,8 @@ Premier lot code envisageable : modèle d’événement et export iCalendar loca
 
 La configuration `wrangler.agenda.staging.json` cible le Worker Agenda dédié. Elle désactive l’export et les URL publiques par défaut. Utiliser une adresse de staging approuvée pour la recette distante.
 
+Le jeu [agenda-staging.json](../tests/fixtures/agenda-staging.json) fournit les champs Firestore typés du scénario. Sur une instance autorisée, remplacer les deux identifiants de profils et l’identifiant dans l’audience par les UID des comptes fictifs correspondants.
+
 1. Vérifier le paquet avec `npx wrangler@4 deploy --dry-run --config wrangler.agenda.staging.json`. Le contrôle local se lance aussi avec `node --test tests/wat-calendar.test.mjs`.
 2. Sur l’instance de recette uniquement, associer le compte de service du projet `wat-connect-staging` disposant des droits de lecture Firestore et de consultation Firebase Auth nécessaires. Fournir `FIREBASE_CLIENT_EMAIL` et `FIREBASE_PRIVATE_KEY` via les secrets de l’environnement. Activer `WAT_ENABLE_AGENDA_EXPORT` après configuration de l’adresse approuvée.
 3. Créer des profils et événements fictifs dans `agendaRecipients` et `agendaEvents`. Utiliser un compte invité vérifié et actif, et un compte vérifié extérieur à l’audience. Pour le cas de révocation, utiliser une session distincte d’un compte fictif.
