@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport } from "../lib/wat-calendar.mjs";
+import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport } from "../lib/wat-calendar.mjs";
 
 const event = {
   id:"conseil-01", revision:0, status:"published",
@@ -81,4 +81,35 @@ test("le service Agenda relit l’invitation et le profil du compte vérifié", 
   assert.equal(await loadCalendarExport({ ...input, readEvent: async () => ({
     ...stored, status: "draft"
   }) }), null);
+});
+
+test("la réponse HTTP Agenda protège le téléchargement et masque les événements non accessibles", async () => {
+  const request = new Request("https://staging.example/agenda");
+  const inputs = {
+    authenticate: async () => ({ uid: "invite-fictif", emailVerified: true }),
+    readRecipient: async uid => ({ uid, active: true }),
+    readEvent: async () => ({ ...event, audience: ["invite-fictif"] })
+  };
+  const allowed = await respondWithCalendarExport(request, event.id, inputs);
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers.get("Content-Type"), "text/calendar; charset=utf-8");
+  assert.equal(allowed.headers.get("Content-Disposition"), 'attachment; filename="wat-agenda.ics"');
+  assert.equal(allowed.headers.get("Cache-Control"), "private, no-store");
+  assert.equal(await allowed.text(), exportCalendarEvent(event));
+  const denied = await respondWithCalendarExport(request, event.id, {
+    ...inputs, readEvent: async () => ({ ...event, audience: ["autre"] })
+  });
+  const missing = await respondWithCalendarExport(request, event.id, { ...inputs, readEvent: async () => null });
+  for (const response of [denied, missing]) {
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(await response.text(), "");
+  }
+  assert.equal((await respondWithCalendarExport(request, event.id, {
+    ...inputs, authenticate: async () => null
+  })).status, 401);
+  const post = new Request(request.url, { method: "POST" });
+  const invalid = await respondWithCalendarExport(post, event.id, { authenticate: assert.fail });
+  assert.equal(invalid.status, 405);
+  assert.equal(invalid.headers.get("Allow"), "GET");
 });
