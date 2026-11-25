@@ -180,3 +180,222 @@ test("les files Nour isolent les entrées locales illisibles et gardent les él�
   assert.equal(readProgressQueue("learner").length, 0);
   assert.equal(readLearningQueue("learner").length, 0);
 });
+
+test("Nour signale un refus du stockage local pour les deux files", async () => {
+  const messages = [];
+  const queues = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({queueAndSyncProgress,queueAndSyncLearning})",
+    {
+      localStorage: {
+        getItem: () => "[]",
+        setItem: () => { throw Error("quota"); }
+      },
+      toast: message => messages.push(message),
+      console: { error() {} }
+    }
+  );
+  await queues.queueAndSyncProgress("learner", "1", 1, 2);
+  await queues.queueAndSyncLearning("learner", "reflection_1", { value: "test" });
+  assert.equal(messages.length, 2);
+  assert.ok(messages.every(message => /file de synchronisation/.test(message)));
+});
+
+test("un devoir Nour reste en attente jusqu’à la confirmation de son envoi", async () => {
+  const stored = new Map();
+  const state = { subs: [] };
+  const confirmations = [];
+  const navigator = { onLine: false };
+  const user = { emailVerified: true };
+  const firebase = {
+    ready: true,
+    auth: { currentUser: user },
+    db: {
+      collection() { return this; },
+      doc() { return this; },
+      set() { return new Promise(resolve => { confirmations.push(resolve); }); }
+    }
+  };
+  const queues = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({queueAndSyncLearning,syncPendingLearning})",
+    {
+      S: state,
+      navigator,
+      localStorage: { getItem: key => stored.get(key), setItem: (key, value) => stored.set(key, value) },
+      window: { WATFirebase: firebase },
+      WATFirebase: firebase,
+      firebase: { firestore: { FieldValue: { serverTimestamp() {} } } },
+      firebaseAuthGeneration: 0,
+      isCurrentFirebaseSession: () => true,
+      render() {},
+      console
+    }
+  );
+
+  const data = { kind: "submission", itemId: "1", value: "devoir", date: "2026-11-24" };
+  await queues.queueAndSyncLearning("learner", "submission_1", data);
+  assert.equal(state.subs[0].pending, true);
+  navigator.onLine = true;
+  const flush = queues.syncPendingLearning("learner");
+  assert.equal(state.subs[0].pending, true);
+  const edited = queues.queueAndSyncLearning("learner", "submission_1", {
+    ...data, value: "devoir modifié"
+  });
+  confirmations.shift()();
+  assert.equal(await flush, 1);
+  assert.equal(state.subs[0].text, "devoir modifié");
+  assert.equal(state.subs[0].pending, true);
+  assert.equal(confirmations.length, 1);
+  confirmations.shift()();
+  await edited;
+  assert.equal(state.subs[0].text, "devoir modifié");
+  assert.equal(state.subs[0].pending, false);
+});
+
+test("la reprise restaure un devoir local même si la lecture distante échoue", async () => {
+  const state = { subs: [] };
+  const user = { emailVerified: true };
+  const firebase = {
+    ready: true,
+    auth: { currentUser: user },
+    db: {
+      collection() { return this; },
+      doc() { return this; },
+      async get() { throw Error("cache distant indisponible"); }
+    }
+  };
+  const load = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\nloadFirebaseLearning",
+    {
+      S: state,
+      WATFirebase: firebase,
+      localStorage: { getItem: () => JSON.stringify([{
+        recordId: "submission_1",
+        data: { kind: "submission", itemId: "1", value: "test", date: "2026-11-24" }
+      }]) },
+      isCurrentFirebaseSession: () => true,
+      firebaseAuthGeneration: 0
+    }
+  );
+  await assert.rejects(load("learner"), /cache distant indisponible/);
+  assert.equal(state.subs[0].text, "test");
+  assert.equal(state.subs[0].pending, true);
+});
+
+test("la reprise restaure un résultat de quiz avant une lecture distante indisponible", async () => {
+  const state = { done: {} };
+  const db = {
+    collection() { return this; },
+    doc() { return this; },
+    async get() { throw Error("cache distant indisponible"); }
+  };
+  const load = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\nloadFirebaseProgress",
+    {
+      S: state,
+      AVAIL: [1],
+      WATFirebase: { db },
+      localStorage: { getItem: () => JSON.stringify([{ lessonId: "1", score: 2, total: 3 }]) },
+      isCurrentFirebaseSession: () => true,
+      firebaseAuthGeneration: 0
+    }
+  );
+  await assert.rejects(load("learner"), /cache distant indisponible/);
+  assert.equal(state.done.learner[1].s, 2);
+  assert.equal(state.done.learner[1].t, 3);
+});
+
+test("une lecture distante refusée ne bloque pas l’envoi des files au démarrage en ligne", async () => {
+  const stored = new Map([
+    ["nh_progress_queue_learner", JSON.stringify([{ lessonId: "1", score: 2, total: 3 }])],
+    ["nh_learning_queue_learner", JSON.stringify([{ recordId: "reflection_1",
+      data: { kind: "reflection", itemId: "1", value: "test" } }])]
+  ]);
+  const sent = [];
+  const db = {
+    collection() { return this; },
+    doc() { return this; },
+    async get() { throw Error("lecture indisponible"); },
+    async set(data) { sent.push(data); }
+  };
+  const WATFirebase = { ready: true, auth: { currentUser: { emailVerified: true } }, db };
+  const app = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({loadFirebaseProgress,loadFirebaseLearning})",
+    {
+      S: { done: {}, reflect: {} }, AVAIL: [1],
+      window: { WATFirebase }, WATFirebase, navigator: { onLine: true },
+      localStorage: { getItem: key => stored.get(key), setItem: (key, value) => stored.set(key, value) },
+      firebase: { firestore: { FieldValue: { serverTimestamp() {} } } },
+      isCurrentFirebaseSession: () => true, firebaseAuthGeneration: 0, console
+    }
+  );
+  await assert.rejects(app.loadFirebaseProgress("learner"), /lecture indisponible/);
+  await assert.rejects(app.loadFirebaseLearning("learner"), /lecture indisponible/);
+  assert.equal(sent.length, 2);
+  assert.equal(stored.get("nh_progress_queue_learner"), "[]");
+  assert.equal(stored.get("nh_learning_queue_learner"), "[]");
+});
+
+test("un chargement de progression lent ne bloque pas la reprise des saisies pédagogiques", async () => {
+  const startEntry = nour.indexOf("async function enterFirebaseUser");
+  const user = { uid: "learner", emailVerified: true, async reload() {} };
+  const started = [];
+  let finishProgress;
+  const entered = vm.runInNewContext(
+    nour.slice(startEntry, nour.indexOf("/* ---------- actions", startEntry)) + "\nenterFirebaseUser",
+    {
+      WATFirebase: {
+        auth: { currentUser: user },
+        db: { collection() { return this; }, doc() { return this; },
+          async get() { return { exists: true, data: () => ({ role: "apprenant" }) }; } }
+      },
+      S: { done: {} }, R: {}, learner: () => ({}),
+      isCurrentFirebaseSession: () => true,
+      loadFirebaseProgress: () => new Promise(resolve => {
+        started.push("progress");
+        finishProgress = resolve;
+      }),
+      loadFirebaseLearning: async () => { started.push("learning"); },
+      save() {}, render() {}, console
+    }
+  )(user, 0);
+
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(started, ["progress", "learning"]);
+  finishProgress();
+  assert.equal(await entered, true);
+});
+
+test("une réponse de l’ancienne session est ignorée après reconnexion du même compte", async () => {
+  let generation = 1;
+  const reads = [];
+  const state = { done: {}, reflect: {} };
+  const WATFirebase = { db: {
+    collection() { return this; },
+    doc() { return this; },
+    get() { return new Promise(resolve => reads.push(resolve)); }
+  } };
+  const app = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({loadFirebaseProgress,loadFirebaseLearning})",
+    {
+      S: state, AVAIL: [1], WATFirebase,
+      localStorage: { getItem: () => "[]" },
+      isCurrentFirebaseSession: (uid, requested) => uid === "learner" && requested === generation
+    }
+  );
+
+  const pending = [app.loadFirebaseProgress("learner", 1), app.loadFirebaseLearning("learner", 1)];
+  assert.equal(reads.length, 2);
+  generation = 2;
+  for (const resolve of reads) {
+    resolve({ forEach() { assert.fail("Ancienne réponse appliquée à la nouvelle session"); } });
+  }
+  assert.deepEqual(await Promise.all(pending), [false, false]);
+  assert.equal(state.done.learner[1], undefined);
+  assert.deepEqual(state.reflect, {});
+});
