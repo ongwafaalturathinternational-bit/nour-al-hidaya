@@ -63,3 +63,10 @@ La [PR #97](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/p
 | WAT, registres et session | Lier des fiches fictives Programme, Projet et Activité, affecter un volontaire et mettre à jour une présence. Dans l’Annuaire, désactiver puis réactiver une fiche de test et vérifier son statut après rechargement. Après déconnexion, vérifier l’isolation des données entre comptes. |
 
 Consigner le SHA, le modèle de téléphone, la version Android, le rôle du compte fictif, le résultat et les écarts. Les simulations Edge couvrent la navigation et les traitements asynchrones Club. L’appareil physique, TalkBack et les opérations avec Firebase staging restent à vérifier.
+
+
+## Recette ciblée des files Nour
+
+La référence intégrée du tableau précédent reste la PR #97 pour les parcours WAT, Annuaire et Club. Pour les reprises de quiz et devoirs, utiliser séparément l’[APK de la PR #110](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45491215592/artifacts/14967405240), SHA `0959fd643d4d593ad5f1995878285cd41b5144c7`. Le [build Android](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45491215592) et le [contrôle Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45491215197) ont réussi. La [PR #111](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/111) ajoute uniquement un test de reconnexion du même compte, avec [185 tests CI réussis](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45591316569).
+
+Sur téléphone physique avec un compte de staging vérifié, créer un score et un devoir textuel en mode avion, redémarrer avant le retour du réseau, puis relever la restauration des deux saisies et la disparition de l’état en attente après confirmation du devoir. Vérifier ensuite le résultat depuis une seconde session du même compte. Consigner séparément les résultats des deux APK avec leur SHA. La validation conjointe des piles et la recette physique restent ouvertes.
