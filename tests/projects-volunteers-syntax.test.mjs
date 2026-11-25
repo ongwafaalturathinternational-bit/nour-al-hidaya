@@ -30,7 +30,10 @@ test("un changement de session libère les formulaires des registres", async () 
       await submit({preventDefault(){}});
       assert.equal(element(button).disabled,true);
     }
+    element("message").textContent = "ancienne session";
     vm.runInContext(clear + "\nclearPrivateView();",context);
+    assert.equal(element("message").textContent, "", file);
+    assert.equal(element("message").hidden, true, file);
     for (const button of Object.values(forms)) assert.equal(element(button).disabled,false);
   }
 });
