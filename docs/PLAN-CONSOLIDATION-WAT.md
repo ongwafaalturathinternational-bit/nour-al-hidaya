@@ -82,3 +82,12 @@ Sur le téléphone, utiliser cet APK pour dérouler les scénarios des deux sect
 Pour la prochaine recette conjointe, utiliser [l’APK de la PR #116](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45594473309/artifacts/15011109139) au SHA `772c0b91228fc6a0c7890655cd98d902b1951158`. L’[archive web du même SHA](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45594473180/artifacts/15010709927) sert à vérifier le service worker dans un navigateur. Les builds ont validé les trois SDK locaux et leurs références dans les pages. Les contrôles applicatifs et Firestore de la PR #112 documentent le socle commun.
 
 Pour la recette web, démarrer sur un hôte de recette isolé, attendre que le service worker contrôle la page, couper le réseau et recharger le point d’entrée. Vérifier que les trois SDK sont servis depuis le cache. Sur Android, suivre séparément les scénarios métier de la recette conjointe avec des comptes fictifs de staging.
+
+## Recette Finance et changement de compte
+
+La pile [#119](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/119), [#120](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/120) et [#121](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/121) conserve les identifiants Firestore et isole les chargements du registre par session. La dernière [CI](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45598133647) a passé 198 tests au SHA `4c69353e3624b544b197dfef667bb8cccf92d09e`. Le paquet conjoint référencé plus haut ne couvre pas cette pile Finance.
+
+1. Depuis un aperçu isolé de ce SHA, vérifier que le projet Firebase sélectionné est `wat-connect-staging`. Utiliser un compte de test Finance et un second compte fictif dépourvu de droits Finance. Préparer uniquement des fiches fictives de staging.
+2. Sur le premier compte, ouvrir le registre et vérifier qu’une transaction liée à un projet et à un compte présente les deux libellés attendus. Vérifier qu’un compte aux droits limités affiche uniquement les sections qu’il peut consulter.
+3. Avec le réseau ralenti, lancer un chargement Finance, puis se déconnecter et ouvrir la session du second compte. Le registre doit rester masqué et une réponse ou une erreur tardive de la première session ne doit pas réafficher ses résultats ni son message d’erreur.
+4. Relever le SHA, l’environnement choisi, les résultats par scénario et les écarts. La recette avec comptes staging reste ouverte.
