@@ -1,3 +1,4 @@
+import vm from "node:vm";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -55,4 +56,14 @@ test("le portail masque son contenu public après authentification sans référe
 test("le portail conserve le mot de passe après un refus et le vide après une connexion acceptée", () => {
   const portal = read("../index.html");
   assert.match(portal, /finally\{if\(signedIn\)\$\("password"\)\.value="";b\.disabled=false/);
+});
+
+test("le paquet conjoint contient la page Finance proposée au contrôleur", () => {
+  const route = read("../index.html").match(/if\(scopes\.includes\("finance\.read"\)[^;\r\n]*?"finance\.html"\)/)?.[0];
+  assert.ok(route);
+  const links = [];
+  vm.runInNewContext(route, { scopes: ["finance.control.read"], addModule: (...args) => links.push(args.at(-1)) });
+  assert.deepEqual(links, ["finance.html"]);
+  assert.match(read("../scripts/prepare-capacitor-web.mjs"), /"finance\.html"/);
+  assert.match(read("../finance.html"), /financeSession/);
 });

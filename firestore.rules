@@ -544,6 +544,601 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    function validFinanceDate(value) {
+      return value is string
+        && (
+          value.matches("^[0-9]{4}-((01|03|05|07|08|10|12)-(0[1-9]|[12][0-9]|3[01])|(04|06|09|11)-(0[1-9]|[12][0-9]|30)|02-(0[1-9]|1[0-9]|2[0-8]))$")
+          || value.matches("^([0-9]{2}(0[48]|[2468][048]|[13579][26])|(0[48]|[2468][048]|[13579][26])00)-02-29$")
+        );
+    }
+
+    match /financeAccounts/{accountId} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.accounts.manage");
+
+      allow create: if staffHasScope("finance.accounts.manage")
+        && request.resource.data.keys().hasOnly([
+          "name", "type", "institution", "reference", "currency", "status", "openingBalance", "openingDate", "openingFiscalYear", "openingReference",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "type", "currency", "status", "openingBalance", "openingDate", "openingFiscalYear", "openingReference",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.type in ["caisse", "banque", "mobile_money"]
+        && (!("institution" in request.resource.data) || (request.resource.data.institution is string && request.resource.data.institution.size() <= 120))
+        && (!("reference" in request.resource.data) || (request.resource.data.reference is string && request.resource.data.reference.size() <= 4))
+        && request.resource.data.currency == "XOF"
+        && request.resource.data.openingBalance is int
+        && request.resource.data.openingBalance >= 0
+        && request.resource.data.openingBalance <= 1000000000000
+        && request.resource.data.openingDate is string
+        && validFinanceDate(request.resource.data.openingDate)
+        && request.resource.data.openingFiscalYear is string
+        && request.resource.data.openingFiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.openingDate.matches("^" + request.resource.data.openingFiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.openingFiscalYear))
+        && request.resource.data.openingReference is string
+        && request.resource.data.openingReference.size() <= 120
+        && request.resource.data.status == "actif"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      // Un compte ne peut être que clôturé; son identité et ses références restent immuables.
+      allow update: if staffHasScope("finance.accounts.manage")
+        && (staffHasScope("finance.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate"))
+        && resource.data.status == "actif"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt", "updatedBy"])
+        && request.resource.data.status == "clos"
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.currency == resource.data.currency
+        && request.resource.data.openingBalance == resource.data.openingBalance
+        && request.resource.data.openingDate == resource.data.openingDate
+        && request.resource.data.openingFiscalYear == resource.data.openingFiscalYear
+        && request.resource.data.openingReference == resource.data.openingReference
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    match /financeTransactions/{transactionId} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate");
+
+      // Une opération est créée comme soumise; elle ne touche jamais le solde avant validation.
+      allow create: if staffHasScope("finance.manage")
+        && request.resource.data.keys().hasOnly([
+          "type", "category", "amount", "date", "counterparty", "paymentMethod",
+          "reference", "description", "status", "projectId", "projectName", "evidenceRef", "accountId", "accountName", "fiscalYear",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "type", "category", "amount", "date", "counterparty", "paymentMethod",
+          "reference", "description", "status", "fiscalYear", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.type in ["recette", "depense"]
+        && request.resource.data.category is string
+        && request.resource.data.category.size() >= 2
+        && request.resource.data.category.size() <= 40
+        && ((request.resource.data.type == "recette"
+          && request.resource.data.category in ["don", "cotisation", "subvention", "collecte", "vente", "autre"])
+          || (request.resource.data.type == "depense"
+          && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "logistique", "communication", "transport", "equipement", "autre"]))
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.date is string
+        && validFinanceDate(request.resource.data.date)
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
+        && request.resource.data.counterparty is string
+        && request.resource.data.counterparty.size() <= 140
+        && request.resource.data.paymentMethod in ["especes", "mobile_money", "virement", "cheque", "nature"]
+        && (request.resource.data.type == "recette" || request.resource.data.paymentMethod != "nature")
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 3
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.status == "soumise"
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
+        && (!("evidenceRef" in request.resource.data) || (
+          request.resource.data.evidenceRef is string
+          && request.resource.data.evidenceRef.size() <= 180
+        ))
+        && (!( "accountId" in request.resource.data) || (
+          request.resource.data.accountId is string
+          && request.resource.data.accountId.size() >= 1
+          && request.resource.data.accountId.size() <= 100
+          && request.resource.data.paymentMethod != "nature"
+          && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId))
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.status == "actif"
+          && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.type ==
+            (request.resource.data.paymentMethod == "especes" ? "caisse" :
+              request.resource.data.paymentMethod == "mobile_money" ? "mobile_money" : "banque")
+          && request.resource.data.accountName is string
+          && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
+          && request.resource.data.date >= get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.openingDate
+        ))
+        && (!("accountName" in request.resource.data) || ("accountId" in request.resource.data))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      // Les opérations sont immuables après soumission. Seul un validateur distinct peut les traiter.
+      allow update: if staffHasScope("finance.validate")
+        && request.auth.uid != resource.data.createdBy
+        && resource.data.status == "soumise"
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.category == resource.data.category
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.fiscalYear == resource.data.fiscalYear
+        && request.resource.data.counterparty == resource.data.counterparty
+        && request.resource.data.paymentMethod == resource.data.paymentMethod
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "validatedAt", "validatedBy", "rejectedAt", "rejectedBy",
+          "rejectionReason", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && (
+          (request.resource.data.status == "validee"
+            && (!( "accountId" in resource.data) || (exists(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)) && get(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)).data.status == "actif"))
+            && !exists(/databases/$(database)/documents/financePeriods/$(resource.data.fiscalYear))
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && !("rejectedAt" in request.resource.data)
+            && !("rejectedBy" in request.resource.data)
+            && !("rejectionReason" in request.resource.data))
+          ||
+          (request.resource.data.status == "rejetee"
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && !("validatedAt" in request.resource.data)
+            && !("validatedBy" in request.resource.data))
+        );
+
+      allow delete: if false;
+    }
+
+    match /financeReconciliations/{reconciliationId} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate");
+      allow create: if staffHasScope("finance.manage")
+        && request.resource.data.keys().hasOnly([
+          "accountId", "accountName", "date", "fiscalYear", "statementBalance",
+          "systemBalanceSnapshot", "difference", "reference", "note", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "accountId", "accountName", "date", "fiscalYear", "statementBalance",
+          "systemBalanceSnapshot", "difference", "reference", "note", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.accountId is string
+        && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId))
+        && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.status == "actif"
+        && request.resource.data.accountName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.name
+        && request.resource.data.date >= get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.accountId)).data.openingDate
+        && request.resource.data.date is string
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && validFinanceDate(request.resource.data.date)
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
+        && request.resource.data.statementBalance is int
+        && request.resource.data.statementBalance >= 0
+        && request.resource.data.statementBalance <= 1000000000000
+        && request.resource.data.systemBalanceSnapshot is int
+        && request.resource.data.systemBalanceSnapshot >= -1000000000000
+        && request.resource.data.systemBalanceSnapshot <= 1000000000000
+        && request.resource.data.difference is int
+        && request.resource.data.difference >= -1000000000000
+        && request.resource.data.difference <= 1000000000000
+        && request.resource.data.difference == request.resource.data.statementBalance - request.resource.data.systemBalanceSnapshot
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 120
+        && request.resource.data.note is string
+        && request.resource.data.note.size() >= 5
+        && request.resource.data.note.size() <= 800
+        && request.resource.data.status == "soumise"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("finance.validate")
+        && request.auth.uid != resource.data.createdBy
+        && resource.data.status == "soumise"
+        && request.resource.data.accountId == resource.data.accountId
+        && request.resource.data.accountName == resource.data.accountName
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.fiscalYear == resource.data.fiscalYear
+        && request.resource.data.statementBalance == resource.data.statementBalance
+        && request.resource.data.systemBalanceSnapshot == resource.data.systemBalanceSnapshot
+        && request.resource.data.difference == resource.data.difference
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.note == resource.data.note
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "validatedAt", "validatedBy", "rejectedAt", "rejectedBy",
+          "rejectionReason", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && (
+          (request.resource.data.status == "validee"
+            && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId))
+            && get(/databases/$(database)/documents/financeAccounts/$(resource.data.accountId)).data.status == "actif"
+            && !exists(/databases/$(database)/documents/financePeriods/$(resource.data.fiscalYear))
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && !("rejectedAt" in request.resource.data)
+            && !("rejectedBy" in request.resource.data)
+            && !("rejectionReason" in request.resource.data))
+          ||
+          (request.resource.data.status == "rejetee"
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && !("validatedAt" in request.resource.data)
+            && !("validatedBy" in request.resource.data))
+        );
+      allow delete: if false;
+    }
+
+    match /financePeriods/{year} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.periods.manage");
+
+      allow create: if staffHasScope("finance.periods.manage")
+        && (staffHasScope("finance.read") || staffHasScope("finance.manage") || staffHasScope("finance.validate"))
+        && request.resource.data.keys().hasOnly([
+          "year", "status", "note", "snapshot", "closedAt", "closedBy", "createdAt", "createdBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "year", "status", "closedAt", "closedBy", "createdAt", "createdBy"
+        ])
+        && request.resource.data.year == year
+        && request.resource.data.year.matches("^[0-9]{4}$")
+        && int(request.resource.data.year) < request.time.year()
+        && request.resource.data.status == "clos"
+        && request.resource.data.snapshot is map
+        && request.resource.data.snapshot.keys().hasOnly(["receiptsCash", "receiptsInKind", "expenses", "netCash", "validatedTransactionCount", "transferCount", "reconciliationCount", "accountCount", "budgetCount"])
+        && request.resource.data.snapshot.keys().hasAll(["receiptsCash", "receiptsInKind", "expenses", "netCash", "validatedTransactionCount", "transferCount", "reconciliationCount", "accountCount", "budgetCount"])
+        && request.resource.data.snapshot.receiptsCash is int
+        && request.resource.data.snapshot.receiptsCash >= 0
+        && request.resource.data.snapshot.receiptsCash <= 1000000000000
+        && request.resource.data.snapshot.receiptsInKind is int
+        && request.resource.data.snapshot.receiptsInKind >= 0
+        && request.resource.data.snapshot.receiptsInKind <= 1000000000000
+        && request.resource.data.snapshot.expenses is int
+        && request.resource.data.snapshot.expenses >= 0
+        && request.resource.data.snapshot.expenses <= 1000000000000
+        && request.resource.data.snapshot.netCash is int
+        && request.resource.data.snapshot.netCash == request.resource.data.snapshot.receiptsCash - request.resource.data.snapshot.expenses
+        && request.resource.data.snapshot.validatedTransactionCount is int
+        && request.resource.data.snapshot.validatedTransactionCount >= 0
+        && request.resource.data.snapshot.validatedTransactionCount <= 1000000
+        && request.resource.data.snapshot.transferCount is int
+        && request.resource.data.snapshot.transferCount >= 0
+        && request.resource.data.snapshot.transferCount <= 1000000
+        && request.resource.data.snapshot.reconciliationCount is int
+        && request.resource.data.snapshot.reconciliationCount >= 0
+        && request.resource.data.snapshot.reconciliationCount <= 1000000
+        && request.resource.data.snapshot.accountCount is int
+        && request.resource.data.snapshot.accountCount >= 0
+        && request.resource.data.snapshot.accountCount <= 1000000
+        && request.resource.data.snapshot.budgetCount is int
+        && request.resource.data.snapshot.budgetCount >= 0
+        && request.resource.data.snapshot.budgetCount <= 1000000
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && request.resource.data.closedAt == request.time
+        && request.resource.data.closedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+
+    match /financeTransfers/{transferId} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate");
+
+      allow create: if staffHasScope("finance.manage")
+        && request.resource.data.keys().hasOnly([
+          "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
+          "amount", "date", "reference", "description", "status", "fiscalYear",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "sourceAccountId", "sourceName", "destinationAccountId", "destinationName",
+"amount", "date", "reference", "description", "status", "fiscalYear",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.sourceAccountId is string
+        && request.resource.data.sourceAccountId.size() >= 1
+        && request.resource.data.sourceAccountId.size() <= 100
+        && request.resource.data.destinationAccountId is string
+        && request.resource.data.destinationAccountId.size() >= 1
+        && request.resource.data.destinationAccountId.size() <= 100
+        && request.resource.data.sourceAccountId != request.resource.data.destinationAccountId
+        && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId))
+        && exists(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId))
+        && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId)).data.status == "actif"
+        && get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId)).data.status == "actif"
+        && request.resource.data.sourceName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId)).data.name
+        && request.resource.data.date >= get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.sourceAccountId)).data.openingDate
+        && request.resource.data.destinationName == get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId)).data.name
+        && request.resource.data.date >= get(/databases/$(database)/documents/financeAccounts/$(request.resource.data.destinationAccountId)).data.openingDate
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.date is string
+        && validFinanceDate(request.resource.data.date)
+        && request.resource.data.fiscalYear is string
+        && request.resource.data.fiscalYear.matches("^[0-9]{4}$")
+        && request.resource.data.date.matches("^" + request.resource.data.fiscalYear + "-[0-9]{2}-[0-9]{2}$")
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.fiscalYear))
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 3
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.status == "soumise"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow update: if staffHasScope("finance.validate")
+        && request.auth.uid != resource.data.createdBy
+        && resource.data.status == "soumise"
+        && request.resource.data.sourceAccountId == resource.data.sourceAccountId
+        && request.resource.data.sourceName == resource.data.sourceName
+        && request.resource.data.destinationAccountId == resource.data.destinationAccountId
+        && request.resource.data.destinationName == resource.data.destinationName
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.fiscalYear == resource.data.fiscalYear
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "validatedAt", "validatedBy", "rejectedAt", "rejectedBy",
+          "rejectionReason", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid
+        && (
+          (request.resource.data.status == "validee"
+            && !exists(/databases/$(database)/documents/financePeriods/$(resource.data.fiscalYear))
+            && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId))
+            && exists(/databases/$(database)/documents/financeAccounts/$(resource.data.destinationAccountId))
+            && get(/databases/$(database)/documents/financeAccounts/$(resource.data.sourceAccountId)).data.status == "actif"
+            && get(/databases/$(database)/documents/financeAccounts/$(resource.data.destinationAccountId)).data.status == "actif"
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && !("rejectedAt" in request.resource.data)
+            && !("rejectedBy" in request.resource.data)
+            && !("rejectionReason" in request.resource.data))
+          ||
+          (request.resource.data.status == "rejetee"
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && !("validatedAt" in request.resource.data)
+            && !("validatedBy" in request.resource.data))
+        );
+
+      allow delete: if false;
+    }
+
+    match /financeBudgets/{budgetId} {
+      allow read: if staffHasScope("finance.read") || staffHasScope("finance.control.read")
+        || staffHasScope("finance.manage")
+        || staffHasScope("finance.validate")
+        || staffHasScope("finance.budgets.manage");
+
+      allow create: if staffHasScope("finance.budgets.manage")
+        && request.resource.data.keys().hasOnly([
+          "name", "year", "amount", "category", "status", "note",
+          "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "year", "amount", "category", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.year is int
+        && request.resource.data.year >= 2020
+        && request.resource.data.year <= 2100
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
+        && request.resource.data.status == "actif"
+        && !exists(/databases/$(database)/documents/financePeriods/$(request.resource.data.year))
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow update: if staffHasScope("finance.budgets.manage")
+        && resource.data.status == "actif"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "updatedAt", "updatedBy"])
+        && request.resource.data.status == "clos"
+        && request.resource.data.keys().hasOnly([
+          "name", "year", "amount", "category", "status", "note",
+          "projectId", "projectName", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "name", "year", "amount", "category", "status",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.year is int
+        && request.resource.data.year >= 2020
+        && request.resource.data.year <= 2100
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 1000000000000
+        && request.resource.data.category in ["fonctionnement", "education", "humanitaire", "social", "projet", "autre"]
+        && request.resource.data.status in ["actif", "clos"]
+        && (!("note" in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 500))
+        && (
+          (("projectId" in request.resource.data) && ("projectName" in request.resource.data)
+            && request.resource.data.projectId is string
+            && request.resource.data.projectId.size() >= 1
+            && request.resource.data.projectId.size() <= 100
+            && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+            && request.resource.data.projectName is string
+            && request.resource.data.projectName.size() <= 140
+            && request.resource.data.projectName == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.name)
+          || (!("projectId" in request.resource.data) && !("projectName" in request.resource.data))
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    match /financeControlObservations/{observationId} {
+      allow read: if staffHasScope("finance.control.read");
+      allow create: if staffHasScope("finance.control.observe")
+        && request.resource.data.keys().hasOnly([
+          "title", "description", "severity", "status", "referenceType", "referenceId",
+          "projectId", "funderId", "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "title", "description", "severity", "status", "referenceType", "referenceId",
+          "createdAt", "createdBy", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 4
+        && request.resource.data.title.size() <= 160
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 4000
+        && request.resource.data.severity in ["faible", "moderee", "elevee", "critique"]
+        && request.resource.data.status == "ouverte"
+        && request.resource.data.referenceType in ["operation", "ecriture", "budget", "banque", "bailleur", "convention", "piece", "cloture", "autre"]
+        && request.resource.data.referenceId is string
+        && request.resource.data.referenceId.size() >= 1
+        && request.resource.data.referenceId.size() <= 160
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() <= 120))
+        && (!("funderId" in request.resource.data) || (request.resource.data.funderId is string && request.resource.data.funderId.size() <= 120))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow update: if staffHasScope("finance.control.observe")
+        && resource.data.createdBy == request.auth.uid
+        && resource.data.status == "ouverte"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["description", "updatedAt", "updatedBy"])
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.severity == resource.data.severity
+        && request.resource.data.referenceType == resource.data.referenceType
+        && request.resource.data.referenceId == resource.data.referenceId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /financeControlReports/{reportId} {
+      allow read: if staffHasScope("finance.control.read");
+      allow create: if staffHasScope("finance.control.observe")
+        && request.resource.data.keys().hasOnly([
+          "title", "periodStart", "periodEnd", "summary", "findingCount",
+          "projectId", "funderId", "createdAt", "createdBy"
+        ])
+        && request.resource.data.keys().hasAll([
+          "title", "periodStart", "periodEnd", "summary", "findingCount",
+          "createdAt", "createdBy"
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 4
+        && request.resource.data.title.size() <= 160
+        && validFinanceDate(request.resource.data.periodStart)
+        && validFinanceDate(request.resource.data.periodEnd)
+        && request.resource.data.periodEnd >= request.resource.data.periodStart
+        && request.resource.data.summary is string
+        && request.resource.data.summary.size() >= 20
+        && request.resource.data.summary.size() <= 8000
+        && request.resource.data.findingCount is int
+        && request.resource.data.findingCount >= 0
+        && request.resource.data.findingCount <= 10000
+        && (!("projectId" in request.resource.data) || (request.resource.data.projectId is string && request.resource.data.projectId.size() <= 120))
+        && (!("funderId" in request.resource.data) || (request.resource.data.funderId is string && request.resource.data.funderId.size() <= 120))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
