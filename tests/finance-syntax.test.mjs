@@ -575,3 +575,64 @@ test("l’interface financière charge l’identité visuelle WAT partagée", ()
   assert.match(brand, /--wat-deep:#103047/);
   assert.match(brand, /\.wat-crystal-surface/);
 });
+
+test("le chargement Finance conserve les identifiants des sept collections", () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const load = html.split("\n").find(line => line.includes("async function load()"));
+  assert.ok(load);
+  assert.equal([...load.matchAll(/\{\.\.\.d\.data\(\),id:d\.id\}/g)].length, 7);
+  assert.doesNotMatch(load, /\{id:d\.id,\.\.\.d\.data\(\)\}/);
+});
+
+test("le chargeur Finance résout les liens malgré les identifiants hérités", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\n").find(line => line.startsWith("async function load()"));
+  const collections = {
+    transactions: "financeTransactions", budgets: "financeBudgets", projects: "projects",
+    accounts: "financeAccounts", transfers: "financeTransfers", periods: "financePeriods",
+    reconciliations: "financeReconciliations"
+  };
+  const select = { value: "", replaceChildren() {}, add() {} };
+  const context = {
+    canRead: true, canBudgetRead: true, canProjectsRead: true, canAccountsRead: true, canPeriodsRead: true,
+    WATFirebase: { db: { collection(name) {
+      return { async get() {
+        return { docs: [{ id: name + "-actual", data: () => ({
+          id: "legacy", name, projectId: "projects-actual", accountId: "financeAccounts-actual"
+        }) }] };
+      } };
+    } } },
+    $: () => select,
+    Option: function () {}
+  };
+  for (const field of Object.keys(collections)) context[field] = [];
+  for (const name of [
+    "fillProjectSelect", "fillAccountSelect", "fillTransactionAccountFilter", "fillTransferSelects",
+    "fillPeriodSelect", "renderKpis", "renderTransactions", "renderExpenseChart", "renderMonthlyChart",
+    "renderPaymentSummary", "renderBudgets", "renderDonorSummary", "renderProjectFinance",
+    "renderAccounts", "renderTransfers", "renderPeriods", "renderReconciliations", "fillReconciliationAccounts"
+  ]) context[name] = () => {};
+  await vm.runInNewContext(source + "\nload()", context);
+  for (const [field, collection] of Object.entries(collections)) {
+    assert.equal(context[field][0].id, collection + "-actual", field);
+  }
+  assert.equal(context.transactions[0].projectName, "projects");
+  assert.equal(context.transactions[0].accountName, "financeAccounts");
+  assert.equal(context.budgets[0].projectName, "projects");
+  const requested = [];
+  context.canRead = false;
+  context.canAccountsRead = false;
+  context.canPeriodsRead = false;
+  const originalCollection = context.WATFirebase.db.collection;
+  context.WATFirebase.db.collection = name => {
+    requested.push(name);
+    return originalCollection(name);
+  };
+  await vm.runInNewContext(source + "\nload()", context);
+  assert.deepEqual(requested, ["financeBudgets", "projects"]);
+  for (const field of ["transactions", "accounts", "transfers", "periods", "reconciliations"]) {
+    assert.equal(context[field].length, 0, field);
+  }
+  assert.equal(context.budgets[0].id, "financeBudgets-actual");
+  assert.equal(context.budgets[0].projectName, "projects");
+});
