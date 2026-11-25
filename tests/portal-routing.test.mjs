@@ -1,3 +1,4 @@
+import vm from "node:vm";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -29,4 +30,19 @@ test("le portail n’affiche le module Finance qu’aux comptes disposant d’un
   assert.match(portal, /scopes\.includes\("finance\.read"\)\|\|scopes\.includes\("finance\.manage"\)\|\|scopes\.includes\("finance\.validate"\)\|\|scopes\.includes\("finance\.control\.read"\)\|\|scopes\.includes\("finance\.budgets\.manage"\)\|\|scopes\.includes\("finance\.accounts\.manage"\)\|\|scopes\.includes\("finance\.periods\.manage"\)/);
   assert.match(portal, /addModule\("₣","Gestion financière WAT"/);
   assert.match(portal, /"finance\.html"/);
+});
+
+test("le lien Finance suit les droits du compte simulé", () => {
+  const portal = read("../index.html");
+  const route = portal.match(/if\(scopes\.includes\("finance\.read"\)[^;\r\n]*?"finance\.html"\)/)?.[0];
+  assert.ok(route);
+  for (const [scopes, expected] of [
+    [["finance.control.read"], true],
+    [["projects.read"], false],
+    [[], false]
+  ]) {
+    const links = [];
+    vm.runInNewContext(route, { scopes, addModule: (...args) => links.push(args.at(-1)) });
+    assert.equal(links.includes("finance.html"), expected, scopes.join(","));
+  }
 });
