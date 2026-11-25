@@ -299,10 +299,10 @@ test("les affectations utilisent les identifiants Firestore des projets et bén�
   assert.equal(selectors.volunteerId.options[0].value, "bénévole");
 });
 
-test("le changement de session efface le détail des projets et activités même si le dialogue est fermé", () => {
-  for (const file of ["projets.html", "activites.html"]) {
+test("le changement de session efface le détail des registres même si le dialogue est fermé", () => {
+  for (const [file, prefix] of [["projets.html", "detail"], ["activites.html", "detail"], ["programmes.html", "programDetail"], ["club-khuddam.html", "volunteerDetail"]]) {
     const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
-    const clear = html.split("\n").find(line => line.startsWith("function clearPrivateView()"));
+    const clear = html.split("\n").find(line => line.startsWith("function clearPrivateView()")).split("async function init")[0];
     const elements = new Map();
     const element = id => {
       if (!elements.has(id)) elements.set(id, {
@@ -312,7 +312,7 @@ test("le changement de session efface le détail des projets et activités même
       return elements.get(id);
     };
     vm.runInNewContext(clear + "\nclearPrivateView()", { $: element });
-    assert.equal(element("detailTitle").textContent, "", file);
-    assert.equal(element("detailContent").textContent, "", file);
+    assert.equal(element(prefix + "Title").textContent, "", file);
+    assert.equal(element(prefix + "Content").textContent, "", file);
   }
 });
