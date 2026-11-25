@@ -1,0 +1,159 @@
+import { authorizeStaffScope } from "./staff-auth.js";
+import { evaluateLearningAssignment } from "./assignment-policy.js";
+import { validateLearningAssignmentRecord } from "./learning-schema.js";
+import { resolveLearningGroup, resolveLearningEnrollment, resolvePendingLearningEnrollment, resolveLearningBeneficiary, resolveLearningBeneficiaryPrivate, resolveLearningProfile } from "./learning-resource-resolver.js";
+
+function decodeValue(value) {
+  if (!value || typeof value !== "object") throw new Error("assignment_value_invalid");
+  if (Object.hasOwn(value, "stringValue")) return value.stringValue;
+  if (Object.hasOwn(value, "booleanValue")) return value.booleanValue;
+  if (Object.hasOwn(value, "timestampValue")) return value.timestampValue;
+  if (Object.hasOwn(value, "nullValue")) return null;
+  if (value.arrayValue) {
+    const values = value.arrayValue.values ?? [];
+    if (!Array.isArray(values)) throw new Error("assignment_array_invalid");
+    return values.map(decodeValue);
+  }
+  if (value.mapValue) return decodeFields(value.mapValue.fields);
+  throw new Error("assignment_value_type_unsupported");
+}
+
+function decodeFields(fields) {
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) throw new Error("assignment_fields_invalid");
+  return Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, decodeValue(value)]));
+}
+
+async function authorizeResolvedResource(request, config, scope, resourceId, options, resolver, resourceKind) {
+  const firestore = options.firestore;
+  if (!firestore || typeof firestore.getDocument !== "function") {
+    return { ok: false, status: 403, error: "learning_authorization_unavailable" };
+  }
+  const staff = await (options.authorizeStaff ?? authorizeStaffScope)(
+    request, config, scope, { ...(options.staffOptions ?? {}), firestore,
+      verifyToken: options.verifyToken ?? options.staffOptions?.verifyToken,
+      lookupAuthUser: options.lookupAuthUser ?? options.staffOptions?.lookupAuthUser },
+  );
+  if (!staff.ok) return staff;
+
+  let resource;
+  try {
+    resource = await resolver(firestore, resourceId);
+  } catch {
+    return { ok: false, status: 404, error: "learning_resource_unavailable" };
+  }
+
+  let document;
+  try {
+    document = await firestore.getDocument("learningStaffAssignments", staff.principal.uid);
+  } catch {
+    return { ok: false, status: 403, error: "learning_assignment_unavailable" };
+  }
+
+  try {
+    const registry = decodeFields(document?.fields);
+    const validation = validateLearningAssignmentRecord(registry);
+    if (!validation.ok) return { ok: false, status: 403, error: "learning_assignment_invalid" };
+    if (registry.active !== true) return { ok: false, status: 403, error: "learning_assignment_inactive" };
+
+    const now = options.now ?? new Date();
+    for (const assignment of registry.assignments) {
+      const result = evaluateLearningAssignment({ assignment, scope, resource, now });
+      if (result.allowed) {
+        return {
+          ok: true, principal: staff.principal, assignmentId: assignment.assignmentId,
+          scope, resource, resourceKind,
+        };
+      }
+    }
+    return { ok: false, status: 403, error: "learning_assignment_scope_denied" };
+  } catch {
+    return { ok: false, status: 403, error: "learning_assignment_invalid" };
+  }
+}
+
+/** Server-side authorization using canonical, Firestore-resolved group context. */
+export function authorizeLearningGroup(request, config, scope, groupId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, groupId, options,
+    options.resolveGroup ?? resolveLearningGroup, "group",
+  );
+}
+
+/** Server-side authorization using canonical, Firestore-resolved active enrollment context. */
+export function authorizeLearningEnrollment(request, config, scope, enrollmentId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    options.resolveEnrollment ?? resolveLearningEnrollment, "enrollment",
+  );
+}
+
+/** Pending registrations require a dedicated administrative review grant. */
+export function authorizeLearningEnrollmentReview(request, config, enrollmentId, options = {}) {
+  const scope = "learning.enrollments.review";
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    options.resolvePendingEnrollment ?? resolvePendingLearningEnrollment, "enrollment-review",
+  );
+}
+
+
+/** Beneficiary dossier access is anchored to a server-resolved active enrollment. */
+export function authorizeLearningBeneficiary(request, config, scope, beneficiaryId, enrollmentId, options = {}) {
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveBeneficiary ?? resolveLearningBeneficiary)(firestore, beneficiaryId, id);
+      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId) {
+        throw new Error("beneficiary_resource_mismatch");
+      }
+      return resolved;
+    }, "beneficiary",
+  );
+}
+
+/** Private beneficiary fields are fetched only after the distinct scope and perimeter pass. */
+export async function authorizeLearningBeneficiaryPrivate(request, config, beneficiaryId, enrollmentId, options = {}) {
+  const scope = "learning.beneficiaries.private.read";
+  const authorized = await authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveBeneficiary ?? resolveLearningBeneficiary)(firestore, beneficiaryId, id);
+      if (resolved.enrollmentId !== id || resolved.beneficiaryId !== beneficiaryId) {
+        throw new Error("beneficiary_resource_mismatch");
+      }
+      return resolved;
+    }, "beneficiary-private",
+  );
+  if (!authorized.ok) return authorized;
+
+  try {
+    const privateResource = await (options.resolveBeneficiaryPrivate ?? resolveLearningBeneficiaryPrivate)(
+      options.firestore, beneficiaryId, enrollmentId,
+    );
+    if (privateResource.beneficiaryId !== beneficiaryId ||
+        privateResource.enrollmentId !== enrollmentId ||
+        privateResource.privateRecordId !== beneficiaryId) {
+      return { ok: false, status: 404, error: "learning_resource_unavailable" };
+    }
+    return { ...authorized, resource: privateResource };
+  } catch {
+    return { ok: false, status: 404, error: "learning_resource_unavailable" };
+  }
+}
+
+
+/** Pedagogical profile access requires its own explicit grant and canonical enrollment perimeter. */
+export function authorizeLearningProfile(request, config, beneficiaryId, enrollmentId, options = {}) {
+  const scope = "learning.profiles.read";
+  return authorizeResolvedResource(
+    request, config, scope, enrollmentId, options,
+    async (firestore, id) => {
+      const resolved = await (options.resolveProfile ?? resolveLearningProfile)(firestore, beneficiaryId, id);
+      if (resolved.beneficiaryId !== beneficiaryId || resolved.enrollmentId !== id ||
+          resolved.profileId !== beneficiaryId) {
+        throw new Error("learning_profile_resource_mismatch");
+      }
+      return resolved;
+    }, "learning-profile",
+  );
+}
