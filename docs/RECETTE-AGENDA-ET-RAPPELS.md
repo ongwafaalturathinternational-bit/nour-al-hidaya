@@ -24,3 +24,13 @@ S’appuie sur ARCHITECTURE-NOTIFICATIONS-UNIFIEES.md. État vérifié dans le c
 | Android | Importer une invitation générique sur le téléphone de recette | Heure, durée et référence correctes ; aucun détail confidentiel exporté |
 
 Premier lot code envisageable : modèle d’événement et export iCalendar local pour les événements habilités, avec données fictives. L’activation des envois nécessite un environnement staging configuré, des appareils et comptes de recette autorisés et la vérification des limites du service. Aucun envoi ni dépense fait dans ce lot.
+
+## Recette du téléchargement iCalendar en staging
+
+La configuration `wrangler.agenda.staging.json` cible le Worker Agenda dédié. Elle désactive l’export et les URL publiques par défaut. Utiliser une adresse de staging approuvée pour la recette distante.
+
+1. Vérifier le paquet avec `npx wrangler@4 deploy --dry-run --config wrangler.agenda.staging.json`. Le contrôle local se lance aussi avec `node --test tests/wat-calendar.test.mjs`.
+2. Sur l’instance de recette uniquement, associer le compte de service du projet `wat-connect-staging` disposant des droits de lecture Firestore et de consultation Firebase Auth nécessaires. Fournir `FIREBASE_CLIENT_EMAIL` et `FIREBASE_PRIVATE_KEY` via les secrets de l’environnement. Activer `WAT_ENABLE_AGENDA_EXPORT` après configuration de l’adresse approuvée.
+3. Créer des profils et événements fictifs dans `agendaRecipients` et `agendaEvents`. Utiliser un compte invité vérifié et actif, et un compte vérifié extérieur à l’audience. Pour le cas de révocation, utiliser une session distincte d’un compte fictif.
+4. Appeler `GET /api/agenda/{id}/calendar.ics` avec le jeton Firebase du compte de recette dans l’en-tête d’autorisation. Attendre un fichier iCalendar générique pour l’invité, une réponse 404 vide pour le compte hors audience et une réponse 401 vide pour la session révoquée. Vérifier `Cache-Control: private, no-store`.
+5. Consigner le SHA, les statuts HTTP, la date et les écarts. Exclure les jetons et la clé privée du rapport. La vérification de l’import sur Android physique fait l’objet d’une recette distincte.
