@@ -1,0 +1,12 @@
+{
+  "name": "wat-agenda-api-staging",
+  "main": "workers/agenda-api/src/index.mjs",
+  "compatibility_date": "2026-11-25",
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": {
+    "WAT_ENV": "staging",
+    "FIREBASE_PROJECT_ID": "wat-connect-staging",
+    "WAT_ENABLE_AGENDA_EXPORT": "false"
+  }
+}
