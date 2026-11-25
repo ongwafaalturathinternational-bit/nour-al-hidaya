@@ -93,3 +93,9 @@ La pile [#119](https://github.com/ongwafaalturathinternational-bit/nour-al-hiday
 4. Relever le SHA, l’environnement choisi, les résultats par scénario et les écarts. La recette avec comptes staging reste ouverte.
 
 Le paquet local `WAT-Finance-staging-121.zip` utilise le code Finance au SHA `4c69353e3624b544b197dfef667bb8cccf92d09e` et l’initialiseur de staging repris de #117. SHA-256 de l’archive `baf95ec685f1dcf2244f0b7e673f7c1604d0b3d7574b12ec048453ea3db05fd9`. Le test HTTP local a servi la page et ses neuf dépendances locales directes. Un SDK simulé confirme le choix de `wat-connect-staging`. Les bibliothèques Firebase CDN et les échanges avec des comptes de staging restent à vérifier dans la recette connectée.
+
+## Recette des détails de projet et d’activité après changement de compte
+
+L’[APK de la PR #122](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45599058041/artifacts/15015160731) au SHA `94cb3a34cd69979cdcc3394e98ebb037b88d6dfd` permet de rejouer les parcours conjoints WAT, Club et Nour avec le correctif du registre. Les [213 tests GitHub Actions](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45599058057) et le build Android ont réussi.
+
+Sur le compte de staging habilité, ouvrir puis fermer le détail d’un projet fictif et d’une activité fictive. Se déconnecter, ouvrir une session de test avec un périmètre différent et vérifier que les anciennes fiches et leurs détails ne réapparaissent pas. Répéter en changeant de session alors que le détail est ouvert. Consigner séparément les deux cas, le SHA et la version Android. La recette physique reste ouverte.
