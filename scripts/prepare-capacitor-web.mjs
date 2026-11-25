@@ -9,6 +9,7 @@ const files = [
   "site-institutionnel.html",
   "nour-al-hidaya.html",
   "administration.html",
+  "finance.html",
   "programmes.html",
   "activites.html",
   "projets.html",
