@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createCalendarReaders } from "../workers/agenda-api/src/calendar-readers.mjs";
-import agendaWorker, { createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
+import agendaWorker, { createAgendaFirestoreWorker, createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
 import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 
 const event = {
@@ -206,4 +206,32 @@ test("le routeur Agenda délègue uniquement le chemin du calendrier", async () 
   assert.equal(response.status, 200);
   assert.deepEqual(reads, [event.id]);
   assert.equal(await response.text(), exportCalendarEvent(event));
+});
+
+test("le serveur Agenda lit Firestore uniquement depuis le projet de staging", async () => {
+  const recipientPath = "projects/wat-connect-staging/databases/(default)/documents/agendaRecipients/invite";
+  const request = new Request("https://staging.example/api/agenda/" + event.id + "/calendar.ics");
+  const env = { WAT_ENV: "staging", FIREBASE_PROJECT_ID: "wat-connect-staging", WAT_ENABLE_AGENDA_EXPORT: "true" };
+  const calls = [];
+  let eventStatus = 404;
+  const worker = createAgendaFirestoreWorker({
+    authenticate: async () => ({ uid: "invite", emailVerified: true }),
+    getAccessToken: async () => "jeton-fictif",
+    async fetchDocument(url, options) {
+      assert.equal(options.method, "GET");
+      assert.equal(options.redirect, "error");
+      assert.equal(options.headers.Authorization, "Bearer jeton-fictif");
+      calls.push(url);
+      return url.endsWith(recipientPath)
+        ? Response.json({ name: recipientPath, fields: { active: { booleanValue: true } } })
+        : new Response(null, { status: eventStatus });
+    }
+  });
+  assert.equal((await worker.fetch(request, { ...env, FIREBASE_PROJECT_ID: "prod" })).status, 404);
+  assert.deepEqual(calls, []);
+  assert.equal((await worker.fetch(request, env)).status, 404);
+  const base = "https://firestore.googleapis.com/v1/";
+  assert.deepEqual(calls, [base + recipientPath, base + recipientPath.replace("agendaRecipients/invite", "agendaEvents/" + event.id)]);
+  eventStatus = 503;
+  assert.equal((await worker.fetch(request, env)).status, 500);
 });
