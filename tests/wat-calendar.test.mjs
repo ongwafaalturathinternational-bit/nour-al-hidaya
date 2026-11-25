@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport } from "../lib/wat-calendar.mjs";
+import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 
 const event = {
   id:"conseil-01", revision:0, status:"published",
@@ -112,4 +112,21 @@ test("la réponse HTTP Agenda protège le téléchargement et masque les événe
   const invalid = await respondWithCalendarExport(post, event.id, { authenticate: assert.fail });
   assert.equal(invalid.status, 405);
   assert.equal(invalid.headers.get("Allow"), "GET");
+});
+
+test("le routeur Agenda délègue uniquement le chemin du calendrier", async () => {
+  const origin = "https://staging.example";
+  const prefix = origin + "/api/agenda/";
+  const paths = ["/", "/api/agenda", "/api/agenda/" + event.id,
+    "/api/agenda/%2F/calendar.ics", "/api/agenda/" + event.id + "/calendar.ics/extra"];
+  for (const path of paths) assert.equal(routeCalendarExport(new Request(origin + path)), null, path);
+  const reads = [];
+  const response = await routeCalendarExport(new Request(prefix + event.id + "/calendar.ics"), {
+    authenticate: async () => ({ uid: "invite", emailVerified: true }),
+    readRecipient: async uid => ({ uid, active: true }),
+    readEvent: async id => { reads.push(id); return { ...event, audience: ["invite"] }; }
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(reads, [event.id]);
+  assert.equal(await response.text(), exportCalendarEvent(event));
 });
