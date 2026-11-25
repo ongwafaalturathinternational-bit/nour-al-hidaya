@@ -123,3 +123,9 @@ Avant toute validation conjointe, vérifier la suite locale, l’émulateur Fire
 ### Dépendances des règles Finance
 
 Comparaison locale des branches #127 et #126. Les huit collections Finance disposent de blocs dédiés dans #127. Elles utilisent deux fonctions définies hors de ces blocs. `validFinanceDate` est propre à Finance. `staffHasScope` est partagée, et la version de WAT exige en plus une adresse e-mail vérifiée. Conserver cette vérification lors de l’assemblage et exécuter les suites Finance et WAT avec l’émulateur. Le scénario de recette doit inclure un compte fictif vérifié et un compte fictif non vérifié disposant du même périmètre Finance. Cette comparaison est statique et aucune règle n’a été modifiée.
+
+## Recette conjointe incluant Finance
+
+La [PR #128](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/128) réunit le socle WAT, Club et Nour de #126 et le module Finance de #127. Au SHA `dd2e5b5278658b60e2f19a988568f18c82688e6c`, les [303 tests avec émulateur Firestore](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45631146481) et les builds Android et Cloudflare sont réussis. [APK de staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45631146461/artifacts/15031955081) · [Archive web de staging](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/actions/runs/45631146491/artifacts/15029959137).
+
+Sur le même build, reprendre les recettes Nour hors connexion, Club et registres décrites plus haut. Pour Finance, vérifier qu’un compte fictif disposant uniquement du périmètre de contrôle accède au registre depuis le portail, puis que le registre reste masqué après passage à un compte sans accès Finance. Vérifier le refus pour un compte fictif non vérifié. Consigner séparément le résultat Finance et celui des parcours existants. La validation connectée et la recette sur téléphone physique restent ouvertes.
