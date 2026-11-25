@@ -1,4 +1,4 @@
-name: Paquet Agenda staging
+name: Recette serveur Agenda et Nour
 
 on:
   pull_request:
@@ -6,10 +6,15 @@ on:
       - '.github/workflows/agenda-staging-package.yml'
       - 'wrangler.agenda.staging.json'
       - 'workers/agenda-api/**'
-      - 'workers/learning-api/src/google-auth.js'
+      - 'workers/learning-api/**'
       - 'lib/wat-calendar.mjs'
+      - 'lib/wat-reminders.mjs'
+      - 'activites.html'
+      - 'tests/activities-syntax.test.mjs'
       - 'tests/wat-calendar.test.mjs'
       - 'tests/fixtures/agenda-staging.json'
+      - 'tests/learning-api-*.test.js'
+      - 'package.json'
 
 permissions:
   contents: read
@@ -25,8 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Tester le parcours Agenda
-        run: node --test tests/wat-calendar.test.mjs
+      - name: Tester Agenda, Activités et les services Nour
+        run: node --test tests/wat-calendar.test.mjs tests/activities-syntax.test.mjs tests/learning-api-*.test.js
       - name: Vérifier le paquet sans déploiement
         env:
           WRANGLER_SEND_METRICS: 'false'
