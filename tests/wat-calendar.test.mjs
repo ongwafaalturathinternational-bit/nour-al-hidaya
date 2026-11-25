@@ -114,6 +114,24 @@ test("la réponse HTTP Agenda protège le téléchargement et masque les événe
   assert.equal(invalid.headers.get("Allow"), "GET");
 });
 
+test("la route Agenda renvoie une erreur sans exposer les données internes", async () => {
+  const request = new Request("https://staging.example/api/agenda/" + event.id + "/calendar.ics");
+  const inputs = {
+    authenticate: async () => ({ uid: "invite", emailVerified: true }),
+    readRecipient: async uid => ({ uid, active: true }),
+    readEvent: async () => ({ ...event, audience: ["invite"] })
+  };
+  for (const dependency of Object.keys(inputs)) {
+    const response = await routeCalendarExport(request, {
+      ...inputs,
+      [dependency]: async () => { throw new Error("Détail interne"); }
+    });
+    assert.equal(response.status, 500, dependency);
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(await response.text(), "");
+  }
+});
+
 test("le routeur Agenda délègue uniquement le chemin du calendrier", async () => {
   const origin = "https://staging.example";
   const prefix = origin + "/api/agenda/";
