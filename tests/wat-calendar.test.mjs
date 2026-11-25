@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { exportCalendarEvent, exportCalendarEventForRecipient } from "../lib/wat-calendar.mjs";
+import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport } from "../lib/wat-calendar.mjs";
 
 const event = {
   id:"conseil-01", revision:0, status:"published",
@@ -57,4 +57,28 @@ test("l’export Agenda exige un destinataire actif et invité", () => {
   assert.equal(exportCalendarEventForRecipient(meeting, { ...invited, uid: "autre" }), null);
   assert.equal(exportCalendarEventForRecipient(meeting), null);
   assert.equal(exportCalendarEventForRecipient(event, invited), null);
+});
+
+test("le service Agenda relit l’invitation et le profil du compte vérifié", async () => {
+  const calls = [];
+  const stored = { ...event, audience: ["invite-fictif"] };
+  const input = {
+    eventId: event.id,
+    authenticatedUser: { uid: "invite-fictif", emailVerified: true },
+    readRecipient: async uid => { calls.push(uid); return { uid, active: true }; },
+    readEvent: async id => { calls.push(id); return stored; }
+  };
+  assert.equal(await loadCalendarExport(input), exportCalendarEvent(event));
+  assert.deepEqual(calls, ["invite-fictif", event.id]);
+  calls.length = 0;
+  assert.equal(await loadCalendarExport({ ...input, authenticatedUser: { uid: "invite-fictif" } }), null);
+  assert.equal(await loadCalendarExport({ ...input, eventId: "../conseil" }), null);
+  assert.deepEqual(calls, []);
+  assert.equal(await loadCalendarExport({ ...input, readRecipient: async () => ({
+    uid: "autre", active: true
+  }) }), null);
+  assert.deepEqual(calls, []);
+  assert.equal(await loadCalendarExport({ ...input, readEvent: async () => ({
+    ...stored, status: "draft"
+  }) }), null);
 });
