@@ -1,4 +1,5 @@
 import { routeCalendarExport } from "../../../lib/wat-calendar.mjs";
+import { createAgendaFirestore, createCalendarReaders } from "./calendar-readers.mjs";
 
 export function createAgendaWorker({ calendar } = {}) {
   return {
@@ -21,3 +22,9 @@ export function createAgendaWorker({ calendar } = {}) {
 }
 
 export default createAgendaWorker();
+
+export function createAgendaFirestoreWorker({ authenticate, getAccessToken, fetchDocument } = {}) {
+  if (typeof getAccessToken !== "function") return createAgendaWorker();
+  const firestore = createAgendaFirestore({ getAccessToken, fetchDocument });
+  return createAgendaWorker({ calendar: { authenticate, ...createCalendarReaders(firestore) } });
+}
