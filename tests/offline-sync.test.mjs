@@ -369,3 +369,33 @@ test("un chargement de progression lent ne bloque pas la reprise des saisies pé
   finishProgress();
   assert.equal(await entered, true);
 });
+
+test("une réponse de l’ancienne session est ignorée après reconnexion du même compte", async () => {
+  let generation = 1;
+  const reads = [];
+  const state = { done: {}, reflect: {} };
+  const WATFirebase = { db: {
+    collection() { return this; },
+    doc() { return this; },
+    get() { return new Promise(resolve => reads.push(resolve)); }
+  } };
+  const app = vm.runInNewContext(
+    nour.slice(start, nour.indexOf("/* ---------- authentification Firebase", start)) +
+      "\n({loadFirebaseProgress,loadFirebaseLearning})",
+    {
+      S: state, AVAIL: [1], WATFirebase,
+      localStorage: { getItem: () => "[]" },
+      isCurrentFirebaseSession: (uid, requested) => uid === "learner" && requested === generation
+    }
+  );
+
+  const pending = [app.loadFirebaseProgress("learner", 1), app.loadFirebaseLearning("learner", 1)];
+  assert.equal(reads.length, 2);
+  generation = 2;
+  for (const resolve of reads) {
+    resolve({ forEach() { assert.fail("Ancienne réponse appliquée à la nouvelle session"); } });
+  }
+  assert.deepEqual(await Promise.all(pending), [false, false]);
+  assert.equal(state.done.learner[1], undefined);
+  assert.deepEqual(state.reflect, {});
+});
