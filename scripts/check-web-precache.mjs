@@ -33,6 +33,19 @@ test("le service worker généré sert les SDK embarqués sans accès réseau", 
   let install;
   handlers.get("install")({ waitUntil: promise => { install = promise; } });
   await install;
+  for (const name of ["manifest.json", "manifest-nour.json"]) {
+    const manifestUrl = new URL(name, origin);
+    const cachedManifest = entries.get(manifestUrl.href);
+    assert.ok(cachedManifest, name);
+    const manifest = JSON.parse(cachedManifest.toString("utf8"));
+    assert.ok(manifest.start_url, name);
+    assert.ok(manifest.icons?.length > 0, name);
+    for (const resource of [manifest.start_url, ...manifest.icons.map(icon => icon.src)]) {
+      const url = new URL(resource, manifestUrl);
+      assert.ok(entries.has(url.href), name + ": " + resource);
+    }
+  }
+
   for (const file of sdkFiles) {
     const url = new URL(file, origin).href;
     let response;
