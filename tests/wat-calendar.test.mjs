@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { createAgendaSessionVerifier } from "../workers/agenda-api/src/firebase-session.mjs";
 import { createCalendarReaders } from "../workers/agenda-api/src/calendar-readers.mjs";
@@ -69,42 +70,38 @@ test("un report et une annulation préservent l’identifiant et expriment la r�
 });
 
 test("le parcours Agenda contrôle la session et remet un calendrier Firestore complet", async () => {
+  const fixtures = JSON.parse(readFileSync(new URL("./fixtures/agenda-staging.json", import.meta.url), "utf8"));
+  const eventId = "recette-agenda-conseil";
   const config = { environment: "staging", firebaseProjectId: "wat-connect-staging" };
   const env = { WAT_ENV: "staging", FIREBASE_PROJECT_ID: config.firebaseProjectId, WAT_ENABLE_AGENDA_EXPORT: "true" };
-  const request = new Request("https://staging.example/api/agenda/" + event.id + "/calendar.ics", {
+  const request = new Request("https://staging.example/api/agenda/" + eventId + "/calendar.ics", {
     headers: { Authorization: "Bearer compte-de-recette-fictif" }
   });
   const root = "projects/wat-connect-staging/databases/(default)/documents/";
-  let audience = "invite";
+  let uid = "recette-agenda-invite";
   let validSince = 10;
   let firestoreRequests = 0;
   const worker = createAgendaFirebaseWorker({
     config,
-    verifyFirebaseIdToken: async () => ({ uid: "invite", emailVerified: true, claims: { auth_time: 10 } }),
-    lookupFirebaseAuthUser: async () => ({ uid: "invite", disabled: false, emailVerified: true, validSince }),
+    verifyFirebaseIdToken: async () => ({ uid, emailVerified: true, claims: { auth_time: 10 } }),
+    lookupFirebaseAuthUser: async () => ({ uid, disabled: false, emailVerified: true, validSince }),
     createGoogleAccessToken: async () => "oauth-fictif",
     async fetchDocument(url) {
       firestoreRequests++;
       const name = url.slice("https://firestore.googleapis.com/v1/".length);
-      if (name === root + "agendaRecipients/invite") {
-        return Response.json({ name, fields: { active: { booleanValue: true } } });
-      }
-      assert.equal(name, root + "agendaEvents/" + event.id);
-      return Response.json({ name, fields: {
-        audience: { arrayValue: { values: [{ stringValue: audience }] } },
-        status: { stringValue: event.status },
-        revision: { integerValue: String(event.revision) },
-        startsAt: { timestampValue: event.startsAt },
-        endsAt: { timestampValue: event.endsAt },
-        updatedAt: { timestampValue: event.updatedAt.replace("Z", ".123456Z") }
-      } });
+      assert.ok(name.startsWith(root));
+      const [collection, id] = name.slice(root.length).split("/");
+      const fields = fixtures[collection]?.[id];
+      assert.ok(fields, name);
+      return Response.json({ name, fields });
     }
   });
   const allowed = await worker.fetch(request, env);
   assert.equal(allowed.status, 200);
-  assert.equal(await allowed.text(), exportCalendarEvent(event));
-  audience = "autre";
+  assert.equal(await allowed.text(), exportCalendarEvent({ ...event, id: eventId }));
+  uid = "recette-agenda-exterieur";
   assert.equal((await worker.fetch(request, env)).status, 404);
+  uid = "recette-agenda-invite";
   validSince = 11;
   assert.equal((await worker.fetch(request, env)).status, 401);
   assert.equal(firestoreRequests, 4);
