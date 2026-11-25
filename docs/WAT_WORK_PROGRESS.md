@@ -71,3 +71,9 @@ Vérifier les PR ouvertes avant chaque lot. Après l’arbitrage Codex, reporter
 - Addendum administration, interconnexion et services externes dans docs/ADDENDUM-ADMINISTRATION-WAT.md (3bca4b2). Huit modèles Word distincts préparés en privé, intégrité de l’archive et huit exports PDF vérifiés. Recettes staging à exécuter.
 - Contrôles Finance dans docs/CONTROLES-FINANCE-SYCEBNL-WAT.md (fa81dd8). Revue ciblée du fonds affecté et de la classe 9 dans les références OHADA, rapprochement documentaire des PR #12 et #69–71. Revue exhaustive compte par compte et validation métier à poursuivre.
 - Reprise : vérifier les PR ouvertes et actualiser la matrice après chaque lot. Éclater les lignes composites, compléter la référence au cahier des charges et rapprocher Finance avec le catalogue applicatif. Qualifier les contrôles sur staging dès disponibilité. Compléter les dossiers de validation et la bibliothèque par série. Directive ajoutée à la tâche horaire existante.
+
+## Directive consolidée — 25 novembre 2026
+
+- PR ouvertes vérifiées jusqu’à #127. #127 porte l’accès du contrôleur habilité au module Finance; preuves techniques décrites dans la PR, recette métier à compléter.
+- Registres transitoires et six documents de travail préparés en privé. Points vérifiés : mandat de contrôle, double signature, fixation et échéance de la cotisation, adoption du budget.
+- Matrice complétée par quatre exigences neutralisées; aucune pièce originale ni donnée réelle dans la branche. Reprise : rapprochement article par article des versions, SYCEBNL compte par compte et critères de recette pour les contrôles transitoires.
