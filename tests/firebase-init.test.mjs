@@ -146,3 +146,11 @@ test("un APK Android de test peut cibler Firebase staging sans changer la config
   assert.equal(androidStaging.wat.projectId, "wat-connect-staging");
   assert.equal(androidStaging.wat.environment, "staging");
 });
+
+test("Finance peut se déconnecter hors ligne sans ouvrir de cache persistant", async () => {
+  const harness = createFirebaseHarness({ page: "finance.html", online: false, environment: "staging" });
+  assert.equal(await harness.wat.persistenceReady, false);
+  assert.equal(harness.wat.persistenceEnabled, false);
+  await harness.wat.signOutSafely();
+  assert.deepEqual(harness.calls, ["auth.signOut", "navigate:index.html"]);
+});
