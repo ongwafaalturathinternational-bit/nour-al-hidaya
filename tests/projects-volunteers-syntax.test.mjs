@@ -311,7 +311,13 @@ test("le changement de session efface le détail des registres même si le dialo
       });
       return elements.get(id);
     };
+    const lists = {
+      "projets.html": ["programId", "assignmentProject", "volunteerId"],
+      "activites.html": ["projectId", "selectedActivity", "clubVolunteer", "projectFilter"]
+    }[file] ?? [];
+    lists.forEach(element);
     vm.runInNewContext(clear + "\nclearPrivateView()", { $: element });
+    for (const id of lists) assert.equal(element(id).textContent, "", file + ": " + id);
     assert.equal(element(prefix + "Title").textContent, "", file);
     assert.equal(element(prefix + "Content").textContent, "", file);
   }
