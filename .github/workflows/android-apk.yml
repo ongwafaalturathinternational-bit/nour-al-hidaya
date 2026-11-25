@@ -22,6 +22,7 @@ on:
       - "package.json"
       - "capacitor.config.json"
       - "scripts/prepare-capacitor-web.mjs"
+      - "scripts/check-web-precache.mjs"
       - ".github/workflows/android-apk.yml"
 
 permissions:
@@ -71,6 +72,9 @@ jobs:
         run: |
           node --check web-dist/firebase-init.js
           grep -Fq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
+
+      - name: Vérifier le précache du paquet web
+        run: node --test scripts/check-web-precache.mjs
 
       - name: Conserver les ressources web de recette staging
         uses: actions/upload-artifact@v4
