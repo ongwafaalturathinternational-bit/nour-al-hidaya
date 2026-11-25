@@ -3,6 +3,8 @@ import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
+const sdkFiles = ["app", "auth", "firestore"].map(sdk => "vendor/firebase-" + sdk + "-compat.js");
+
 test("le service worker généré sert les SDK embarqués sans accès réseau", async () => {
   const origin = "https://staging.example/";
   const handlers = new Map();
@@ -31,8 +33,8 @@ test("le service worker généré sert les SDK embarqués sans accès réseau", 
   let install;
   handlers.get("install")({ waitUntil: promise => { install = promise; } });
   await install;
-  for (const sdk of ["app", "auth", "firestore"]) {
-    const url = new URL("vendor/firebase-" + sdk + "-compat.js", origin).href;
+  for (const file of sdkFiles) {
+    const url = new URL(file, origin).href;
     let response;
     handlers.get("fetch")({
       request: { method: "GET", url },
@@ -40,4 +42,18 @@ test("le service worker généré sert les SDK embarqués sans accès réseau", 
     });
     assert.ok(Buffer.isBuffer(await response), url);
   }
+});
+
+test("les pages Firebase du paquet chargent les trois SDK du précache", () => {
+  const expected = sdkFiles.map(file => "./" + file);
+  let checked = 0;
+  for (const page of fs.readdirSync("web-dist").filter(file => file.endsWith(".html"))) {
+    const html = fs.readFileSync("web-dist/" + page, "utf8");
+    const sources = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]);
+    const sdkSources = sources.filter(source => /firebase-(app|auth|firestore)-compat\.js(?:[?#].*)?$/.test(source));
+    if (!sources.some(source => /(?:^|\/)firebase-init\.js(?:[?#].*)?$/.test(source)) && sdkSources.length === 0) continue;
+    assert.deepEqual(sdkSources, expected, page);
+    checked++;
+  }
+  assert.ok(checked > 0, "Aucune page Firebase vérifiée");
 });
