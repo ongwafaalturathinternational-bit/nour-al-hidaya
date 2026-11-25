@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createCalendarReaders } from "../workers/agenda-api/src/calendar-readers.mjs";
 import agendaWorker, { createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
 import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 
@@ -159,6 +160,35 @@ test("le serveur Agenda ouvre l’export uniquement dans le staging autorisé", 
   assert.equal(response.status, 200);
   assert.equal(await response.text(), exportCalendarEvent(event));
   assert.equal(calls, 1);
+});
+
+test("les lecteurs Agenda limitent l’export aux documents attendus du staging", async () => {
+  const root = "projects/wat-connect-staging/databases/(default)/documents/";
+  const fields = {
+    audience: { arrayValue: { values: [{ stringValue: "invite" }] } },
+    status: { stringValue: event.status },
+    revision: { integerValue: String(event.revision) },
+    startsAt: { timestampValue: event.startsAt },
+    endsAt: { timestampValue: event.endsAt },
+    updatedAt: { timestampValue: event.updatedAt },
+    title: { stringValue: "Réunion interne" }
+  };
+  const readers = createCalendarReaders({
+    async getDocument(collection, id) {
+      assert.match(id, /^[A-Za-z0-9_-]+$/);
+      if (collection === "agendaEvents") return { name: root + collection + "/" + id, fields };
+      assert.equal(collection, "agendaRecipients");
+      const prefix = id === "externe" ? root.replace("wat-connect-staging", "prod") : root;
+      return { name: prefix + collection + "/" + id, fields: { active: { booleanValue: true } } };
+    }
+  });
+  const result = await loadCalendarExport({
+    ...readers, eventId: event.id, authenticatedUser: { uid: "invite", emailVerified: true }
+  });
+  assert.equal(result, exportCalendarEvent(event));
+  assert.equal(await readers.readRecipient("externe"), null);
+  assert.equal(await readers.readRecipient("autre/profil"), null);
+  assert.equal("title" in await readers.readEvent(event.id), false);
 });
 
 test("le routeur Agenda délègue uniquement le chemin du calendrier", async () => {
