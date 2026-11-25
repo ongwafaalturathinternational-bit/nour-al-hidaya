@@ -619,4 +619,20 @@ test("le chargeur Finance résout les liens malgré les identifiants hérités",
   assert.equal(context.transactions[0].projectName, "projects");
   assert.equal(context.transactions[0].accountName, "financeAccounts");
   assert.equal(context.budgets[0].projectName, "projects");
+  const requested = [];
+  context.canRead = false;
+  context.canAccountsRead = false;
+  context.canPeriodsRead = false;
+  const originalCollection = context.WATFirebase.db.collection;
+  context.WATFirebase.db.collection = name => {
+    requested.push(name);
+    return originalCollection(name);
+  };
+  await vm.runInNewContext(source + "\nload()", context);
+  assert.deepEqual(requested, ["financeBudgets", "projects"]);
+  for (const field of ["transactions", "accounts", "transfers", "periods", "reconciliations"]) {
+    assert.equal(context[field].length, 0, field);
+  }
+  assert.equal(context.budgets[0].id, "financeBudgets-actual");
+  assert.equal(context.budgets[0].projectName, "projects");
 });
