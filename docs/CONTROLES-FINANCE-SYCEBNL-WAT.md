@@ -1,0 +1,11 @@
+# Contrôles fonctionnels Finance — lot SYCEBNL
+
+Brouillon de recette sur cas fictifs. Références : Journal officiel OHADA SYCEBNL, nomenclature p. 105, fonctionnement du compte 16 p. 120–121, compte 79 p. 285 et guide, application 4 (fonds affectés) et application 20 (contributions volontaires).
+
+| Cas | Exigence issue de la revue | Critère de réception |
+|---|---|---|
+| F-AFFECT | Le fonds affecté à un projet spécifique répond à la qualification prévue par le référentiel; la reprise suit la consommation. Les financements d’une autre nature suivent leurs règles propres. | Une convention fictive qualifiée, des charges éligibles et une clôture produisent un suivi distinct de disponibilité, consommation et reprise, relié à la pièce. Vérifier le schéma contre l’application 4. |
+| F-NATURE | Les groupes 90–91 du plan officiel couvrent les emplois et les contributions volontaires en nature. La nomenclature distingue aussi les groupes 92–99 de comptabilité analytique de gestion. Les codes projet ou bailleur de WAT sont des dimensions distinctes. | Une contribution en nature fictive reste séparée de la trésorerie et sa valorisation est traçable. Un identifiant de projet libre ne peut être saisi comme compte général. Vérifier la présentation contre l’application 20. |
+| F-CLOT | Le registre des opérations et le moteur de soldes sont des prérequis du rapprochement. | Pour un exercice fictif, relier balance, journaux, grand livre, soldes rapprochés et états selon le régime confirmé. Vérifier les immobilisations, stocks et écritures rectificatives par jeux distincts. |
+
+Comparaison documentaire GitHub : #12 décrit le registre soumis à double contrôle, le reporting de trésorerie et des contributions en nature. #69 décrit la validation des rôles, #70 l’export de montants signés et #71 le calcul commun du solde daté. Ces preuves ne suffisent pas à établir la couverture des écritures réglementaires et des états de clôture. La recette attend un SHA déployé sur staging, des jeux fictifs et une qualification métier. La Trésorerie devra documenter les ressources réalisées par exercice, les exemptions éventuelles, les conventions, les balances et les pièces avant détermination du régime et reprise des données réelles.
