@@ -1499,7 +1499,7 @@ function attestView(){
 
 /* ---------- synchronisation des résultats de quiz ---------- */
 const queueFlushes = new Map();
-function flushQueuedWrites({key, isActive, read, save, send, onError}) {
+function flushQueuedWrites({key, isActive, read, save, send, onError, onConfirmed}) {
  const previous = queueFlushes.get(key);
  const flush = async () => {
   if(!isActive())return 0;
@@ -1519,6 +1519,7 @@ function flushQueuedWrites({key, isActive, read, save, send, onError}) {
     break;
    }
    synced++;
+   onConfirmed?.(item);
   }
   return synced;
  };
@@ -1546,14 +1547,14 @@ function readProgressQueue(uid) {
   Number.isFinite(item.score) && Number.isFinite(item.total)
  );
 }
-function writeProgressQueue(uid,items){try{localStorage.setItem(progressQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale de progression indisponible",e)}}
+function writeProgressQueue(uid,items){try{localStorage.setItem(progressQueueKey(uid),JSON.stringify(items));return true}catch(e){console.error("File locale de progression indisponible",e);return false}}
 function enqueueProgress(uid,lessonId,score,total){
  const items=readProgressQueue(uid).filter(x=>String(x.lessonId)!==String(lessonId));
  items.push({lessonId:String(lessonId),score:Number(score),total:Number(total)});
- writeProgressQueue(uid,items);
+ return writeProgressQueue(uid,items);
 }
 async function queueAndSyncProgress(uid,lessonId,score,total){
- enqueueProgress(uid,lessonId,score,total);
+ if(!enqueueProgress(uid,lessonId,score,total)){toast("Impossible de mettre le résultat en file de synchronisation.");return}
  if(navigator.onLine)await syncPendingProgress(uid);
 }
 async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
@@ -1570,8 +1571,23 @@ async function syncPendingProgress(uid,generation=firebaseAuthGeneration){
   onError:error=>console.error("Synchronisation progression :",error)
  });
 }
+function applyPendingProgress(uid){
+ S.done[uid]=S.done[uid]||{};
+ readProgressQueue(uid).forEach(p=>{
+  const lessonId=Number(p.lessonId);
+  if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
+ });
+}
 async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
- const snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ if(!isCurrentFirebaseSession(uid,generation))return false;
+ applyPendingProgress(uid);
+ let snap;
+ try {
+  snap=await WATFirebase.db.collection("users").doc(uid).collection("progress").get();
+ } catch(error) {
+  if(globalThis.navigator?.onLine&&isCurrentFirebaseSession(uid,generation))await syncPendingProgress(uid,generation);
+  throw error;
+ }
  if(!isCurrentFirebaseSession(uid,generation))return false;
  S.done[uid]=S.done[uid]||{};
  snap.forEach(doc=>{
@@ -1580,12 +1596,8 @@ async function loadFirebaseProgress(uid,generation=firebaseAuthGeneration){
    S.done[uid][lessonId]={s:p.score,t:p.total};
   }
  });
- // Les résultats encore en attente hors connexion restent prioritaires sur la copie distante.
- readProgressQueue(uid).forEach(p=>{
-  const lessonId=Number(p.lessonId);
-  if(AVAIL.includes(lessonId))S.done[uid][lessonId]={s:p.score,t:p.total};
- });
- await syncPendingProgress(uid);
+ applyPendingProgress(uid);
+ await syncPendingProgress(uid,generation);
  return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- synchronisation des autres données pédagogiques de l'apprenant ---------- */
@@ -1596,22 +1608,23 @@ function readLearningQueue(uid) {
   item.data !== null && typeof item.data === "object" && !Array.isArray(item.data)
  );
 }
-function writeLearningQueue(uid,items){try{localStorage.setItem(learningQueueKey(uid),JSON.stringify(items))}catch(e){console.error("File locale pédagogique indisponible",e)}}
-function applyLearningRecord(uid,data){
+function writeLearningQueue(uid,items){try{localStorage.setItem(learningQueueKey(uid),JSON.stringify(items));return true}catch(e){console.error("File locale pédagogique indisponible",e);return false}}
+function applyLearningRecord(uid,data,pending=false){
  const key=uid+":"+data.itemId;
  if(data.kind==="reflection"&&typeof data.value==="string")S.reflect[key]=data.value;
  if(data.kind==="practice"&&Array.isArray(data.value))S.practice[key]=data.value;
  if(data.kind==="submission"&&typeof data.value==="string"){
   S.subs=S.subs.filter(x=>!(x.hw===data.itemId&&x.u===uid));
-  S.subs.push({hw:data.itemId,u:uid,date:data.date||dayISO(),status:"rendu",pending:false,text:data.value});
+  S.subs.push({hw:data.itemId,u:uid,date:data.date||dayISO(),status:"rendu",pending,text:data.value});
  }
 }
 function enqueueLearning(uid,recordId,data){
  const items=readLearningQueue(uid).filter(x=>x.recordId!==recordId);
- items.push({recordId,data});writeLearningQueue(uid,items);
+ items.push({recordId,data});return writeLearningQueue(uid,items);
 }
 async function queueAndSyncLearning(uid,recordId,data){
- enqueueLearning(uid,recordId,data);applyLearningRecord(uid,data);
+ if(!enqueueLearning(uid,recordId,data)){toast("Impossible de mettre la saisie en file de synchronisation.");return}
+ applyLearningRecord(uid,data,true);
  if(navigator.onLine)await syncPendingLearning(uid);
 }
 async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
@@ -1625,16 +1638,30 @@ async function syncPendingLearning(uid,generation=firebaseAuthGeneration){
   send:item=>WATFirebase.db.collection("users").doc(uid).collection("learning").doc(item.recordId).set({
     ...item.data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   }),
-  onError:error=>console.error("Synchronisation pédagogique :",error)
+  onError:error=>console.error("Synchronisation pédagogique :",error),
+  onConfirmed:item=>{
+   if(item.data.kind==="submission"&&!readLearningQueue(uid).some(next=>next.recordId===item.recordId)){
+    applyLearningRecord(uid,item.data);
+    render();
+   }
+  }
  });
 }
 async function loadFirebaseLearning(uid,generation=firebaseAuthGeneration){
- const snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ if(!isCurrentFirebaseSession(uid,generation))return false;
+ readLearningQueue(uid).forEach(item=>applyLearningRecord(uid,item.data,true));
+ let snap;
+ try {
+  snap=await WATFirebase.db.collection("users").doc(uid).collection("learning").get();
+ } catch(error) {
+  if(globalThis.navigator?.onLine&&isCurrentFirebaseSession(uid,generation))await syncPendingLearning(uid,generation);
+  throw error;
+ }
  if(!isCurrentFirebaseSession(uid,generation))return false;
  snap.forEach(doc=>applyLearningRecord(uid,doc.data()));
  const pending=readLearningQueue(uid);
- pending.forEach(item=>applyLearningRecord(uid,item.data));
- await syncPendingLearning(uid);
+ pending.forEach(item=>applyLearningRecord(uid,item.data,true));
+ await syncPendingLearning(uid,generation);
  return isCurrentFirebaseSession(uid,generation);
 }
 /* ---------- authentification Firebase ---------- */
@@ -1662,7 +1689,14 @@ async function enterFirebaseUser(user,generation){
   let l=learner(id);
   if(!l){l={id,name:p.displayName||"Apprenant",sex:"",age:"",level:1,cc:p.country||"BJ",mosq:p.mosque||"",st:p.learningMode==="seul"?"libre":"attente",by:"firebase",volet:p.interest||"C"};S.learners.push(l)}
   else{l.name=p.displayName||l.name;l.cc=p.country||l.cc;l.mosq=p.mosque||l.mosq}
-  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};try{await loadFirebaseProgress(id,generation)}catch(progressError){console.error("Chargement progression distante :",progressError)}if(!isCurrentFirebaseSession(id,generation))return false;try{await loadFirebaseLearning(id,generation)}catch(learningError){console.error("Chargement données pédagogiques :",learningError)}if(!isCurrentFirebaseSession(id,generation))return false;R.signup=false;R.tab=null;save();render();return true;
+  S.cur=id;S.role="apprenant";S.access=null;S.done[id]=S.done[id]||{};
+   const [progress,learning]=await Promise.allSettled([
+     loadFirebaseProgress(id,generation),
+     loadFirebaseLearning(id,generation)
+   ]);
+   if(progress.status==="rejected")console.error("Chargement progression distante :",progress.reason);
+   if(learning.status==="rejected")console.error("Chargement donnees pedagogiques :",learning.reason);
+   if(!isCurrentFirebaseSession(id,generation))return false;R.signup=false;R.tab=null;save();render();return true;
 }
 /* ---------- actions ---------- */
 function finishLessonScore(){const{id,q}=R.lesson;(S.done[CUR()]=S.done[CUR()]||{})[id]={s:q.score,t:LESSONS[id].quiz.length};save();const user=window.WATFirebase&&WATFirebase.ready&&WATFirebase.auth.currentUser;if(user&&user.emailVerified)queueAndSyncProgress(user.uid,id,q.score,LESSONS[id].quiz.length)}
@@ -1807,7 +1841,7 @@ async signup(){
  disc(){S.set.discreet=!S.set.discreet;save()},
  reset(){S=seed();R={tab:null};save();toast("Données d’exemple rétablies")}
 };
-function submit(o){const u=CUR(),h=R.hw;const pend=!online();S.subs=S.subs.filter(s=>!(s.hw===h&&s.u===u));S.subs.push({hw:h,u,date:dayISO(),status:"rendu",pending:pend,...o});save();if(typeof o.text==="string"&&window.WATFirebase&&WATFirebase.auth.currentUser&&WATFirebase.auth.currentUser.emailVerified)queueAndSyncLearning(u,"submission_"+h,{kind:"submission",itemId:String(h),value:o.text,date:dayISO()});toast(pend?"Gardé : il partira avec le réseau":"Devoir enregistré ✓") }
+function submit(o){const u=CUR(),h=R.hw;const pend=!online();S.subs=S.subs.filter(s=>!(s.hw===h&&s.u===u));S.subs.push({hw:h,u,date:dayISO(),status:"rendu",pending:pend,...o});save();toast(pend?"Gardé : il partira avec le réseau":"Devoir enregistré ✓");if(typeof o.text==="string"&&window.WATFirebase&&WATFirebase.auth.currentUser&&WATFirebase.auth.currentUser.emailVerified)queueAndSyncLearning(u,"submission_"+h,{kind:"submission",itemId:String(h),value:o.text,date:dayISO()}); }
 
 /* correction par le formateur */
 const origHw=hwDetail;
