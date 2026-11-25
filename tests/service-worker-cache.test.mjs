@@ -1,3 +1,4 @@
+import vm from "node:vm";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -37,4 +38,32 @@ test("les requêtes métier et API non listées ne sont pas interceptées comme 
   assert.ok(allowlistGuard >= 0 && allowlistGuard < navigationHandler,
     "la liste blanche doit être vérifiée avant tout fallback de navigation");
   assert.doesNotMatch(sw, /caches\.put\(request,\s*response\)/);
+});
+
+test("une navigation précachée reste disponible quand le serveur renvoie 503", async () => {
+  const origin = "https://staging.example/";
+  const handlers = new Map();
+  const cached = { status: 200 };
+  let response = { status: 503, ok: false };
+  let cachedResponse = cached;
+  vm.runInNewContext(sw, {
+    URL,
+    self: { registration: { scope: origin }, addEventListener: (name, fn) => handlers.set(name, fn) },
+    caches: { match: async () => cachedResponse },
+    fetch: async () => response
+  });
+  function navigate() {
+    let result;
+    handlers.get("fetch")({
+      request: { url: origin + "nour-al-hidaya.html", method: "GET", mode: "navigate" },
+      respondWith: promise => { result = promise; }
+    });
+    return result;
+  }
+  assert.equal(await navigate(), cached);
+  cachedResponse = undefined;
+  assert.equal(await navigate(), response);
+  cachedResponse = cached;
+  response = { status: 404, ok: false };
+  assert.equal(await navigate(), response);
 });
