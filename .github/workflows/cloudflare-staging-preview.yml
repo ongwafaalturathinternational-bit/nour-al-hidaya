@@ -9,6 +9,7 @@ on:
       - 'scripts/prepare-capacitor-web.mjs'
       - 'scripts/check-web-precache.mjs'
       - 'sw.js'
+      - 'finance.html'
       - 'package.json'
 
 permissions:
