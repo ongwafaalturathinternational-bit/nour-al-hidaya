@@ -64,6 +64,22 @@ for (const file of sdkFiles) {
   await fs.writeFile(path.join(vendor, file), Buffer.from(await response.arrayBuffer()));
 }
 
+const worker = path.join(output, "sw.js");
+const workerSource = await fs.readFile(worker, "utf8");
+const appFiles = /const APP_FILES = \[([\s\S]*?)\];/;
+const externalAssets = /const EXTERNAL_ASSETS = \[[\s\S]*?\];/;
+if (!appFiles.test(workerSource) || !externalAssets.test(workerSource)) {
+  throw new Error("Listes de ressources du service worker introuvables.");
+}
+const vendoredAssets = sdkFiles.map(file => "./vendor/" + file);
+await fs.writeFile(worker, workerSource
+  .replace(/(const CACHE_NAME = "[^"]+)"/, '$1-embedded"')
+  .replace(appFiles, (_, entries) => {
+    const files = JSON.parse("[" + entries + "]");
+    return "const APP_FILES = " + JSON.stringify([...files, ...vendoredAssets], null, 2) + ";";
+  })
+  .replace(externalAssets, "const EXTERNAL_ASSETS = [];"));
+
 const htmlFiles = files.filter(file => file.endsWith(".html"));
 for (const file of htmlFiles) {
   const target = path.join(output, file);
