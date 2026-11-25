@@ -104,6 +104,8 @@ L’[APK de la PR #125](https://github.com/ongwafaalturathinternational-bit/nour
 4. Relever le résultat par registre et par scénario, avec le SHA, le modèle du téléphone et la version Android. La recette physique reste ouverte.
 
 
+Pour la recette du portail Finance, utiliser le paquet local `WAT-Finance-staging-127.zip`, SHA-256 `737d1fa8e94469c718e4a6818331354b670374bca1048fc3a9594bf557be9c14`. Il reprend la [PR #127](https://github.com/ongwafaalturathinternational-bit/nour-al-hidaya/pull/127), SHA `48d79629dce44a63545291de9e3fce4c0b15d76f`, et le même initialiseur forcé vers staging que le paquet #121. Le test local du paquet confirme avec Firebase simulé la sélection de staging et l’ouverture de Finance pour un compte qui possède uniquement `finance.control.read`. La recette connectée reste ouverte.
+
 ## Simulation d’intégration Finance avec WAT, Club et Nour
 
 La simulation locale `git merge-tree` entre les équivalents locaux de #126 (`71bcb81a45b5786c4f622127dc7f8540b2acfff9`) et #121 (`4c69353e3624b544b197dfef667bb8cccf92d09e`) signale six conflits. Aucun changement de branche ni fusion de PR n’a été effectué.
