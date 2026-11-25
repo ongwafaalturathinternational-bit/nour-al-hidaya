@@ -2,13 +2,54 @@ name: Cloudflare staging preview
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/cloudflare-staging-preview.yml'
+      - 'wrangler.staging.json'
+      - 'scripts/prepare-capacitor-web.mjs'
+      - 'scripts/check-web-precache.mjs'
+      - 'sw.js'
+      - 'package.json'
 
 permissions:
   contents: read
 
 jobs:
+  validate-staging:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+
+      - name: Construire les ressources web
+        env:
+          WAT_FIREBASE_ENV: staging
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:android:web
+          node --check web-dist/firebase-init.js
+          grep -Fxq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
+          node --test scripts/check-web-precache.mjs
+
+      - name: Conserver le paquet web staging
+        uses: actions/upload-artifact@v4
+        with:
+          name: wat-connect-cloudflare-web-staging
+          path: web-dist/
+          if-no-files-found: error
+          retention-days: 14
+
+
   deploy-staging:
-    if: github.ref == 'refs/heads/fix/lot8-club-onboarding-and-access'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/lot8-club-onboarding-and-access'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: staging
@@ -30,9 +71,14 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo "::error::Secret CLOUDFLARE_ACCOUNT_ID manquant dans l'environnement staging." && exit 1)
 
       - name: Construire les ressources web
+        env:
+          WAT_FIREBASE_ENV: staging
         run: |
           npm install --no-audit --no-fund
           npm run build:android:web
+          node --check web-dist/firebase-init.js
+          grep -Fxq 'window.WAT_FIREBASE_ENV = "staging";' web-dist/firebase-init.js
+          node --test scripts/check-web-precache.mjs
 
       - name: Publier uniquement le Worker de staging
         env:
