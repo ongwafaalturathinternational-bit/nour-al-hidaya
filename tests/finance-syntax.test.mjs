@@ -684,3 +684,23 @@ test("seule une erreur de la session Finance active est affichée", async () => 
   await Promise.resolve();
   assert.equal(messages.length, 1);
 });
+
+test("Finance utilise la déconnexion commune et signale un échec", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\n").find(line => line.startsWith('$("logout").addEventListener'));
+  let logout;
+  let calls = 0;
+  const messages = [];
+  vm.runInNewContext(source, {
+    $: () => ({ addEventListener: (_, callback) => { logout = callback; } }),
+    WATFirebase: { async signOutSafely() {
+      if (++calls === 2) throw Error("Déconnexion reportée");
+    } },
+    say: message => messages.push(message)
+  });
+  await logout();
+  assert.deepEqual(messages, []);
+  await logout();
+  assert.equal(calls, 2);
+  assert.deepEqual(messages, ["Déconnexion reportée"]);
+});
