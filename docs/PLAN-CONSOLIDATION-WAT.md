@@ -119,3 +119,7 @@ La simulation locale `git merge-tree` entre les équivalents locaux de #126 (`71
 | `WAT_CONNECT_PROGRESS.md` | Conserver le suivi des deux branches et référencer le résultat de l’assemblage. |
 
 Avant toute validation conjointe, vérifier la suite locale, l’émulateur Firestore, le paquet de staging et la présence de Finance dans ce paquet. La recette Finance isolée et celle des registres peuvent être exécutées indépendamment.
+
+### Dépendances des règles Finance
+
+Comparaison locale des branches #127 et #126. Les huit collections Finance disposent de blocs dédiés dans #127. Elles utilisent deux fonctions définies hors de ces blocs. `validFinanceDate` est propre à Finance. `staffHasScope` est partagée, et la version de WAT exige en plus une adresse e-mail vérifiée. Conserver cette vérification lors de l’assemblage et exécuter les suites Finance et WAT avec l’émulateur. Le scénario de recette doit inclure un compte fictif vérifié et un compte fictif non vérifié disposant du même périmètre Finance. Cette comparaison est statique et aucune règle n’a été modifiée.
