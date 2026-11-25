@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { exportCalendarEvent } from "../lib/wat-calendar.mjs";
+import { exportCalendarEvent, exportCalendarEventForRecipient } from "../lib/wat-calendar.mjs";
 
 const event = {
   id:"conseil-01", revision:0, status:"published",
@@ -46,4 +46,15 @@ test("le calendrier conserve le libellé générique UTF-8 et omet les données 
   const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   assert.ok(decoded.split("\r\n").includes("SUMMARY:Événement WAT Connect"));
   assert.doesNotMatch(decoded, /Réunion privée|Lieu confidentiel|profil-fictif/);
+});
+
+test("l’export Agenda exige un destinataire actif et invité", () => {
+  const meeting = { ...event, audience: ["invite-fictif"], location: "lieu privé" };
+  const invited = { uid: "invite-fictif", active: true };
+  assert.equal(exportCalendarEventForRecipient(meeting, invited), exportCalendarEvent(meeting));
+  assert.match(exportCalendarEventForRecipient({ ...meeting, status: "cancelled" }, invited), /STATUS:CANCELLED/);
+  assert.equal(exportCalendarEventForRecipient(meeting, { ...invited, active: false }), null);
+  assert.equal(exportCalendarEventForRecipient(meeting, { ...invited, uid: "autre" }), null);
+  assert.equal(exportCalendarEventForRecipient(meeting), null);
+  assert.equal(exportCalendarEventForRecipient(event, invited), null);
 });
