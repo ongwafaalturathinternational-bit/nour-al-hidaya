@@ -53,3 +53,12 @@ Origines : D1 = cahier des charges et ordre permanent ; D2 = transmission du ré
 | Finance | Manuel 02 et annexes 12, 14–16, contrôles SYCEBNL et modèle M12 | Distinguer suivi de trésorerie et états réglementaires. Déterminer le régime après rapprochement des ressources et conventions. Soumettre nomenclature et imputations au visa professionnel. | Activation des comptes et modèles de clôture uniquement après validation. |
 | Achats | Manuel 03, exigences GED/Finance/Achats, modèles M13–M14 | Renforcer la traçabilité du retrait pour conflit d’intérêts et de la réception. Valider les seuils, exceptions et délégations; intégrer les conditions bailleurs. | Contrôles à la consultation, à l’engagement et avant traitement de la facture. |
 | Intégrations et communication | Manuel 07 et étude A6 | Comparer coûts, accès et confidentialité. Arbitrage requis avant tout engagement ou compte institutionnel. | Démarrage avec liens et exports autorisés, puis essais fictifs par fournisseur. |
+
+## Directive consolidée du 25 novembre — exigences fonctionnelles neutralisées
+
+| ID | Référence | Besoin | PR ou preuve | Recette et validation | Statut |
+|---|---|---|---|---|---|
+| FIN-06 | §§ II, V, VII | Séparer les soldes déclarés, constatés et validés. Rapprochement par canal, autorisations distinctes et piste d’audit. | #12, #127 pour accès au contrôle | Vérifier sur données fictives qu’un contrôleur habilité consulte sans autoriser ni modifier. Visa statutaire requis. | spécifié |
+| FIN-07 | §§ III, IV, VII | Qualifier les preuves historiques et les entrées patrimoniales, sans import automatique en comptabilité. | Procédures privées | Tester rejet d’un montant uniquement déclaré à l’ouverture. Validation professionnelle. | spécifié |
+| MET-05 | § VI | Cotisation annuelle par exercice, décision d’AG, versements, reçu, mise en demeure et décision séparée. | Registre transitoire privé | Tester échéancier et reçu sans suspension automatique. Visa de l’organe compétent. | spécifié |
+| FIN-08 | §§ VII, IX | Budget approuvé, scénarios séparés, financement espéré distinct et réalisation issue d’opérations validées. | #12 partiel | Préparer recette scénario/révision/adoption. Visa AG. | spécifié |
