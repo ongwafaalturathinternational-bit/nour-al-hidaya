@@ -102,3 +102,18 @@ L’[APK de la PR #125](https://github.com/ongwafaalturathinternational-bit/nour
 2. Charger des options fictives distinctives dans Projets et Activités. Après le changement de compte, vérifier les listes des formulaires de projet, d’affectation et de présence, ainsi que le filtre par projet.
 3. Provoquer un message d’état avec le premier compte. Après changement de compte, vérifier que seul le message de la session active est visible.
 4. Relever le résultat par registre et par scénario, avec le SHA, le modèle du téléphone et la version Android. La recette physique reste ouverte.
+
+
+## Simulation d’intégration Finance avec WAT, Club et Nour
+
+La simulation locale `git merge-tree` entre les équivalents locaux de #126 (`71bcb81a45b5786c4f622127dc7f8540b2acfff9`) et #121 (`4c69353e3624b544b197dfef667bb8cccf92d09e`) signale six conflits. Aucun changement de branche ni fusion de PR n’a été effectué.
+
+| Fichiers en conflit | Vérification avant un assemblage de recette |
+| --- | --- |
+| `firestore.rules` | Préserver les règles existantes de chaque module et conserver les cas d’autorisation et de refus des deux suites. |
+| `.github/workflows/firestore-rules.yml` | Couvrir les changements Finance et registres lors des contrôles de PR. |
+| `index.html`, `tests/portal-routing.test.mjs` | Vérifier la navigation, notamment l’entrée Finance pour les comptes habilités et les parcours WAT existants. |
+| `wat-brand.css` | Préserver les fichiers graphiques existants. La recette fonctionnelle peut conserver la feuille de style WAT de la base d’assemblage. |
+| `WAT_CONNECT_PROGRESS.md` | Conserver le suivi des deux branches et référencer le résultat de l’assemblage. |
+
+Avant toute validation conjointe, vérifier la suite locale, l’émulateur Firestore, le paquet de staging et la présence de Finance dans ce paquet. La recette Finance isolée et celle des registres peuvent être exécutées indépendamment.
