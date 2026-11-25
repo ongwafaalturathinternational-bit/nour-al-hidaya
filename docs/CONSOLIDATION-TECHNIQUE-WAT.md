@@ -39,3 +39,14 @@ Relever SHA, projet, rôle fictif, navigateur ou appareil et résultat. Masquer 
 - Club Khuddam : conserver la validation atomique de #20 et le rafraîchissement du jeton de #40 dans la recette commune.
 
 Travaux graphiques suspendus. Aucune fusion de pull request ni publication de production.
+
+## Consolidation Agenda et Nour
+
+Le sommet Agenda serveur vérifié est la PR #143 (`e5b4059deffe90c3fd9b062a3942486bd6811a97`). Les PR #130 à #143 sont empilées. Pour préparer un candidat de recette sur un socle approuvé, relever le delta depuis le parent de #130 jusqu’au sommet de la pile. Ce delta local compte dix fichiers. Comparer séparément les changements des rappels et de la route agent Nour.
+
+| Branche comparée | Résultat de la simulation Git locale | Contrôles du candidat |
+|---|---|---|
+| `codex/agenda-suivi-distribution` (`f1f4276`) | Conflits dans le journal, la procédure Agenda, les deux bibliothèques Agenda et rappels, `activites.html` et les deux fichiers de tests associés. | Préserver la réservation et la distribution des rappels, les appels de la page Activités et la couverture des tests. Conserver l’export serveur authentifié, puis exécuter les suites Agenda et Activités. |
+| `codex/nour-config-route-agent` (`726c866`) | Conflits dans `index.html` et le journal. `workers/learning-api/src/google-auth.js` est partagé à l’identique sur ces sommets. | Vérifier les routes Nour et les liens du portail après réconciliation. Tester l’export Agenda et la route agent avec appels simulés, puis vérifier le paquet Wrangler. |
+
+Les simulations ont produit des arbres temporaires avec `git merge-tree`. La recette distante de l’Agenda requiert une instance autorisée de staging et le jeu de données décrit dans [la procédure Agenda](RECETTE-AGENDA-ET-RAPPELS.md).
