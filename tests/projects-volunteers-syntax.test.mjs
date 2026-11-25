@@ -298,3 +298,21 @@ test("les affectations utilisent les identifiants Firestore des projets et bén�
   assert.equal(selectors.programId.options[1].value, "programme");
   assert.equal(selectors.volunteerId.options[0].value, "bénévole");
 });
+
+test("le changement de session efface le détail des projets et activités même si le dialogue est fermé", () => {
+  for (const file of ["projets.html", "activites.html"]) {
+    const html = readFileSync(new URL("../" + file, import.meta.url), "utf8");
+    const clear = html.split("\n").find(line => line.startsWith("function clearPrivateView()"));
+    const elements = new Map();
+    const element = id => {
+      if (!elements.has(id)) elements.set(id, {
+        open: false, textContent: "ancienne fiche", reset() {},
+        replaceChildren() { this.textContent = ""; }
+      });
+      return elements.get(id);
+    };
+    vm.runInNewContext(clear + "\nclearPrivateView()", { $: element });
+    assert.equal(element("detailTitle").textContent, "", file);
+    assert.equal(element("detailContent").textContent, "", file);
+  }
+});
