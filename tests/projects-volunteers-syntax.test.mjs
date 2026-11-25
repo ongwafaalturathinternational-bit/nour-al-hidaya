@@ -320,5 +320,7 @@ test("le changement de session efface le détail des registres même si le dialo
     for (const id of lists) assert.equal(element(id).textContent, "", file + ": " + id);
     assert.equal(element(prefix + "Title").textContent, "", file);
     assert.equal(element(prefix + "Content").textContent, "", file);
+    assert.equal(element("message").textContent, "", file);
+    assert.equal(element("message").hidden, true, file);
   }
 });
