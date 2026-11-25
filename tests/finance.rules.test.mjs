@@ -541,6 +541,9 @@ test("le contrôleur financier consulte les registres sans pouvoir créer, valid
   const db = env.authenticatedContext("finance-controller", { email_verified: true }).firestore();
   await assertSucceeds(getDoc(doc(db, "financeTransactions", "controller-visible")));
   await assertSucceeds(getDoc(doc(db, "financeBudgets", "controller-budget")));
+  const unverified = env.authenticatedContext("finance-controller", { email_verified: false }).firestore();
+  await assertFails(getDoc(doc(unverified, "financeTransactions", "controller-visible")));
+  await assertFails(getDoc(doc(unverified, "financeBudgets", "controller-budget")));
   await assertFails(setDoc(doc(db, "financeTransactions", "controller-cannot-create"), transaction("finance-controller")));
   await assertFails(updateDoc(doc(db, "financeTransactions", "controller-visible"), {
     status: "validee", validatedAt: serverTimestamp(), validatedBy: "finance-controller",
