@@ -583,3 +583,40 @@ test("le chargement Finance conserve les identifiants des sept collections", () 
   assert.equal([...load.matchAll(/\{\.\.\.d\.data\(\),id:d\.id\}/g)].length, 7);
   assert.doesNotMatch(load, /\{id:d\.id,\.\.\.d\.data\(\)\}/);
 });
+
+test("le chargeur Finance résout les liens malgré les identifiants hérités", async () => {
+  const html = readFileSync(new URL("../finance.html", import.meta.url), "utf8");
+  const source = html.split("\n").find(line => line.startsWith("async function load()"));
+  const collections = {
+    transactions: "financeTransactions", budgets: "financeBudgets", projects: "projects",
+    accounts: "financeAccounts", transfers: "financeTransfers", periods: "financePeriods",
+    reconciliations: "financeReconciliations"
+  };
+  const select = { value: "", replaceChildren() {}, add() {} };
+  const context = {
+    canRead: true, canBudgetRead: true, canProjectsRead: true, canAccountsRead: true, canPeriodsRead: true,
+    WATFirebase: { db: { collection(name) {
+      return { async get() {
+        return { docs: [{ id: name + "-actual", data: () => ({
+          id: "legacy", name, projectId: "projects-actual", accountId: "financeAccounts-actual"
+        }) }] };
+      } };
+    } } },
+    $: () => select,
+    Option: function () {}
+  };
+  for (const field of Object.keys(collections)) context[field] = [];
+  for (const name of [
+    "fillProjectSelect", "fillAccountSelect", "fillTransactionAccountFilter", "fillTransferSelects",
+    "fillPeriodSelect", "renderKpis", "renderTransactions", "renderExpenseChart", "renderMonthlyChart",
+    "renderPaymentSummary", "renderBudgets", "renderDonorSummary", "renderProjectFinance",
+    "renderAccounts", "renderTransfers", "renderPeriods", "renderReconciliations", "fillReconciliationAccounts"
+  ]) context[name] = () => {};
+  await vm.runInNewContext(source + "\nload()", context);
+  for (const [field, collection] of Object.entries(collections)) {
+    assert.equal(context[field][0].id, collection + "-actual", field);
+  }
+  assert.equal(context.transactions[0].projectName, "projects");
+  assert.equal(context.transactions[0].accountName, "financeAccounts");
+  assert.equal(context.budgets[0].projectName, "projects");
+});
