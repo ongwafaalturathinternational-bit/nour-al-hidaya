@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import agendaWorker, { createAgendaWorker } from "../workers/agenda-api/src/index.mjs";
 import { exportCalendarEvent, exportCalendarEventForRecipient, loadCalendarExport, respondWithCalendarExport, routeCalendarExport } from "../lib/wat-calendar.mjs";
 
 const event = {
@@ -130,6 +131,34 @@ test("la route Agenda renvoie une erreur sans exposer les données internes", as
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.equal(await response.text(), "");
   }
+});
+
+test("le serveur Agenda ouvre l’export uniquement dans le staging autorisé", async () => {
+  const request = new Request("https://staging.example/api/agenda/" + event.id + "/calendar.ics");
+  const env = {
+    WAT_ENV: "staging",
+    FIREBASE_PROJECT_ID: "wat-connect-staging",
+    WAT_ENABLE_AGENDA_EXPORT: "true"
+  };
+  let calls = 0;
+  const worker = createAgendaWorker({
+    calendar: {
+      authenticate: async () => { calls++; return { uid: "invite", emailVerified: true }; },
+      readRecipient: async uid => ({ uid, active: true }),
+      readEvent: async () => ({ ...event, audience: ["invite"] })
+    }
+  });
+  for (const settings of [undefined, { ...env, WAT_ENV: "production" },
+    { ...env, FIREBASE_PROJECT_ID: "prod" }, { ...env, WAT_ENABLE_AGENDA_EXPORT: "false" }]) {
+    assert.equal((await worker.fetch(request, settings)).status, 404);
+  }
+  assert.equal((await agendaWorker.fetch(request, env)).status, 404);
+  assert.equal((await worker.fetch(new Request("https://staging.example/other"), env)).status, 404);
+  assert.equal(calls, 0);
+  const response = await worker.fetch(request, env);
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), exportCalendarEvent(event));
+  assert.equal(calls, 1);
 });
 
 test("le routeur Agenda délègue uniquement le chemin du calendrier", async () => {
