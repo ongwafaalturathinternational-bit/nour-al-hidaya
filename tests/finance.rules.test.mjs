@@ -575,6 +575,18 @@ test("le contrôleur financier lit les données, crée des observations séparé
     updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
   }));
   await assertFails(updateDoc(observation, {
+    description: "Court",
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(updateDoc(observation, {
+    description: 12345,
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(updateDoc(observation, {
+    description: "x".repeat(4001),
+    updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
+  }));
+  await assertFails(updateDoc(observation, {
     status: "cloturee", updatedAt: serverTimestamp(), updatedBy: "finance-controller-role"
   }));
   await assertFails(deleteDoc(observation));

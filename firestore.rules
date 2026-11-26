@@ -1098,6 +1098,9 @@ service cloud.firestore {
         && resource.data.createdBy == request.auth.uid
         && resource.data.status == "ouverte"
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["description", "updatedAt", "updatedBy"])
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.description.size() <= 4000
         && request.resource.data.title == resource.data.title
         && request.resource.data.severity == resource.data.severity
         && request.resource.data.referenceType == resource.data.referenceType
