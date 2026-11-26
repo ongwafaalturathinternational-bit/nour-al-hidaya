@@ -50,8 +50,8 @@
 |---|---|---|---|
 | **Finance / WAT** | **Résolu par Codex** | Déjà intégré dans `wat-finance-paquet-conjoint` (`1dd663d`), `wat-finance-deconnexion-partagee` (`dcb46ca`) et `wat-nour-recette-route` (`25a94d2`). | Aucune action requise ; conserver `25a94d2` comme base. |
 | **Nour (`nour-config-route-agent` vs `25a94d2`)** | **Résolu fonctionnellement** | `wat-nour-recette-route` (`25a94d2`) contient déjà `workers/learning-api/*` et la restriction staging (`config.js`). Les conflits `add/add` viennent uniquement de deux historiques parallèles. | Ne pas re-fusionner `nour-config-route-agent` ; travailler uniquement depuis `25a94d2`. |
-| **Agenda / Rappels (`agenda-suivi-distribution` `e605f70` vs `25a94d2`)** | **Non résolu** | 11 commits en avance (`e605f70`) ; conflits sur 11 fichiers (`activites.html`, `programmes.html`, `projets.html`, `lib/wat-calendar.mjs`, `lib/wat-reminders.mjs`, `tests/activities-syntax.test.mjs`, `tests/projects-volunteers-syntax.test.mjs`, `tests/wat-calendar.test.mjs`, docs). | Réconcilier sur une branche `antigravity/lot2-reconciliation-agenda` en conservant les briques `workers/agenda-api` de `25a94d2` et le suivi de distribution/réservation de `e605f70`. |
-| **PR #44 / #45 (`activites-presences-continuite` vs `activites-session-registre`)** | **Arbitrage en attente** | `49056e3` (4 commits) et `9bc827a` (2 commits) divergent sur `activites.html`, `programmes.html`, `projets.html`. | Soumettre une matrice de comparaison exacte à la Présidence/Codex avant réconciliation. |
+| **Agenda / Rappels (`agenda-suivi-distribution` `e605f70` vs `25a94d2`)** | **Déjà résolu et dépassé dans `25a94d2`** | La comparaison directe `git diff 25a94d2 e605f70` prouve que `wat-nour-recette-route` (`25a94d2`) contient déjà les versions plus avancées de `lib/wat-calendar.mjs` (+53 lignes), `lib/wat-reminders.mjs` (garde `prepareReminder` et `receipt-unconfirmed`), `tests/wat-calendar.test.mjs` (+283 lignes), `activites.html`, `programmes.html` et `projets.html`. | Ne pas rétrograder `25a94d2` en fusionnant `e605f70`. La branche `antigravity/lot2-reconciliation-agenda` est conservée à l'identique sur `25a94d2` comme trace de vérification. |
+| **PR #44 / #45 (`activites-presences-continuite` vs `activites-session-registre`)** | **Déjà intégrées et dépassées dans `25a94d2`** | `25a94d2` contient déjà les correctifs de continuité et de purge de session des quatre registres (`tests/activities-syntax.test.mjs` +145 lignes vs `49056e3`). | Confirmation formelle à soumettre à la Présidence/Codex pour clôturer les anciennes PR #44/#45 sans nouvelle fusion. |
 
 ---
 
@@ -63,11 +63,9 @@
 - Séparation des tâches respectée sur `financeTransfers` (`request.auth.uid != resource.data.createdBy` pour valider/rejeter).
 - `staffAccess` en lecture seule pour son propre UID (`list`, `create`, `update`, `delete` interdits).
 
-### Anomalie détectée (à corriger et tester sous Firestore Emulator en CI)
-- **`firestore.rules` lignes 1097–1108 (`financeControlObservations` — `allow update`)** :
-  - Lors de la création (`create`, lignes 1082–1084), `description` est validée (`is string`, `size() >= 10`, `size() <= 4000`).
-  - Lors de la mise à jour (`update`, lignes 1097–1108), `affectedKeys().hasOnly(["description", "updatedAt", "updatedBy"])` autorise la modification de `description`, **mais la règle omet de revalider le type et la longueur de `request.resource.data.description`**. Un contrôleur habilité pourrait ainsi remplacer une observation par une chaîne vide ou un type non conforme.
-  - **Action proposée :** Ajouter `&& request.resource.data.description is string && request.resource.data.description.size() >= 10 && request.resource.data.description.size() <= 4000` dans `allow update` + test négatif dédié dans `tests/finance.rules.test.mjs` (à valider via CI Firestore Emulator).
+### Correctif préparé sur `antigravity/lot3-securite-observations` (commit `39f18d3`)
+- **`firestore.rules` lignes 1097–1108 (`financeControlObservations` — `allow update`)** : ajout de la revalidation `&& request.resource.data.description is string && request.resource.data.description.size() >= 10 && request.resource.data.description.size() <= 4000` (alignée sur `allow create`).
+- **`tests/finance.rules.test.mjs` lignes 577–588** : ajout de 3 tests négatifs (description < 10 caractères, type non textuel `12345`, longueur > 4 000 caractères). Syntaxe vérifiée (`node --check`), exécution complète soumise à la CI Firestore Emulator après publication.
 
 ### Renforcement exécuté localement (`tests/finance-access-policy.test.mjs`)
 - Ajout d'un test négatif de séparation des fonctions (`financial_reader`, `financial_manager`, `financial_validator`, `budget_manager`, `accounting_admin`) et de rejet des actions non textuelles/héritées (`null`, `undefined`, `123`, `"toString"`, `"has"`).
@@ -85,6 +83,8 @@
 
 ## 5. Prochaines étapes et point de reprise
 
-- **En attente d'autorisation / environnement :**
-  1. Exécution des 10 suites `.rules.test.mjs` sur Firestore Emulator (via PR brouillon GitHub Actions ou poste équipé Java).
-  2. Arbitrage Présidence/Codex sur la réconciliation `codex/agenda-suivi-distribution` (`e605f70`) vs `25a94d2` et sur la correction `financeControlObservations` dans `firestore.rules`.
+- **Blocage d'authentification GitHub constaté :** `git push -u origin antigravity/lot1-qualification-technique` reste en attente d'authentification interactive GitHub (et `gh` CLI n'est pas installé localement). Intervention de la Présidence requise pour authentifier le `push` et ouvrir les PR en brouillon :
+  1. `antigravity/lot1-qualification-technique` (base `codex/wat-nour-recette-route`) — Journal & tests négatifs `finance-access-policy.test.mjs` (8/8 PASS).
+  2. `antigravity/lot3-securite-observations` (`39f18d3`, base `codex/wat-nour-recette-route`) — Correctif `financeControlObservations` + 3 tests négatifs (validation CI Firestore Emulator à lancer via PR brouillon).
+  3. `antigravity/lot2-reconciliation-agenda` (conservée sur `25a94d2` sans modification, comme preuve de non-régression).
+- **Vérification anti-doublon (`git fetch --all --prune`) :** aucun nouveau commit Codex/Work depuis le 25 novembre 2026 (`25a94d2`).
