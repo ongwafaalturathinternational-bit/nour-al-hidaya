@@ -63,3 +63,19 @@ test("les noms hérités et les valeurs non textuelles ne confèrent aucun droit
     assert.deepEqual(getFinancePermissions(role), []);
   }
 });
+
+test("séparation des fonctions : aucun rôle Finance ne cumule saisie, validation et administration", () => {
+  assert.equal(canFinanceAction("financial_reader", "finance.operations.create"), false);
+  assert.equal(canFinanceAction("financial_reader", "control.observations.create"), false);
+  assert.equal(canFinanceAction("financial_manager", "finance.operations.validate"), false);
+  assert.equal(canFinanceAction("financial_manager", "grants.approve"), false);
+  assert.equal(canFinanceAction("financial_manager", "bank.reconciliation.validate"), false);
+  assert.equal(canFinanceAction("financial_validator", "finance.operations.create"), false);
+  assert.equal(canFinanceAction("financial_validator", "accounting.entries.create"), false);
+  assert.equal(canFinanceAction("budget_manager", "finance.operations.validate"), false);
+  assert.equal(canFinanceAction("accounting_admin", "finance.operations.create"), false);
+  assert.equal(canFinanceAction("accounting_admin", "finance.operations.validate"), false);
+  for (const badAction of [null, undefined, 123, "toString", "has"]) {
+    assert.equal(canFinanceAction("financial_manager", badAction), false);
+  }
+});

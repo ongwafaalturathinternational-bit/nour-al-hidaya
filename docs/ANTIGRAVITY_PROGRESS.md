@@ -69,6 +69,10 @@
   - Lors de la mise à jour (`update`, lignes 1097–1108), `affectedKeys().hasOnly(["description", "updatedAt", "updatedBy"])` autorise la modification de `description`, **mais la règle omet de revalider le type et la longueur de `request.resource.data.description`**. Un contrôleur habilité pourrait ainsi remplacer une observation par une chaîne vide ou un type non conforme.
   - **Action proposée :** Ajouter `&& request.resource.data.description is string && request.resource.data.description.size() >= 10 && request.resource.data.description.size() <= 4000` dans `allow update` + test négatif dédié dans `tests/finance.rules.test.mjs` (à valider via CI Firestore Emulator).
 
+### Renforcement exécuté localement (`tests/finance-access-policy.test.mjs`)
+- Ajout d'un test négatif de séparation des fonctions (`financial_reader`, `financial_manager`, `financial_validator`, `budget_manager`, `accounting_admin`) et de rejet des actions non textuelles/héritées (`null`, `undefined`, `123`, `"toString"`, `"has"`).
+- **Preuve :** `node --test tests/finance-access-policy.test.mjs` → **8 / 8 tests réussis, 0 échec**.
+
 ---
 
 ## 4. Lot 4 — Audit d'intégration continue (`.github/workflows/`)
