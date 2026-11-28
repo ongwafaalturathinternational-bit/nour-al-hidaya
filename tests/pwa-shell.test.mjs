@@ -47,7 +47,7 @@ test("les pages WAT chargent la feuille de style officielle", () => {
     const stylesheet = page === "nour-al-hidaya.html" ? "wat-brand-nour.css" : "wat-brand.css";
     assert.ok(head.includes(`href="${stylesheet}"`), page);
   }
-  assert.match(worker, /wat-connect-shell-v6/);
+  assert.match(worker, /const CACHE_NAME = "wat-connect-shell-v7";/);
 });
 
 test("tous les modules métier Firestore utilisent la persistance avant leurs lectures", () => {

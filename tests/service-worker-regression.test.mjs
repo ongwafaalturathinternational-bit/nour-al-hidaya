@@ -8,9 +8,14 @@
  * Le fichier sw.js n'est jamais modifié : il est lu en lecture seule.
  *
  * Les tests exécutables vérifient les invariants de sécurité et de
- * non-régression attendus. Les anomalies et risques connus sont documentés
- * séparément en fin de fichier avec test.todo : ils ne sont volontairement
- * pas transformés en exigences permanentes.
+ * non-régression attendus. Les anomalies corrigées par le lot 002 sont
+ * désormais couvertes par des tests exécutables : isolation du cache,
+ * refus de la 206, en-têtes privés, échec d'écriture, hors connexion
+ * explicite, nettoyage ciblé des caches, exclusion Authorization/Range,
+ * inspection et atomicité du précache, revalidation des entrées servies,
+ * redirections suivies, migration v6 -> v7 et page hors connexion trilingue.
+ * Seuls les risques résiduels non traités restent documentés en test.todo
+ * en fin de fichier.
  */
 import vm from "node:vm";
 import test from "node:test";
@@ -28,16 +33,61 @@ const flush = async (rounds = 3) => {
 
 const appUrl = file => new URL(file, SCOPE).href;
 
-function makeResponse({ status = 200, type = "basic", body = "" } = {}) {
+function makeHeaders(entries = {}) {
+  const store = new Map(
+    Object.entries(entries).map(([name, value]) => [String(name).toLowerCase(), String(value)])
+  );
+  return {
+    get: name => (store.has(String(name).toLowerCase()) ? store.get(String(name).toLowerCase()) : null),
+    has: name => store.has(String(name).toLowerCase())
+  };
+}
+
+function makeResponse({
+  status = 200,
+  type = "basic",
+  body = "",
+  headers = {},
+  redirected = false,
+  url = ""
+} = {}) {
   return {
     status,
     type,
     body,
+    url,
+    redirected,
     ok: status >= 200 && status < 300,
+    headers: makeHeaders(headers),
     clone() {
-      return makeResponse({ status, type, body });
+      return makeResponse({ status, type, body, headers, redirected, url });
+    },
+    async text() {
+      return body;
     }
   };
+}
+
+// Réponse synthétique produite par le worker hors connexion : le simulateur
+// reproduit uniquement l'interface Response réellement utilisée par sw.js.
+class MockResponse {
+  constructor(body, init = {}) {
+    this.body = body;
+    this.status = init.status === undefined ? 200 : init.status;
+    this.statusText = init.statusText || "";
+    this.ok = this.status >= 200 && this.status < 300;
+    this.type = "basic";
+    this.redirected = false;
+    this.headers = typeof init.headers?.get === "function" ? init.headers : makeHeaders(init.headers || {});
+  }
+
+  clone() {
+    return new MockResponse(this.body, { status: this.status, statusText: this.statusText, headers: this.headers });
+  }
+
+  async text() {
+    return this.body;
+  }
 }
 
 // Lecture des constantes du service worker sans exécuter ses écouteurs.
@@ -66,18 +116,27 @@ const { CACHE_NAME, APP_FILES, EXTERNAL_ASSETS } = readSwConstants();
  * Toutes les réponses et requêtes sont des objets locaux, jamais des objets
  * réseau réels.
  */
-function createHarness({ initialCaches = {}, fetchImpl } = {}) {
+function createHarness({
+  initialCaches = {},
+  fetchImpl,
+  putFails = null,
+  openFails = false,
+  deleteFails = null
+} = {}) {
   const handlers = new Map();
   const stores = new Map();
   const log = {
     opened: [],
     puts: [],
     putRejections: [],
+    putFailures: [],
     deletes: [],
+    deleteFailures: [],
     addAll: [],
     skipWaiting: 0,
     claim: 0,
-    fetch: []
+    fetch: [],
+    globalMatches: 0
   };
 
   for (const [name, entries] of Object.entries(initialCaches)) {
@@ -116,6 +175,12 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
         });
         throw new TypeError("Cache.put: une réponse 206 ne peut pas être mise en cache");
       }
+      if (putFails && putFails(keyOf(request), this.name)) {
+        const error = new Error("QuotaExceededError: quota de stockage insuffisant");
+        error.name = "QuotaExceededError";
+        log.putFailures.push({ cache: this.name, key: keyOf(request) });
+        throw error;
+      }
       log.puts.push({
         cache: this.name,
         key: keyOf(request),
@@ -123,6 +188,10 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
         type: response.type
       });
       storeFor(this.name).set(keyOf(request), response);
+    }
+
+    async delete(request) {
+      return storeFor(this.name).delete(keyOf(request));
     }
 
     async addAll(urls) {
@@ -143,6 +212,7 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
   const caches = {
     async open(name) {
       log.opened.push(name);
+      if (openFails) throw new Error("stockage indisponible : ouverture du cache refusée");
       return new CacheMock(name);
     },
     async keys() {
@@ -150,9 +220,16 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
     },
     async delete(name) {
       log.deletes.push(name);
+      if (deleteFails && deleteFails(name)) {
+        log.deleteFailures.push(name);
+        throw new Error(`suppression refusée : ${name}`);
+      }
       return stores.delete(name);
     },
     async match(request) {
+      // Le worker ne doit jamais utiliser cette recherche globale : elle peut
+      // renvoyer une entrée appartenant à un autre cache de la même origine.
+      log.globalMatches += 1;
       const key = keyOf(request);
       for (const store of stores.values()) {
         if (store.has(key)) return store.get(key);
@@ -176,7 +253,7 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
     }
   };
 
-  const context = vm.createContext({ URL, self, caches, fetch: callFetch, console });
+  const context = vm.createContext({ URL, self, caches, fetch: callFetch, console, Response: MockResponse });
   vm.runInContext(swSource, context, { filename: "sw.js" });
 
   const emit = (name, event) => {
@@ -202,14 +279,18 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
   const runFetch = request => {
     let responded = false;
     let promise;
+    const pendingWrites = [];
     emit("fetch", {
       request,
       respondWith: value => {
         responded = true;
         promise = value;
+      },
+      waitUntil: value => {
+        pendingWrites.push(value);
       }
     });
-    return { responded, promise };
+    return { responded, promise, pendingWrites };
   };
 
   return { handlers, stores, log, context, install, activate, runFetch, cacheStorage: caches };
@@ -222,10 +303,10 @@ function createHarness({ initialCaches = {}, fetchImpl } = {}) {
 test("installation : précache exactement les fichiers applicatifs autorisés", async () => {
   const harness = createHarness();
   await harness.install();
-  const precached = harness.log.addAll.flat();
-  assert.deepEqual([...new Set(precached)].sort(), [...APP_FILES].sort());
   const store = harness.stores.get(CACHE_NAME);
   assert.ok(store, "le cache de l'application est créé pendant l'installation");
+  const localKeys = [...store.keys()].filter(key => key.startsWith(SCOPE)).sort();
+  assert.deepEqual(localKeys, APP_FILES.map(appUrl).sort());
   assert.deepEqual(
     [...store.keys()].sort(),
     [...APP_FILES.map(appUrl), ...EXTERNAL_ASSETS].sort()
@@ -262,7 +343,11 @@ test("installation : une réponse externe 404 non opaque n'est pas mise en cache
   await harness.install();
   const store = harness.stores.get(CACHE_NAME);
   for (const asset of EXTERNAL_ASSETS) assert.equal(store.has(asset), false);
-  assert.equal(harness.log.puts.length, 0);
+  assert.equal(
+    harness.log.puts.some(entry => EXTERNAL_ASSETS.includes(entry.key)),
+    false,
+    "aucune réponse externe 404 n'est écrite"
+  );
 });
 
 test("installation : une redirection opaque n'est pas mise en cache", async () => {
@@ -554,7 +639,7 @@ test("navigation : sans page précachée, la panne réseau retombe sur index.htm
   assert.equal(await promise, index);
 });
 
-test("navigation : une panne réseau sans cache est prise en charge par respondWith", () => {
+test("navigation : une panne réseau sans cache est prise en charge par respondWith", async () => {
   const harness = createHarness({
     fetchImpl: async () => {
       throw new TypeError("hors connexion");
@@ -566,7 +651,18 @@ test("navigation : une panne réseau sans cache est prise en charge par respondW
     mode: "navigate"
   });
   assert.equal(responded, true);
-  assert.ok(promise instanceof Promise);
+  // La promesse provient du contexte node:vm : son constructeur diffère de
+  // celui du test. On attend la réponse effective au lieu de tester
+  // `instanceof Promise`, puis on vérifie son contenu.
+  const response = await promise;
+  assert.equal(response.status, 503);
+  assert.equal(response.statusText, "Service Unavailable");
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const body = await response.text();
+  assert.match(body, /hors connexion/i);
+  assert.match(body, /lang="en"/);
+  assert.match(body, /lang="ar"/);
 });
 
 test("navigation : une réponse 404 est transmise et n'est pas mise en cache", async () => {
@@ -942,7 +1038,7 @@ test("installation : un échec du précache applicatif ne laisse aucune entrée 
   assert.ok(harness.log.opened.length > 0, "le cache a bien été ouvert");
   assert.deepEqual([...new Set(harness.log.opened)], [CACHE_NAME]);
   const store = harness.stores.get(CACHE_NAME);
-  assert.equal(store ? store.size : 0, 0, "aucune entrée partielle après échec de addAll");
+  assert.equal(store ? store.size : 0, 0, "aucune entrée partielle après échec du précache");
 });
 
 test("installation : un SDK en échec n'empêche pas la mise en cache des autres SDK", async () => {
@@ -1033,28 +1129,721 @@ test("navigation : une réponse 401 est transmise et n'est pas mise en cache", a
 });
 
 /* ------------------------------------------------------------------ */
-/* Anomalies et limites documentées                                    */
-/*                                                                     */
-/* Ces entrées sont volontairement des test.todo : elles documentent   */
-/* des comportements observés ou des risques conditionnels sans les    */
-/* transformer en exigences de non-régression. Les autres tests        */
-/* exécutables du fichier couvrent les invariants de sécurité attendus. */
+/* Lot 002 — isolation stricte du cache (axe A)                        */
 /* ------------------------------------------------------------------ */
 
-test.todo("ANOMALIE confirmée (faible) : le SW tente de mettre en cache une réponse 206 ; Cache.put la refuse, mais le rejet n'est pas géré");
-test.todo("ANOMALIE conditionnelle (moyenne) : caches.match global peut servir une entrée d'un autre cache de la même origine");
-test.todo("ANOMALIE conditionnelle (moyenne) : hors connexion, une navigation peut utiliser la copie d'un autre cache");
-test.todo("ANOMALIE conditionnelle (faible) : l'activation supprime tout cache partageant le préfixe wat-connect-");
-test.todo("ANOMALIE confirmée (faible) : une ressource statique en cache n'est jamais revalidée avant expiration du cache");
-test.todo("ANOMALIE confirmée (faible) : sans aucun cache, la navigation hors ligne ne renvoie pas de Response explicite");
+test("isolation : une entrée identique d'un cache étranger n'est jamais servie", async () => {
+  const url = appUrl("./index.html");
+  const foreign = makeResponse({ body: "cache-étranger" });
+  const network = makeResponse({ body: "réseau" });
+  const harness = createHarness({
+    initialCaches: { "autre-application-shell-v1": { [url]: foreign }, [CACHE_NAME]: {} },
+    fetchImpl: async () => network
+  });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, network, "la réponse réseau prime sur le cache tiers");
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.globalMatches, 0, "aucune recherche globale de cache");
+  assert.equal(harness.stores.get("autre-application-shell-v1").get(url), foreign,
+    "le cache tiers reste intact");
+  assert.equal(harness.stores.get(CACHE_NAME).get(url).body, "réseau");
+});
+
+test("isolation : une ancienne version du cache WAT n'est jamais servie", async () => {
+  const url = appUrl("./index.html");
+  const stale = makeResponse({ body: "v5-obsolète" });
+  const network = makeResponse({ body: "v6" });
+  const harness = createHarness({
+    initialCaches: { "wat-connect-shell-v5": { [url]: stale }, [CACHE_NAME]: {} },
+    fetchImpl: async () => network
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, network);
+  assert.equal(harness.log.globalMatches, 0);
+});
+
+test("isolation : hors connexion, une copie d'un cache étranger n'est jamais utilisée", async () => {
+  const url = appUrl("./programmes.html");
+  const foreign = makeResponse({ body: "page-étrangère" });
+  const harness = createHarness({
+    initialCaches: { "autre-application-shell-v1": { [url]: foreign } },
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  const result = await promise;
+  assert.notEqual(result, foreign, "le contenu d'une autre application n'est pas servi");
+  assert.equal(result.status, 503, "réponse hors ligne explicite");
+});
+
+test("isolation : une indisponibilité du cache laisse passer la réponse réseau", async () => {
+  const network = makeResponse({ body: "page-réseau" });
+  const harness = createHarness({ openFails: true, fetchImpl: async () => network });
+  const { promise, pendingWrites } = harness.runFetch({
+    url: appUrl("./projets.html"),
+    method: "GET",
+    mode: "navigate"
+  });
+  assert.equal(await promise, network, "la navigation reste servie");
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 0);
+});
+
+test("isolation : cache indisponible et réseau coupé produisent une réponse explicite", async () => {
+  const harness = createHarness({
+    openFails: true,
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { promise } = harness.runFetch({
+    url: appUrl("./activites.html"),
+    method: "GET",
+    mode: "navigate"
+  });
+  const result = await promise;
+  assert.equal(result.status, 503);
+  assert.match(result.headers.get("content-type"), /text\/html/);
+});
+
+test("isolation : aucune lecture ne passe par caches.match global", async () => {
+  const harness = createHarness();
+  await harness.install();
+  harness.runFetch({ url: appUrl("./index.html"), method: "GET", mode: "navigate" });
+  harness.runFetch({ url: appUrl("./wat-brand.css"), method: "GET", mode: "no-cors" });
+  harness.runFetch({ url: EXTERNAL_ASSETS[0], method: "GET", mode: "no-cors" });
+  await flush();
+  assert.equal(harness.log.globalMatches, 0);
+  assert.deepEqual([...new Set(harness.log.opened)], [CACHE_NAME]);
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 — sécurité des réponses HTTP (axe B)                        */
+/* ------------------------------------------------------------------ */
+
+test("206 : une réponse partielle n'est jamais proposée au cache", async () => {
+  for (const mode of ["no-cors", "navigate"]) {
+    const partial = makeResponse({ status: 206, body: "partiel" });
+    const url = appUrl("./icon-192.png");
+    const harness = createHarness({ fetchImpl: async () => partial });
+    const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode });
+    assert.equal(await promise, partial, `la 206 est transmise telle quelle (${mode})`);
+    await Promise.all(pendingWrites);
+    await flush();
+    assert.equal(harness.log.putRejections.length, 0,
+      `aucune tentative d'écriture d'une 206 (${mode})`);
+    assert.equal(harness.log.puts.length, 0, `aucune écriture (${mode})`);
+    assert.equal(harness.stores.get(CACHE_NAME)?.has(url) ?? false, false, mode);
+  }
+});
+
+test("206 : un SDK partiel n'est pas mis en cache", async () => {
+  const partial = makeResponse({ status: 206 });
+  const harness = createHarness({ fetchImpl: async () => partial });
+  const { promise, pendingWrites } = harness.runFetch({
+    url: EXTERNAL_ASSETS[0],
+    method: "GET",
+    mode: "no-cors"
+  });
+  assert.equal(await promise, partial);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 0);
+  assert.equal(harness.log.putRejections.length, 0);
+});
+
+test("cache-control : les réponses privées ou non stockables ne sont jamais écrites", async () => {
+  for (const value of ["private", "no-store", "private, max-age=0", "no-cache", "max-age=0, no-store"]) {
+    const network = makeResponse({ body: "sensible", headers: { "Cache-Control": value } });
+    const url = appUrl("./administration.html");
+    const harness = createHarness({ fetchImpl: async () => network });
+    const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+    assert.equal(await promise, network, value);
+    await Promise.all(pendingWrites);
+    assert.equal(harness.log.puts.length, 0, `Cache-Control: ${value}`);
+    assert.equal(harness.stores.get(CACHE_NAME)?.has(url) ?? false, false, value);
+  }
+});
+
+test("cache-control : une réponse publique reste mise en cache (témoin positif)", async () => {
+  const network = makeResponse({ body: "public", headers: { "Cache-Control": "public, max-age=3600" } });
+  const url = appUrl("./nour-al-hidaya.html");
+  const harness = createHarness({ fetchImpl: async () => network });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, network);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 1, "une réponse publique est bien stockée");
+  assert.equal(harness.stores.get(CACHE_NAME).get(url).body, "public");
+});
+
+test("vary : les réponses dépendantes d'Authorization ou de toute requête ne sont pas stockées", async () => {
+  for (const value of ["*", "Authorization", "Accept-Encoding, Authorization"]) {
+    const network = makeResponse({ body: "variable", headers: { Vary: value } });
+    const url = appUrl("./club-khuddam.html");
+    const harness = createHarness({ fetchImpl: async () => network });
+    const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+    assert.equal(await promise, network, value);
+    await Promise.all(pendingWrites);
+    assert.equal(harness.log.puts.length, 0, `Vary: ${value}`);
+  }
+});
+
+test("vary : une dimension de négociation neutre n'empêche pas la mise en cache", async () => {
+  const network = makeResponse({ body: "négocié", headers: { Vary: "Accept-Encoding" } });
+  const url = appUrl("./wat-brand.css");
+  const harness = createHarness({ fetchImpl: async () => network });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+  assert.equal(await promise, network);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 1);
+});
+
+test("authorization : toute requête authentifiée est exclue avant lecture et écriture, SDK inclus", () => {
+  const cases = [
+    { url: appUrl("./club-khuddam-espace.html"), mode: "navigate" },
+    { url: appUrl("./wat-brand.css"), mode: "no-cors" },
+    { url: EXTERNAL_ASSETS[0], mode: "no-cors" }
+  ];
+  for (const { url, mode } of cases) {
+    const cached = makeResponse({ body: "copie-locale" });
+    const harness = createHarness({
+      initialCaches: { [CACHE_NAME]: { [url]: cached } },
+      fetchImpl: async () => makeResponse({ body: "réseau" })
+    });
+    for (const headerName of ["Authorization", "authorization"]) {
+      const { responded } = harness.runFetch({
+        url,
+        method: "GET",
+        mode,
+        headers: makeHeaders({ [headerName]: "Bearer secret" })
+      });
+      assert.equal(responded, false, `${url} (${headerName})`);
+    }
+    assert.equal(harness.log.fetch.length, 0, `aucun appel réseau pour ${url}`);
+    assert.equal(harness.log.opened.length, 0, `aucune ouverture de cache pour ${url}`);
+    assert.equal(
+      harness.stores.get(CACHE_NAME).get(url),
+      cached,
+      "le cache existant reste intact"
+    );
+  }
+});
+
+test("navigation : une réponse 403 n'est jamais remplacée par une copie locale", async () => {
+  const cached = makeResponse({ body: "ancienne-version" });
+  const forbidden = makeResponse({ status: 403 });
+  const url = appUrl("./administration.html");
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: cached } },
+    fetchImpl: async () => forbidden
+  });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, forbidden);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.stores.get(CACHE_NAME).get(url), cached,
+    "le refus d'accès n'écrase pas la copie locale");
+});
+
+test("navigation : une réponse 500 est remplacée par la copie locale sans écriture", async () => {
+  const cached = makeResponse({ body: "secours" });
+  const failure = makeResponse({ status: 500 });
+  const url = appUrl("./portail.html");
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: cached } },
+    fetchImpl: async () => failure
+  });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, cached);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 0);
+  assert.equal(harness.stores.get(CACHE_NAME).get(url), cached);
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 — robustesse des écritures (axe C)                          */
+/* ------------------------------------------------------------------ */
+
+test("écriture : un rejet de Cache.put ne dégrade pas la réponse réseau", async () => {
+  const network = makeResponse({ body: "page" });
+  const url = appUrl("./index.html");
+  const harness = createHarness({ fetchImpl: async () => network, putFails: () => true });
+  for (let round = 0; round < 2; round += 1) {
+    const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+    assert.equal(await promise, network, `tour ${round}`);
+    // Promise.all propage un rejet : l'absence de rejet prouve que l'échec
+    // d'écriture est absorbé et ne produit pas de promesse orpheline.
+    await Promise.all(pendingWrites);
+  }
+  assert.equal(harness.log.putFailures.length, 2, "les deux échecs sont tracés");
+  assert.equal(harness.stores.get(CACHE_NAME)?.has(url) ?? false, false);
+});
+
+test("écriture : un quota insuffisant n'empêche pas le service des ressources statiques", async () => {
+  const network = makeResponse({ body: "css" });
+  const url = appUrl("./wat-brand.css");
+  const harness = createHarness({ fetchImpl: async () => network, putFails: () => true });
+  const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+  assert.equal(await promise, network);
+  await Promise.all(pendingWrites);
+  assert.equal(harness.log.puts.length, 0);
+  assert.equal(harness.stores.get(CACHE_NAME)?.has(url) ?? false, false);
+});
+
+test("écriture : un quota insuffisant sur un SDK n'empêche pas skipWaiting", async () => {
+  const harness = createHarness({ putFails: key => EXTERNAL_ASSETS.includes(key) });
+  await harness.install();
+  assert.ok(harness.log.skipWaiting >= 1, "l'installation aboutit malgré le quota");
+  assert.equal(harness.stores.get(CACHE_NAME).size, APP_FILES.length);
+  assert.equal(harness.log.putFailures.length, EXTERNAL_ASSETS.length);
+});
+
+test("écriture : un waitUntil finalisé ne casse pas la navigation", async () => {
+  const network = makeResponse({ body: "page" });
+  const url = appUrl("./index.html");
+  const harness = createHarness({ fetchImpl: async () => network });
+  let promise;
+  harness.handlers.get("fetch")({
+    request: { url, method: "GET", mode: "navigate" },
+    respondWith: value => {
+      promise = value;
+    },
+    waitUntil: () => {
+      throw new Error("InvalidStateError: événement déjà finalisé");
+    }
+  });
+  assert.equal(await promise, network, "la réponse reste servie malgré waitUntil en échec");
+  await flush();
+  assert.equal(harness.stores.get(CACHE_NAME).get(url).body, "page",
+    "l'écriture est tout de même tentée");
+});
+
+test("écriture : un SDK récupéré avec succès est écrit après la réponse, sans la consommer", async () => {
+  const network = makeResponse({ body: "sdk" });
+  const harness = createHarness({ fetchImpl: async () => network });
+  const { promise, pendingWrites } = harness.runFetch({
+    url: EXTERNAL_ASSETS[2],
+    method: "GET",
+    mode: "no-cors"
+  });
+  assert.equal(await promise, network, "la réponse réseau est rendue intacte");
+  assert.equal(pendingWrites.length, 1, "l'écriture est rattachée à waitUntil");
+  await Promise.all(pendingWrites);
+  const stored = harness.stores.get(CACHE_NAME).get(EXTERNAL_ASSETS[2]);
+  assert.notEqual(stored, network);
+  assert.equal(stored.body, "sdk");
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 — fonctionnement hors connexion (axe D)                     */
+/* ------------------------------------------------------------------ */
+
+test("hors connexion : sans aucun cache, une réponse 503 explicite est renvoyée", async () => {
+  const harness = createHarness({
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { responded, promise } = harness.runFetch({
+    url: appUrl("./nour-al-hidaya.html"),
+    method: "GET",
+    mode: "navigate"
+  });
+  assert.equal(responded, true);
+  const response = await promise;
+  assert.equal(response.status, 503);
+  assert.equal(response.statusText, "Service Unavailable");
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  assert.equal(response.headers.get("location"), null, "aucune redirection");
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const body = await response.text();
+  assert.match(body, /hors connexion/i);
+  assert.match(body, /WAT Connect/);
+  assert.doesNotMatch(body, /<script/i, "aucune ressource exécutable dans la page de secours");
+});
+
+test("hors connexion : le worker ne redirige jamais arbitrairement une navigation", () => {
+  assert.doesNotMatch(swSource, /Response\.redirect\s*\(/);
+  assert.doesNotMatch(swSource, /\blocation\.(?:replace|assign)\s*\(/);
+  assert.doesNotMatch(swSource, /window\.location/);
+});
+
+test("hors connexion : la page précachée reste prioritaire sur la page de secours", async () => {
+  const cached = makeResponse({ body: "programmes-hors-ligne" });
+  const url = appUrl("./programmes.html");
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: cached } },
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, cached);
+});
+
+test("activation : un cache tiers au préfixe proche est préservé", async () => {
+  const harness = createHarness({
+    initialCaches: {
+      [CACHE_NAME]: {},
+      "wat-connect-cache-extra": {},
+      "wat-connect-shell-v6-backup": {},
+      "nour-al-hidaya-shell-v2": {}
+    }
+  });
+  await harness.activate();
+  assert.deepEqual(
+    [...harness.stores.keys()].sort(),
+    [CACHE_NAME, "wat-connect-cache-extra", "wat-connect-shell-v6-backup"].sort()
+  );
+  assert.deepEqual(harness.log.deletes, ["nour-al-hidaya-shell-v2"]);
+});
+
+test("activation : une suppression en échec n'annule pas le nettoyage ni clients.claim", async () => {
+  const harness = createHarness({
+    initialCaches: { "wat-connect-shell-v4": {}, "wat-connect-shell-v5": {}, [CACHE_NAME]: {} },
+    deleteFails: name => name === "wat-connect-shell-v4"
+  });
+  await harness.activate();
+  assert.ok(harness.log.claim >= 1, "les clients sont repris malgré l'échec");
+  assert.deepEqual([...harness.stores.keys()].sort(), ["wat-connect-shell-v4", CACHE_NAME].sort());
+  assert.deepEqual(harness.log.deleteFailures, ["wat-connect-shell-v4"]);
+  assert.ok(harness.log.deletes.includes("wat-connect-shell-v5"));
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 (contrôle final) — installation inspectée et atomique      */
+/* ------------------------------------------------------------------ */
+
+test("installation : le précache n'utilise pas addAll sans inspection des réponses", async () => {
+  const harness = createHarness();
+  await harness.install();
+  assert.equal(harness.log.addAll.length, 0, "aucun addAll aveugle");
+  assert.equal(
+    harness.log.puts.length,
+    APP_FILES.length + EXTERNAL_ASSETS.length,
+    "chaque ressource autorisée est écrite après validation"
+  );
+});
+
+test("installation : une réponse applicative privée fait échouer l'installation sans écriture partielle", async () => {
+  for (const value of ["private", "no-store", "no-cache", "private, max-age=0"]) {
+    const harness = createHarness({
+      fetchImpl: async url =>
+        url === appUrl("./index.html")
+          ? makeResponse({ headers: { "Cache-Control": value } })
+          : makeResponse()
+    });
+    await assert.rejects(harness.install());
+    assert.equal(harness.log.skipWaiting, 0, `aucune activation (${value})`);
+    assert.equal(harness.log.puts.length, 0, `aucune écriture (${value})`);
+    const store = harness.stores.get(CACHE_NAME);
+    assert.equal(store ? store.size : 0, 0, `cache vide (${value})`);
+  }
+});
+
+test("installation : un SDK privé ou non stockable n'est pas mis en cache", async () => {
+  for (const value of ["private", "no-store", "no-cache"]) {
+    const harness = createHarness({
+      fetchImpl: async url =>
+        EXTERNAL_ASSETS.includes(url)
+          ? makeResponse({ headers: { "Cache-Control": value } })
+          : makeResponse()
+    });
+    await harness.install();
+    const store = harness.stores.get(CACHE_NAME);
+    for (const asset of EXTERNAL_ASSETS) {
+      assert.equal(store.has(asset), false, `${asset} (${value})`);
+    }
+    assert.equal(
+      harness.log.puts.some(entry => EXTERNAL_ASSETS.includes(entry.key)),
+      false,
+      `aucune écriture externe (${value})`
+    );
+    assert.ok(harness.log.skipWaiting >= 1, `installation maintenue (${value})`);
+  }
+});
+
+test("installation : un échec d'écriture applicative annule les entrées déjà écrites", async () => {
+  const harness = createHarness({
+    putFails: key => key === appUrl("./portail.html")
+  });
+  await assert.rejects(harness.install());
+  assert.equal(harness.log.skipWaiting, 0);
+  const store = harness.stores.get(CACHE_NAME);
+  assert.equal(store ? store.size : 0, 0, "rollback complet des écritures");
+  assert.ok(harness.log.putFailures.length >= 1);
+});
+
+test("installation : une redirection same-origin d'un fichier applicatif reste précachable", async () => {
+  const harness = createHarness({
+    fetchImpl: async url =>
+      url === appUrl("./")
+        ? makeResponse({
+            body: "index-redirigé",
+            redirected: true,
+            url: appUrl("./index.html")
+          })
+        : makeResponse()
+  });
+  await harness.install();
+  const store = harness.stores.get(CACHE_NAME);
+  assert.equal(store.get(appUrl("./")).body, "index-redirigé");
+});
+
+test("installation : une redirection applicative vers une autre origine est refusée", async () => {
+  const harness = createHarness({
+    fetchImpl: async url =>
+      url === appUrl("./")
+        ? makeResponse({
+            body: "contenu-tiers",
+            redirected: true,
+            url: "https://cdn.example/index.html"
+          })
+        : makeResponse()
+  });
+  await assert.rejects(harness.install());
+  assert.equal(harness.log.skipWaiting, 0);
+  assert.equal(harness.log.puts.length, 0, "aucune écriture d'une redirection tierce");
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 (contrôle final) — revalidation des entrées servies        */
+/* ------------------------------------------------------------------ */
+
+test("cache existant : une réponse privée ou non stockable n'est jamais servie", async () => {
+  const variants = [
+    { "Cache-Control": "private" },
+    { "Cache-Control": "no-store" },
+    { "Cache-Control": "no-cache" },
+    { "Cache-Control": "private, max-age=0" },
+    { Vary: "*" },
+    { Vary: "Authorization" }
+  ];
+  for (const headers of variants) {
+    const url = appUrl("./wat-brand.css");
+    const stale = makeResponse({ body: "ancienne-copie", headers });
+    const fresh = makeResponse({ body: "réseau-public" });
+    const harness = createHarness({
+      initialCaches: { [CACHE_NAME]: { [url]: stale } },
+      fetchImpl: async () => fresh
+    });
+    const { promise } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+    const result = await promise;
+    assert.notEqual(result, stale, `copie privée servie : ${JSON.stringify(headers)}`);
+    assert.equal(result, fresh, `réseau attendu : ${JSON.stringify(headers)}`);
+    await flush();
+    assert.equal(
+      harness.stores.get(CACHE_NAME).get(url).body,
+      "réseau-public",
+      `cache remplacé : ${JSON.stringify(headers)}`
+    );
+  }
+});
+
+test("cache existant : hors connexion, une réponse privée n'est jamais servie", async () => {
+  const url = appUrl("./programmes.html");
+  const stale = makeResponse({ body: "privée", headers: { "Cache-Control": "private" } });
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: stale } },
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  const result = await promise;
+  assert.notEqual(result, stale, "aucune restitution de la copie privée");
+  assert.equal(result.status, 503);
+  assert.match(await result.text(), /hors connexion/i);
+});
+
+test("cache existant : une réponse 206 déjà stockée n'est jamais servie", async () => {
+  const url = appUrl("./icon-192.png");
+  const partial = makeResponse({ status: 206, body: "partiel" });
+  const fresh = makeResponse({ body: "complet" });
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: partial } },
+    fetchImpl: async () => fresh
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+  assert.equal(await promise, fresh);
+});
+
+test("cache existant : une réponse issue d'une redirection n'est jamais servie", async () => {
+  const url = appUrl("./manifest.json");
+  const redirected = makeResponse({
+    body: "redirigé",
+    redirected: true,
+    url: appUrl("./index.html")
+  });
+  const fresh = makeResponse({ body: "manifeste" });
+  const harness = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: redirected } },
+    fetchImpl: async () => fresh
+  });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+  assert.equal(await promise, fresh);
+});
+
+test("cache existant : une réponse publique reste servie (témoin positif)", async () => {
+  const url = appUrl("./wat-brand.css");
+  const cached = makeResponse({
+    body: "public",
+    headers: { "Cache-Control": "public, max-age=3600" }
+  });
+  const harness = createHarness({ initialCaches: { [CACHE_NAME]: { [url]: cached } } });
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "no-cors" });
+  assert.equal(await promise, cached);
+  assert.equal(harness.log.fetch.length, 0);
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 (contrôle final) — Range et redirections suivies           */
+/* ------------------------------------------------------------------ */
+
+test("range : une requête Range n'est jamais interceptée, même avec une copie en cache", () => {
+  const cases = [
+    { url: appUrl("./icon-512.png"), mode: "no-cors" },
+    { url: appUrl("./index.html"), mode: "navigate" },
+    { url: EXTERNAL_ASSETS[1], mode: "no-cors" }
+  ];
+  for (const { url, mode } of cases) {
+    const cached = makeResponse({ body: "copie" });
+    const harness = createHarness({ initialCaches: { [CACHE_NAME]: { [url]: cached } } });
+    const { responded } = harness.runFetch({
+      url,
+      method: "GET",
+      mode,
+      headers: makeHeaders({ Range: "bytes=0-1023" })
+    });
+    assert.equal(responded, false, url);
+    assert.equal(harness.log.fetch.length, 0, `aucun réseau pour ${url}`);
+    assert.equal(harness.log.opened.length, 0, `aucune lecture de cache pour ${url}`);
+    assert.equal(harness.stores.get(CACHE_NAME).get(url), cached, "cache intact");
+  }
+});
+
+test("redirection : une réponse suivie est servie mais jamais stockée au runtime", async () => {
+  const cases = [
+    { url: appUrl("./nour-al-hidaya.html"), mode: "navigate" },
+    { url: appUrl("./wat-brand-nour.css"), mode: "no-cors" },
+    { url: EXTERNAL_ASSETS[2], mode: "no-cors" }
+  ];
+  for (const { url, mode } of cases) {
+    const redirected = makeResponse({
+      body: "contenu-redirigé",
+      redirected: true,
+      url: appUrl("./index.html")
+    });
+    const harness = createHarness({ fetchImpl: async () => redirected });
+    const { promise, pendingWrites } = harness.runFetch({ url, method: "GET", mode });
+    assert.equal(await promise, redirected, url);
+    await Promise.all(pendingWrites);
+    await flush();
+    assert.equal(harness.stores.get(CACHE_NAME)?.has(url) ?? false, false, url);
+    assert.equal(harness.log.puts.length, 0, `aucune écriture pour ${url}`);
+  }
+});
+
+test("redirection : un SDK obtenu après redirection n'est pas précaché", async () => {
+  const redirected = makeResponse({
+    body: "sdk-redirigé",
+    redirected: true,
+    url: EXTERNAL_ASSETS[0]
+  });
+  const harness = createHarness({
+    fetchImpl: async url =>
+      EXTERNAL_ASSETS.includes(url) ? redirected : makeResponse()
+  });
+  await harness.install();
+  const store = harness.stores.get(CACHE_NAME);
+  for (const asset of EXTERNAL_ASSETS) assert.equal(store.has(asset), false);
+  assert.equal(
+    harness.log.puts.some(entry => EXTERNAL_ASSETS.includes(entry.key)),
+    false,
+    "aucune écriture d'un SDK redirigé"
+  );
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 (contrôle final) — migration v6 -> v7                      */
+/* ------------------------------------------------------------------ */
+
+test("migration : le cache v6 est supprimé à l'activation de la version sécurisée", async () => {
+  const version = Number(CACHE_NAME.match(/v(\d+)$/)[1]);
+  assert.ok(version >= 7, `version sécurisée attendue, reçue : ${CACHE_NAME}`);
+  const harness = createHarness({
+    initialCaches: {
+      "wat-connect-shell-v6": { [appUrl("./index.html")]: makeResponse({ body: "v6" }) },
+      [CACHE_NAME]: {}
+    }
+  });
+  await harness.activate();
+  assert.equal(harness.stores.has("wat-connect-shell-v6"), false);
+  assert.ok(harness.stores.has(CACHE_NAME));
+  assert.ok(harness.log.deletes.includes("wat-connect-shell-v6"));
+});
+
+test("migration : après activation, aucune entrée du cache v6 n'est servie", async () => {
+  const url = appUrl("./index.html");
+  const obsolete = makeResponse({ body: "v6-obsolète" });
+  const network = makeResponse({ body: "v7-réseau" });
+  const harness = createHarness({
+    initialCaches: {
+      "wat-connect-shell-v6": { [url]: obsolete },
+      [CACHE_NAME]: {}
+    },
+    fetchImpl: async () => network
+  });
+  await harness.activate();
+  const { promise } = harness.runFetch({ url, method: "GET", mode: "navigate" });
+  assert.equal(await promise, network);
+  assert.equal(harness.log.globalMatches, 0);
+});
+
+/* ------------------------------------------------------------------ */
+/* Lot 002 (contrôle final) — page hors connexion trilingue           */
+/* ------------------------------------------------------------------ */
+
+test("hors connexion : le message de secours est trilingue et sans dépendance réseau", async () => {
+  const harness = createHarness({
+    fetchImpl: async () => {
+      throw new TypeError("hors connexion");
+    }
+  });
+  const { promise } = harness.runFetch({
+    url: appUrl("./nour-al-hidaya.html"),
+    method: "GET",
+    mode: "navigate"
+  });
+  const response = await promise;
+  assert.equal(response.status, 503);
+  const body = await response.text();
+  assert.match(body, /lang="fr"/);
+  assert.match(body, /lang="en"/);
+  assert.match(body, /lang="ar"/);
+  assert.match(body, /dir="rtl"/);
+  assert.match(body, /hors connexion/i);
+  assert.match(body, /temporarily offline/i);
+  assert.match(body, /غير متصل/);
+  assert.doesNotMatch(body, /<script/i);
+  assert.doesNotMatch(body, /<link/i);
+  assert.doesNotMatch(body, /@import/i);
+  assert.doesNotMatch(body, /https?:\/\//i);
+});
+
+/* ------------------------------------------------------------------ */
+/* Risques résiduels non traités par le lot 002                        */
+/*                                                                     */
+/* Ces entrées restent des test.todo : elles documentent des limites   */
+/* assumées ou hors périmètre, sans affaiblir les tests exécutables.   */
+/* ------------------------------------------------------------------ */
+
+test.todo("RISQUE conditionnel (faible) : une ressource statique en cache n'est jamais revalidée avant expiration du cache");
 test.todo("RISQUE conditionnel (moyenne) : les SDK opaques sont mis en cache sans SRI ni vérification de contenu");
 test.todo("RISQUE conditionnel (faible) : administration.html et club-khuddam-espace.html sont précachés sans vérification de contenu");
-test.todo("RISQUE conditionnel (faible) : aucune vérification Authorization/Vary avant mise en cache");
-test.todo("ANOMALIE confirmée (faible) : cache.put n'est pas attendu dans les handlers fetch");
+test.todo("RISQUE conditionnel (faible) : la correspondance Cache.match ne tient pas compte d'un Vary autre que * ou Authorization");
 test.todo("ANOMALIE confirmée (faible) : skipWaiting est immédiat à l'installation");
-test.todo("ANOMALIE confirmée (faible) : l'activation est tout-ou-rien si une suppression de cache échoue");
 test.todo("ANOMALIE confirmée (faible) : aucun handler message pour piloter mise à jour ou purge");
-test.todo("RISQUE conditionnel (faible) : quota/éviction non gérés");
+test.todo("RISQUE conditionnel (faible) : aucune politique d'éviction préventive ni surveillance du quota");
 test.todo("RISQUE processus (faible) : versionnement manuel de CACHE_NAME");
 
 test("sécurité : le service worker n'utilise pas importScripts", () => {
@@ -1074,4 +1863,84 @@ test("intégrité : les SDK externes proviennent tous de www.gstatic.com en HTTP
     assert.equal(url.protocol, "https:");
     assert.equal(url.origin, "https://www.gstatic.com");
   }
+});
+
+/* Clôture ciblée — contrôle indépendant de coordination WAT */
+test("clôture : une réponse opaque locale n'est jamais écrite au runtime", async () => {
+  for (const mode of ["navigate", "no-cors"]) {
+    const url = appUrl("./administration.html");
+    const opaque = makeResponse({ status: 0, type: "opaque" });
+    const h = createHarness({ fetchImpl: async () => opaque });
+    const { promise, pendingWrites } = h.runFetch({ url, method: "GET", mode });
+    await promise;
+    await Promise.all(pendingWrites);
+    await flush();
+    assert.equal(h.log.puts.length, 0);
+    assert.equal(h.stores.get(CACHE_NAME)?.has(url) ?? false, false);
+  }
+});
+
+test("clôture : une réponse opaque locale héritée est ignorée et purgée hors ligne", async () => {
+  const url = appUrl("./administration.html");
+  const h = createHarness({
+    initialCaches: { [CACHE_NAME]: { [url]: makeResponse({ status: 0, type: "opaque" }) } },
+    fetchImpl: async () => { throw new TypeError("offline"); }
+  });
+  const result = await h.runFetch({ url, method: "GET", mode: "navigate" }).promise;
+  assert.equal(result.status, 503);
+  assert.equal(h.stores.get(CACHE_NAME).has(url), false);
+});
+
+test("clôture : un SDK opaque autorisé reste utilisable hors ligne", async () => {
+  const url = EXTERNAL_ASSETS[0];
+  const opaque = makeResponse({ status: 0, type: "opaque" });
+  const h = createHarness({ initialCaches: { [CACHE_NAME]: { [url]: opaque } } });
+  assert.equal(await h.runFetch({ url, method: "GET", mode: "no-cors" }).promise, opaque);
+  assert.equal(h.log.fetch.length, 0);
+});
+
+test("clôture : la racine redirigée est normalisée au précache et disponible hors ligne", async () => {
+  let offline = false;
+  const root = appUrl("./");
+  const h = createHarness({ fetchImpl: async url => {
+    if (offline) throw new TypeError("offline");
+    return url === root ? makeResponse({ body: "accueil", redirected: true,
+      url: appUrl("./index.html"), headers: { "Content-Type": "text/html; charset=utf-8" } }) : makeResponse();
+  } });
+  await h.install();
+  offline = true;
+  const cached = h.stores.get(CACHE_NAME).get(root);
+  assert.equal(cached.redirected, false);
+  const result = await h.runFetch({ url: root, method: "GET", mode: "navigate" }).promise;
+  assert.equal(result.redirected, false);
+  assert.equal(await result.text(), "accueil");
+  assert.equal(result.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.equal(h.stores.get(CACHE_NAME).has(root), true);
+});
+
+test("clôture : une redirection racine vers une autre destination locale est refusée", async () => {
+  for (const destination of ["./administration.html", "./index.html?token=fictif", "./api/private"]) {
+    const h = createHarness({ fetchImpl: async url => url === SCOPE ? makeResponse({
+      redirected: true, url: appUrl(destination) }) : makeResponse() });
+    await assert.rejects(h.install());
+    assert.equal(h.log.puts.length, 0);
+    assert.equal(h.log.skipWaiting, 0);
+  }
+});
+
+test("clôture : une redirection d'une ressource autre que la racine est refusée au précache", async () => {
+  const h = createHarness({ fetchImpl: async url => url === appUrl("./wat-brand.css") ? makeResponse({
+    redirected: true, url: appUrl("./index.html") }) : makeResponse() });
+  await assert.rejects(h.install());
+  assert.equal(h.log.puts.length, 0);
+});
+
+test("clôture : une ancienne redirection autorisée de la racine est normalisée à la lecture", async () => {
+  const root = appUrl("./");
+  const h = createHarness({ initialCaches: { [CACHE_NAME]: { [root]: makeResponse({
+    body: "accueil", redirected: true, url: appUrl("./index.html") }) } },
+    fetchImpl: async () => { throw new TypeError("offline"); } });
+  const result = await h.runFetch({ url: root, method: "GET", mode: "navigate" }).promise;
+  assert.equal(result.redirected, false);
+  assert.equal(await result.text(), "accueil");
 });
