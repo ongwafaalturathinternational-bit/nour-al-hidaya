@@ -42,14 +42,31 @@ test("les requêtes métier et API non listées ne sont pas interceptées comme 
 
 test("une navigation précachée reste disponible quand le serveur renvoie 503", async () => {
   const origin = "https://staging.example/";
+  const cacheName = sw.match(/const CACHE_NAME = "([^"]+)";/)[1];
   const handlers = new Map();
   const cached = { status: 200 };
   let response = { status: 503, ok: false };
   let cachedResponse = cached;
+  const openedCaches = [];
   vm.runInNewContext(sw, {
     URL,
     self: { registration: { scope: origin }, addEventListener: (name, fn) => handlers.set(name, fn) },
-    caches: { match: async () => cachedResponse },
+    // Depuis l'isolation du cache, le worker n'utilise plus `caches.match` global
+    // mais uniquement `caches.open(CACHE_NAME).match` : le simulateur doit donc
+    // exposer l'ouverture du cache applicatif.
+    caches: {
+      async open(name) {
+        openedCaches.push(name);
+        return {
+          async match() {
+            return cachedResponse;
+          },
+          async put() {
+            throw new Error("aucune écriture attendue dans ce scénario");
+          }
+        };
+      }
+    },
     fetch: async () => response
   });
   function navigate() {
@@ -66,4 +83,9 @@ test("une navigation précachée reste disponible quand le serveur renvoie 503",
   cachedResponse = cached;
   response = { status: 404, ok: false };
   assert.equal(await navigate(), response);
+  assert.ok(openedCaches.length >= 1, "le cache applicatif est bien ouvert");
+  assert.ok(
+    openedCaches.every(name => name === cacheName),
+    "aucune lecture hors du cache WAT Connect"
+  );
 });
