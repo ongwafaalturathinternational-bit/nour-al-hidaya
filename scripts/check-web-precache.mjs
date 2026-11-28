@@ -4,57 +4,96 @@ import test from "node:test";
 import vm from "node:vm";
 
 const sdkFiles = ["app", "auth", "firestore"].map(sdk => "vendor/firebase-" + sdk + "-compat.js");
+const origin = "https://staging.example/";
+const cacheName = /const CACHE_NAME = "([^"]+)";/.exec(fs.readFileSync("web-dist/sw.js", "utf8"))?.[1];
 
-test("le service worker généré sert les SDK embarqués sans accès réseau", async () => {
-  const origin = "https://staging.example/";
+function createHarness() {
+  assert.ok(cacheName?.endsWith("-embedded"), "Cache embarqué attendu");
   const handlers = new Map();
   const entries = new Map();
+  const names = new Set([cacheName, "wat-connect-shell-v6-embedded", "nour-al-hidaya-shell-v1-embedded", "foreign-cache", "wat-connect-shell-v6-embedded-other"]);
+  const fetched = [];
+  const attempts = [];
+  let online = true;
+  const key = request => new URL(typeof request === "string" ? request : request.url, origin).href;
   const cache = {
-    async addAll(files) {
-      for (const file of files) {
-        const url = new URL(file, origin);
-        assert.equal(url.origin, new URL(origin).origin);
-        const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
-        entries.set(url.href, fs.readFileSync("web-dist/" + name));
-      }
-    }
+    async put(request, response) {
+      assert.equal(response.status, 200);
+      entries.set(key(request), response.clone());
+    },
+    async match(request) { return entries.get(key(request))?.clone(); },
+    async delete(request) { return entries.delete(key(request)); }
   };
   vm.runInNewContext(fs.readFileSync("web-dist/sw.js", "utf8"), {
-    URL,
+    URL, Response, Headers,
     self: {
       registration: { scope: origin },
       addEventListener: (event, callback) => handlers.set(event, callback),
-      skipWaiting() {}
+      skipWaiting() {}, clients: { claim() {} }
     },
-    caches: { open: async () => cache, match: async request => entries.get(request.url) },
-    fetch: async () => assert.fail("Requête réseau inattendue")
+    caches: {
+      open: async name => { assert.equal(name, cacheName); return cache; },
+      keys: async () => [...names],
+      delete: async name => names.delete(name)
+    },
+    fetch: async request => {
+      attempts.push(key(request));
+      assert.ok(online, "Requête réseau inattendue hors connexion");
+      const url = new URL(key(request));
+      assert.equal(url.origin, new URL(origin).origin, "SDK distant interdit dans le paquet embarqué");
+      assert.equal(url.search + url.hash, "");
+      const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
+      assert.ok(name && !name.includes(".."));
+      fetched.push(url.href);
+      return new Response(fs.readFileSync("web-dist/" + name), { status: 200 });
+    }
   });
+  async function lifecycle(name) {
+    let pending;
+    handlers.get(name)({ waitUntil: promise => { pending = promise; } });
+    assert.ok(pending);
+    await pending;
+  }
+  async function offlineResponse(file) {
+    let response;
+    handlers.get("fetch")({ request: { method: "GET", url: new URL(file, origin).href }, respondWith: promise => { response = promise; } });
+    assert.ok(response, file);
+    return response;
+  }
+  return { entries, names, fetched, attempts, lifecycle, offlineResponse, goOffline: () => { online = false; } };
+}
 
-  let install;
-  handlers.get("install")({ waitUntil: promise => { install = promise; } });
-  await install;
+test("le service worker généré sert les SDK embarqués sans accès réseau", async () => {
+  const h = createHarness();
+  await h.lifecycle("install");
+  assert.deepEqual(h.attempts, h.fetched, "Aucune tentative réseau non autorisée");
+  const installationAttempts = h.attempts.length;
+  h.goOffline();
   for (const name of ["manifest.json", "manifest-nour.json"]) {
     const manifestUrl = new URL(name, origin);
-    const cachedManifest = entries.get(manifestUrl.href);
+    const cachedManifest = h.entries.get(manifestUrl.href);
     assert.ok(cachedManifest, name);
-    const manifest = JSON.parse(cachedManifest.toString("utf8"));
+    const manifest = await cachedManifest.clone().json();
     assert.ok(manifest.start_url, name);
     assert.ok(manifest.icons?.length > 0, name);
     for (const resource of [manifest.start_url, ...manifest.icons.map(icon => icon.src)]) {
       const url = new URL(resource, manifestUrl);
-      assert.ok(entries.has(url.href), name + ": " + resource);
+      assert.ok(h.entries.has(url.href), name + ": " + resource);
     }
   }
-
   for (const file of sdkFiles) {
-    const url = new URL(file, origin).href;
-    let response;
-    handlers.get("fetch")({
-      request: { method: "GET", url },
-      respondWith: promise => { response = promise; }
-    });
-    assert.ok(Buffer.isBuffer(await response), url);
+    assert.ok(h.fetched.includes(new URL(file, origin).href), file);
+    const response = await h.offlineResponse(file);
+    assert.equal(response.status, 200, file);
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()), fs.readFileSync("web-dist/" + file), file);
   }
+  assert.equal(h.attempts.length, installationAttempts, "Aucune tentative réseau hors connexion");
+});
+
+test("la migration embarquée supprime les anciens caches WAT mais préserve les caches étrangers", async () => {
+  const h = createHarness();
+  await h.lifecycle("activate");
+  assert.deepEqual([...h.names].sort(), [cacheName, "foreign-cache", "wat-connect-shell-v6-embedded-other"].sort());
 });
 
 test("les pages Firebase du paquet chargent les trois SDK du précache", () => {
