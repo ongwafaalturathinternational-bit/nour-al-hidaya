@@ -78,7 +78,7 @@ const EXTERNAL_ASSETS = [
 
 // Caches hérités dont ce service worker est propriétaire. Le motif est strict :
 // un cache tiers dont le nom commence seulement par le même préfixe est préservé.
-const OWNED_CACHE_NAME = /^(?:wat-connect-shell|nour-al-hidaya-shell)-v\d+$/;
+const OWNED_CACHE_NAME = /^(?:wat-connect-shell|nour-al-hidaya-shell)-v\d+(?:-embedded)?$/;
 
 const OFFLINE_HTML = [
   "<!doctype html>",
@@ -334,7 +334,7 @@ async function handleStaticAsset(request, event) {
 }
 
 // Précache applicatif en deux phases : récupération et validation intégrales,
-// puis écriture atomique. Un échec de validation ou d'écriture annule au mieux
+// puis écriture avec annulation au mieux. Un échec de validation ou d'écriture annule au mieux
 // les entrées déjà écrites et rejette l'installation dans tous les cas, afin de
 // ne jamais activer une interface incomplète.
 async function precacheAppShell(cache) {
