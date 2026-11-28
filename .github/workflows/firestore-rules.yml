@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - "firestore.rules"
+      # Toute modification de test doit déclencher la suite, y compris les nouveaux tests.
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
       - "administration.html"
       - "programmes.html"
       - "activites.html"
